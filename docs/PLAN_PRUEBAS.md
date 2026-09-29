@@ -1,0 +1,107 @@
+# Plan de pruebas
+
+## Modelo de proceso: V con implementación incremental
+Los requisitos son fijos y claros, y el riesgo principal es entregar algo que no cumpla
+un criterio. Por eso se sigue el **modelo en V**: cada nivel de especificación tiene su nivel
+de prueba, diseñado al mismo tiempo que la especificación. La implementación es
+**incremental** (entidad por entidad, cada una terminada y probada), para que lo entregado
+funcione en cualquier punto.
+
+```
+Requisitos (ESPECIFICACION.md) ◄──────────────► Aceptación: Postman/Newman, E2E (opcional)
+   Diseño (PLAN.md) ◄─────────────────────► Integración: API con WebApplicationFactory
+      Arquitectura ◄────────────────────► Arquitectura: dependencias entre capas
+         Módulos ◄───────────────────► Unitarias: dominio, validaciones, servicios
+                        Código
+```
+
+## Independencia de las pruebas
+Las pruebas se escriben **desde la especificación y antes de la implementación**, por un
+agente con un modelo de otro proveedor (rol tester), sin leer la implementación. Así las
+pruebas no heredan los errores de interpretación del código. Detalle en `docs/AGENTES.md`.
+
+## Proyectos y niveles
+| Nivel | Proyecto | Herramientas | Qué necesita para correr |
+|---|---|---|---|
+| Unitarias | tests/RRHH.UnitTests | xUnit, SQLite en memoria | Nada |
+| Integración | tests/RRHH.IntegrationTests | xUnit, WebApplicationFactory, SQLite en memoria | Nada |
+| Arquitectura | tests/RRHH.ArchitectureTests | xUnit, NetArchTest | Nada |
+| Migraciones | comando de EF + prueba opcional | dotnet-ef, SQL Server | SQL Server sólo para la prueba opcional |
+| Aceptación de la API | postman/ | Postman, Newman | La API corriendo |
+| E2E (opcional) | tests/RRHH.E2ETests | xUnit, Playwright | API, web y navegadores instalados |
+
+`dotnet test` corre unitarias, integración y arquitectura. Las E2E y la prueba de migraciones
+sobre SQL Server están marcadas con `[Trait("Categoria", "E2E")]` y `[Trait("Categoria", "SqlServer")]`
+y se excluyen por defecto:
+
+```
+dotnet test --filter "Categoria!=E2E&Categoria!=SqlServer"    # lo de siempre
+dotnet test --filter "Categoria=E2E"                           # con la app corriendo
+```
+
+Convención de nombres: `Metodo_Escenario_ResultadoEsperado`, con estructura Arrange-Act-Assert.
+
+## Nota sobre SQLite
+SQLite en memoria respeta claves foráneas y restricciones únicas, pero no es idéntico a
+SQL Server (tipos, intercalación, algunas funciones). Por eso las migraciones reales se
+verifican aparte contra SQL Server (MIG2).
+
+## Trazabilidad: requisito → prueba
+U = unitaria · I = integración · A = aceptación (Postman) · E = E2E · R = arquitectura · M = migraciones
+
+| Id | Qué se verifica | Nivel | Pruebas |
+|---|---|---|---|
+| CA1 | Detalle de empresa con país, departamento y municipio | I, A | `GetEmpresa_Existente_DevuelveGeografiaCompleta`; Postman «Empresas / Obtener» |
+| CA2 | Colaborador con empresas, edad, teléfono y correo | U, I, A | `CalcularEdad_*`; `GetColaborador_Existente_DevuelveEdadYEmpresas` |
+| CA3 | Un colaborador en varias empresas | I, A, E | `AsociarEmpresa_SegundaEmpresa_QuedaConDos`; Postman «Colaboradores / Asociar empresa» |
+| CA4 | Migraciones completas y aplicables | M | MIG1, MIG2 |
+| CA5 | Pruebas unitarias correctas | U | Todo RRHH.UnitTests; cobertura con coverlet |
+| CA6 | La arquitectura se respeta | R | ARQ1–ARQ4 |
+| CA7 | Todos los servicios en Postman | A | Cada endpoint del PLAN.md tiene su request con pruebas |
+| CA8 | Git | — | Historial por ramas, Conventional Commits, tag v1.0.0 |
+| RN1 | No borrar geografía con dependencias | U, I | `Eliminar_PaisConDepartamentos_Conflicto` (y equivalentes por nivel) |
+| RN2 | No borrar empresa con colaboradores | U, I | `Eliminar_EmpresaConColaboradores_Conflicto` |
+| RN3 | Al menos una empresa | U, I | `Crear_ColaboradorSinEmpresas_Error`; `QuitarEmpresa_UltimaEmpresa_Conflicto` |
+| RN4 | Edad entre 18 y 100 | U | `Validar_Edad17_Error`, `Validar_Edad18_Valido`, `Validar_Edad100_Valido`, `Validar_Edad101_Error` (valores límite) |
+| RN5 | Sin duplicados | U, I | `Crear_NitDuplicado_Conflicto`, `Crear_CorreoDuplicado_Conflicto`, `AsociarEmpresa_YaAsociada_Conflicto`, ... |
+| RN6 | Geografía en cascada | I, E | `GetMunicipiosDeDepartamento_*`; E2E «Crear empresa eligiendo geografía» |
+| V1–V4 | Validaciones de entrada | U, I | Pruebas de validadores con `[Theory]`; `Post*_DatosInvalidos_Devuelve400ConDetalle` |
+
+## Pruebas de dominio y validaciones (unitarias)
+- **Cálculo de edad**, con casos límite: cumpleaños hoy, mañana, ayer, 29 de febrero.
+  El cálculo recibe la fecha actual como parámetro (o un `TimeProvider`) para que las
+  pruebas no dependan del día en que se corren.
+- **Validadores** con `[Theory]` e `[InlineData]` para cada campo.
+- **Servicios** contra SQLite en memoria: reglas RN1 a RN5.
+
+## Pruebas de arquitectura
+- **ARQ1.** RRHH.Domain y RRHH.Contratos no dependen de ningún otro proyecto de la solución.
+- **ARQ2.** RRHH.Application no depende de RRHH.Infrastructure, RRHH.Api ni RRHH.Web.
+- **ARQ3.** RRHH.Web sólo depende de RRHH.Contratos (habla con la API por HTTP).
+- **ARQ4.** Los controladores de la API no exponen tipos de RRHH.Domain en sus respuestas.
+
+## Migraciones
+- **MIG1.** `dotnet ef migrations has-pending-model-changes -p src/RRHH.Infrastructure -s src/RRHH.Api`
+  no informa cambios pendientes (no necesita base de datos).
+- **MIG2** (opcional, categoría SqlServer). Aplicar todas las migraciones sobre una base
+  vacía de LocalDB y verificar que se crean las tablas y los datos iniciales.
+
+## Aceptación con Postman
+- Un request por endpoint, agrupado por entidad, con variables de entorno (`{{baseUrl}}`).
+- Cada request tiene pruebas: código de estado, estructura de la respuesta y, en los
+  casos de error, el `ProblemDetails` esperado.
+- Los requests guardan ids en variables (el país creado se usa para crear el departamento).
+- Ejecución de toda la colección:
+  `newman run postman/RRHH.postman_collection.json -e postman/local.postman_environment.json`
+
+## E2E (opcional, Playwright)
+Sólo flujos clave, no toda la interfaz:
+1. Crear una empresa eligiendo país, departamento y municipio en cascada.
+2. Crear un colaborador asociado a dos empresas y ver su edad en el detalle.
+3. Intentar eliminar una empresa con colaboradores y ver el mensaje de error.
+
+## Criterio de terminado de cada tarea
+- Compila sin advertencias nuevas.
+- `dotnet test` en verde.
+- Las reglas nuevas tienen su prueba y figuran en la tabla de trazabilidad.
+- Postman actualizado si se agregó o cambió un endpoint.
