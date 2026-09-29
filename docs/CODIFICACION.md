@@ -249,7 +249,8 @@ builder.Services.AddExceptionHandler<ManejadorExcepciones>();
 // ...
 app.UseExceptionHandler();
 
-public partial class Program;   // para WebApplicationFactory<Program> en las pruebas
+// No hace falta agregar `public partial class Program;` para WebApplicationFactory<Program>:
+// desde .NET 10 el SDK genera la clase Program como pública.
 ```
 Los errores de formato de los DTOs los devuelve `[ApiController]` solo, como `ValidationProblem` (400).
 

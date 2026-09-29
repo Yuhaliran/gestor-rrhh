@@ -19,15 +19,15 @@ contrato → pruebas (tester) → implementación (implementador) → revisión.
 Cada paso es un commit propio; el merge se hace al cerrar la fase, con el PR.
 
 ## Fase 0 · rama `chore/estructura`
-- [ ] 1. Crear la solución, los proyectos de src/ y tests/ y sus referencias, Directory.Build.props
+- [x] 1. Crear la solución, los proyectos de src/ y tests/ y sus referencias, Directory.Build.props
        y .editorconfig (ver docs/CODIFICACION.md); .gitignore de .NET
        (`chore: estructura inicial de la solución`)
-- [ ] 2. Agregar AGENTS.md, CLAUDE.md, README y docs/ (`docs: especificación, planes y tareas`)
-- [ ] 2b. Configurar permisos por rol: `.claude/settings.json` (implementador sin acceso a tests/)
+- [x] 2. Agregar AGENTS.md, CLAUDE.md, README y docs/ (`docs: especificación, planes y tareas`)
+- [x] 2b. Configurar permisos por rol: `.claude/settings.json` (implementador sin acceso a tests/)
         y permisos del tester en Antigravity CLI: sólo tests/, postman/, docs/PLAN_PRUEBAS.md
         y docs/ERRORES_RECURRENTES.md (`chore: permisos de los agentes por rol`)
-- [ ] 3. Pruebas de arquitectura ARQ1–ARQ4 (`test(arquitectura): reglas de dependencia entre capas`)
-- [ ] 3b. Integración continua con GitHub Actions: `dotnet build`, `dotnet test` y
+- [x] 3. Pruebas de arquitectura ARQ1–ARQ4 (`test(arquitectura): reglas de dependencia entre capas`)
+- [x] 3b. Integración continua con GitHub Actions: `dotnet build`, `dotnet test` y
         `dotnet format --verify-no-changes` en cada PR; exigirla en el ruleset de `main`
         (`ci: build, pruebas y formato en cada PR`)
 
