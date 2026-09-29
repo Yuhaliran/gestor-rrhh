@@ -27,6 +27,9 @@ const ESCRITURA_TESTER = ['tests/', 'postman/', 'docs/PLAN_PRUEBAS.md', 'docs/ER
 // Implementación que el tester no lee: sus pruebas son de caja negra.
 const LECTURA_PROHIBIDA_TESTER = ['src/RRHH.Application/Servicios/', 'src/RRHH.Infrastructure/'];
 
+// Campos de texto libre que agy agrega a las herramientas: describen la acción, no son rutas.
+const CAMPOS_DESCRIPTIVOS = new Set(['toolAction', 'toolSummary']);
+
 // Carpetas propias de agy fuera del repositorio, que agy ya permite por defecto.
 const TEMPORALES = os.tmpdir();
 const AYUDA_AGY = path.join(os.homedir(), '.gemini', 'antigravity-cli', 'builtin');
@@ -85,7 +88,10 @@ function decidirEscritura(args, artefactos) {
 }
 
 function decidirLectura(args, artefactos) {
-  const rutas = Object.values(args).map(aAbsoluta).filter((ruta) => ruta !== null);
+  const rutas = Object.entries(args)
+    .filter(([campo]) => !CAMPOS_DESCRIPTIVOS.has(campo))
+    .map(([, valor]) => aAbsoluta(valor))
+    .filter((ruta) => ruta !== null);
 
   if (rol !== 'revisor') {
     const prohibida = rutas
