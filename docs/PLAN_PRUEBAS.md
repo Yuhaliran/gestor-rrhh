@@ -56,7 +56,7 @@ U = unitaria · I = integración · A = aceptación (Postman) · E = E2E · R = 
 | CA3 | Un colaborador en varias empresas | I, A, E | `AsociarEmpresa_SegundaEmpresa_QuedaConDos`; Postman «Colaboradores / Asociar empresa» |
 | CA4 | Migraciones completas y aplicables | M | MIG1, MIG2 |
 | CA5 | Pruebas unitarias correctas | U | Todo RRHH.UnitTests; cobertura con coverlet |
-| CA6 | La arquitectura se respeta | R | ARQ1–ARQ4 |
+| CA6 | La arquitectura se respeta | R | `VerificarDependencias_DomainYContratos_NoDependenDeOtrosProyectos`, `VerificarDependencias_Application_NoDependeDeInfraestructuraApiNiWeb`, `VerificarDependencias_Web_SoloDependeDeContratos`, `VerificarDependencias_ControladoresApi_NoUsanTiposDeDominio` |
 | CA7 | Todos los servicios en Postman | A | Cada endpoint del PLAN.md tiene su request con pruebas |
 | CA8 | Git | — | Historial por ramas, un PR por fase con la plantilla, Conventional Commits, tag v1.0.0 |
 | RN1 | No borrar geografía con dependencias | U, I | `Eliminar_PaisConDepartamentos_Conflicto` (y equivalentes por nivel) |
