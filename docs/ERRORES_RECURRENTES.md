@@ -92,6 +92,18 @@ Compilación, paquetes, pruebas, EF Core, git.
                  hook no decidió.
 - Origen:        tarea 2b · 2026-09-29 · responsable
 
+### E-008 · Un `packages.lock.json` menciona un proyecto que no existe
+- Síntoma:       el lock de un proyecto de pruebas tiene un proyecto o una dependencia entre
+                 proyectos que no están en la solución (por ejemplo `rrhh.temporal`).
+- Causa:         pruebas de mutación: con la arquitectura rota a propósito, `dotnet test` restaura
+                 y reescribe los `packages.lock.json` de los proyectos de pruebas. Al deshacer sólo
+                 `src/`, el lock de `tests/` quedó con la mutación y se commiteó.
+- Solución:      `dotnet restore <proyecto> --force-evaluate` regenera el lock desde el estado real.
+- Cómo evitarlo: hacer las mutaciones con el árbol de trabajo limpio y deshacerlas con
+                 `git checkout -- .`, que incluye los lock files. Antes de commitear, revisar el
+                 diff de cada `packages.lock.json`.
+- Origen:        tarea 3 · 2026-09-29 · implementador
+
 ## Funcionalidad
 Comportamiento que no cumplía la especificación, detectado por pruebas o revisión.
 

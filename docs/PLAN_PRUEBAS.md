@@ -78,7 +78,8 @@ U = unitaria · I = integración · A = aceptación (Postman) · E = E2E · R = 
 - **ARQ1.** RRHH.Domain y RRHH.Contratos no dependen de ningún otro proyecto de la solución.
 - **ARQ2.** RRHH.Application no depende de RRHH.Infrastructure, RRHH.Api ni RRHH.Web.
 - **ARQ3.** RRHH.Web sólo depende de RRHH.Contratos (habla con la API por HTTP).
-- **ARQ4.** Los controladores de la API no exponen tipos de RRHH.Domain en sus respuestas.
+- **ARQ4.** Los controladores de la API no usan tipos de RRHH.Domain, ni en sus respuestas ni
+  en su código: trabajan con los DTOs de RRHH.Contratos y los servicios de RRHH.Application.
 
 ## Migraciones
 - **MIG1.** `dotnet ef migrations has-pending-model-changes -p src/RRHH.Infrastructure -s src/RRHH.Api`
