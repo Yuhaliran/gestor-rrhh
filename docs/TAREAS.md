@@ -33,7 +33,8 @@ Cada paso es un commit propio; el merge se hace al cerrar la fase, con el PR.
 
 ## Fase 1 · rama `feature/dominio-datos`
 - [ ] 4. Entidades del dominio y cálculo de edad, con pruebas de valores límite
-       (`feat(dominio): entidades y cálculo de edad`)
+       (`feat(dominio): entidades y cálculo de edad`). Con la primera prueba unitaria, quitar el
+       `--ignore-exit-code 8` de RRHH.UnitTests.csproj (E-002)
 - [ ] 5. RrhhDbContext y configuraciones con Fluent API (tipos, largos, únicos, FK con Restrict)
        (`feat(datos): contexto y configuraciones de EF Core`)
 - [ ] 6. Migración inicial y datos iniciales de Guatemala; verificar MIG1
@@ -56,7 +57,8 @@ Cada paso es un commit propio; el merge se hace al cerrar la fase, con el PR.
 
 ## Fase 4 · rama `test/integracion`
 - [ ] 15. WebApplicationFactory con SQLite y pruebas de integración de los endpoints
-        (`test(api): pruebas de integración`)
+        (`test(api): pruebas de integración`). Quitar el `--ignore-exit-code 8` de
+        RRHH.IntegrationTests.csproj, si no se quitó antes (E-002)
 - [ ] 16. Revisar la tabla de trazabilidad de PLAN_PRUEBAS.md: cada regla con su prueba
         (`test: completar trazabilidad de reglas`)
 

@@ -63,6 +63,8 @@ docs/
 - Trabajar en la rama de la fase actual (ver `docs/TAREAS.md`), nunca directo en `main`.
 - Un commit por tarea terminada, con el mensaje sugerido en TAREAS.md.
 - Cada fase se cierra con un pull request a `main` (plantilla en `.github/`); `main` está protegida.
+- La integración continua (`.github/workflows/ci.yml`) corre en cada PR: restauración con
+  `--locked-mode`, build, `dotnet format --verify-no-changes` y pruebas. Tiene que quedar en verde.
 
 ## Roles
 Este proyecto separa roles entre agentes de distintos modelos (ver `docs/AGENTES.md`):

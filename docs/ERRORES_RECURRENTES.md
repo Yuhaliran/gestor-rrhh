@@ -37,10 +37,16 @@ Compilación, paquetes, pruebas, EF Core, git.
 - Síntoma:       «No se ejecutaron pruebas», código de salida 8.
 - Causa:         MTP devuelve 8 cuando no se ejecutó ninguna prueba: un proyecto vacío o un filtro
                  que excluye todo.
-- Solución:      hasta la tarea 3 es esperado, porque los proyectos de pruebas están vacíos.
-- Cómo evitarlo: no usar `--ignore-exit-code 8` en forma permanente, porque escondería un filtro mal
-                 escrito. Si aparece cuando ya hay pruebas, revisar el filtro y los `[Trait]`.
-- Origen:        tarea 1 · 2026-09-29 · implementador
+- Solución:      los proyectos que todavía no tienen pruebas (RRHH.UnitTests y RRHH.IntegrationTests)
+                 ignoran el código 8 en su `.csproj`, con `TestingPlatformCommandLineArguments`
+                 (tarea 3b). RRHH.ArchitectureTests no lo ignora.
+- Cómo evitarlo: ignorar el 8 sólo por proyecto y mientras esté vacío. Ignorarlo en toda la solución
+                 (`dotnet test --ignore-exit-code 8` o `TESTINGPLATFORM_EXITCODE_IGNORE`) haría que
+                 un filtro mal escrito dé verde sin ejecutar ninguna prueba. Al agregar la primera
+                 prueba a un proyecto, quitar esa propiedad de su `.csproj` (recordatorio en las
+                 tareas 4 y 15). Si el 8 aparece en un proyecto con pruebas, revisar el filtro y los
+                 `[Trait]`.
+- Origen:        tarea 1 · 2026-09-29 · implementador; solución en la tarea 3b
 
 ### E-003 · `dotnet format` marca CHARSET o WHITESPACE en archivos de plantillas
 - Síntoma:       `dotnet format --verify-no-changes` falla en archivos que genera `dotnet new`.
