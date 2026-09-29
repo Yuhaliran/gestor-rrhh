@@ -99,6 +99,7 @@ public class ArquitecturaTests
         var apiAssembly = CargarEnsamblado("RRHH.Api");
         var controladores = apiAssembly.GetTypes().Where(EsControlador).ToList();
         var violaciones = new List<string>();
+        string[] prohibidosControladores = ["RRHH.Domain", "RRHH.Infrastructure", "Microsoft.EntityFrameworkCore"];
 
         // Act
         foreach (var controlador in controladores)
@@ -110,6 +111,14 @@ public class ArquitecturaTests
                 {
                     violaciones.Add($"{controlador.FullName}.{metodo.Name} retorna {metodo.ReturnType.Name} con tipos de RRHH.Domain");
                 }
+
+                foreach (var parametro in metodo.GetParameters())
+                {
+                    if (ContieneTipoDeDominio(parametro.ParameterType))
+                    {
+                        violaciones.Add($"{controlador.FullName}.{metodo.Name} recibe parámetro '{parametro.Name}' de tipo {parametro.ParameterType.Name} con tipos de RRHH.Domain");
+                    }
+                }
             }
         }
 
@@ -119,13 +128,13 @@ public class ArquitecturaTests
             .And()
             .HaveNameEndingWith("Controller")
             .ShouldNot()
-            .HaveDependencyOn("RRHH.Domain")
+            .HaveDependencyOnAny(prohibidosControladores)
             .GetResult();
 
         // Assert
         Assert.Empty(violaciones);
         Assert.True(resultadoTiposControladores.IsSuccessful,
-            $"Controladores de API tienen dependencias de RRHH.Domain: {string.Join(", ", resultadoTiposControladores.FailingTypeNames ?? [])}");
+            $"Controladores de API tienen dependencias prohibidas: {string.Join(", ", resultadoTiposControladores.FailingTypeNames ?? [])}");
     }
 
     private static string ObtenerRaizRepositorio()
