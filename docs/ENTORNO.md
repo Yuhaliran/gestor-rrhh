@@ -25,6 +25,8 @@ irm https://claude.ai/install.ps1 | iex                 # Claude Code (requiere 
 irm https://antigravity.google/cli/install.ps1 | iex    # Antigravity CLI (inicio de sesión con Google)
 ```
 Primer inicio: `claude` y `agy` dentro de la carpeta del proyecto; cada uno abre el navegador para iniciar sesión.
+En `agy`, confiar en la carpeta cuando lo pregunte: así carga el hook de permisos del tester y
+del revisor (`.agents/hooks.json`, ver `docs/AGENTES.md`).
 
 ## Verificación
 ```powershell
@@ -35,6 +37,7 @@ node --version
 newman --version
 claude --version
 agy --version
+agy -p "/hooks"         # desde PowerShell, en el proyecto: debe listar permisos-por-rol
 ```
 
 ## No hace falta

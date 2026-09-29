@@ -60,6 +60,38 @@ Compilación, paquetes, pruebas, EF Core, git.
 - Cómo evitarlo: los avisos son informativos y no rompen nada; no borrar `.gitattributes`.
 - Origen:        tarea 1 · 2026-09-29 · implementador
 
+### E-005 · Una regla `Write(...)` en los permisos de Claude Code no bloquea nada
+- Síntoma:       una regla como `"deny": ["Write(tests/**)"]` se acepta, pero Claude Code puede
+                 seguir escribiendo en esa ruta (al iniciar avisa que la regla no se consulta).
+- Causa:         para archivos, Claude Code sólo aplica reglas `Edit(...)` y `Read(...)`; las de
+                 `Write`, `NotebookEdit` o `MultiEdit` con ruta se ignoran.
+- Solución:      `.claude/settings.json` con `Edit(/tests/**)`, que cubre todas las herramientas
+                 que modifican archivos.
+- Cómo evitarlo: para archivos, sólo reglas `Edit(...)` y `Read(...)`, con `/` al inicio para
+                 anclarlas a la raíz del repositorio. Los comandos se niegan en cada terminal:
+                 `Bash(...)` y `PowerShell(...)`.
+- Origen:        tarea 2b · 2026-09-29 · implementador
+
+### E-006 · El hook de `agy` falla con «Cannot find module ...\.agents\.agents\hooks\...»
+- Síntoma:       en `agy`, todas las herramientas fallan con `jsonhook__permisos-por-rol_PreToolUse`
+                 `failed: exit status 1` y `MODULE_NOT_FOUND` sobre una ruta con `.agents` repetido.
+- Causa:         `agy` ejecuta los comandos de `.agents/hooks.json` desde la carpeta `.agents/`, no
+                 desde la raíz del repositorio; una ruta `.agents/hooks/...` queda duplicada.
+- Solución:      comando `node hooks/permisos-por-rol.mjs`, relativo a `.agents/`.
+- Cómo evitarlo: en `.agents/hooks.json`, escribir las rutas relativas a `.agents/`. Para probar un
+                 hook a mano, ejecutarlo desde esa carpeta.
+- Origen:        tarea 2b · 2026-09-29 · responsable
+
+### E-007 · `agy` bloquea todo con «tool call denied by pre-tool hook:» y sin motivo
+- Síntoma:       el tester no puede leer `docs/`, ejecutar `git status` ni escribir en `tests/`; el
+                 mensaje de bloqueo termina en «:» sin explicación.
+- Causa:         `agy` trata como `deny` una respuesta del hook sin `decision` (por ejemplo `{}`).
+- Solución:      el hook responde siempre una decisión: `allow` donde `agy` ya permitía por defecto,
+                 `ask` en los comandos y fuera de sus carpetas, `deny` con `reason` en lo prohibido.
+- Cómo evitarlo: en un hook `PreToolUse`, nunca devolver `{}`. Un bloqueo sin motivo indica que el
+                 hook no decidió.
+- Origen:        tarea 2b · 2026-09-29 · responsable
+
 ## Funcionalidad
 Comportamiento que no cumplía la especificación, detectado por pruebas o revisión.
 

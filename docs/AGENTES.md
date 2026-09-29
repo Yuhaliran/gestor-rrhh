@@ -48,21 +48,59 @@ debe ver cómo están implementados (pruebas de caja negra). El contrato es la f
 interfaces y DTOs sí; servicios, no.
 
 ## Cómo se imponen las reglas
-Las restricciones no dependen sólo de las instrucciones: se configuran como permisos de
-cada herramienta, para que el agente **no pueda** hacer lo que no debe.
+Las restricciones no dependen sólo de las instrucciones: se configuran en cada herramienta,
+para que el agente **no pueda** hacer lo que no debe. Las dos configuraciones están versionadas.
 
-```
-// .claude/settings.json — el implementador no puede editar pruebas
+**Implementador (Claude Code): `.claude/settings.json`**
+```json
 {
   "permissions": {
-    "deny": ["Edit(tests/**)", "Write(tests/**)", "Read(./.env)", "Bash(git push:*)"]
+    "deny": [
+      "Edit(/tests/**)",
+      "Edit(/postman/**)",
+      "Read(./.env)",
+      "Bash(git push *)",
+      "PowerShell(git push *)"
+    ]
   }
 }
 ```
+Para archivos, Claude Code sólo aplica reglas `Edit(...)` y `Read(...)` (ver E-005 en
+`docs/ERRORES_RECURRENTES.md`); la `/` inicial ancla la ruta a la raíz del repositorio.
+`git push` se niega en Bash y en PowerShell, las dos terminales que usa en Windows.
 
-Para el tester, las instrucciones del rol no dependen de la herramienta: cada sesión
-empieza indicando el rol, y los límites se configuran en los permisos de la herramienta
-(sólo escritura en `tests/`, `postman/`, `docs/PLAN_PRUEBAS.md` y `docs/ERRORES_RECURRENTES.md`).
+**Tester y revisor (Antigravity CLI): hook `.agents/hooks.json`**
+Antigravity permite por defecto escribir en todo el proyecto y, en sus reglas de permisos,
+una denegación gana siempre: «sólo estas carpetas» no se puede expresar con reglas. Por eso
+un hook del proyecto (`.agents/hooks/permisos-por-rol.mjs`, en Node) revisa cada herramienta
+de archivos y cada comando antes de que se ejecuten:
+
+| Rol (`RRHH_ROL`) | Escritura en el repositorio | Lectura |
+|---|---|---|
+| `tester` (por defecto) | Sólo `tests/`, `postman/`, `docs/PLAN_PRUEBAS.md` y `docs/ERRORES_RECURRENTES.md` | Todo menos `src/RRHH.Application/Servicios/` y `src/RRHH.Infrastructure/` |
+| `revisor` | Nada | Todo |
+
+Para los dos roles quedan bloqueados `git push` y los subagentes, porque las herramientas de un
+subagente no pasan por el hook. Un valor desconocido de `RRHH_ROL` bloquea toda escritura. Lo
+demás sigue como Antigravity lo hace por defecto: los comandos piden aprobación y, fuera del
+repositorio, se permiten sólo sus propias carpetas (artefactos, temporales y ayuda
+incorporada); para el resto, pregunta.
+
+El rol se define en PowerShell antes de abrir `agy` (escrito en el chat no llega al hook):
+```powershell
+$env:RRHH_ROL = "tester";  agy     # sesión del tester
+$env:RRHH_ROL = "revisor"; agy     # sesión del revisor
+```
+
+Antigravity carga el hook cuando se confía en la carpeta del proyecto (primer inicio). Ejecuta
+el comando desde la carpeta `.agents/` (por eso la ruta es `hooks/...`, ver E-006) y, en
+Windows, con `cmd /C`, que no interpreta comillas escapadas: el comando va sin comillas. Si el
+hook falla o responde sin decisión, `agy` bloquea la herramienta (E-007).
+
+Límites: los permisos controlan las herramientas del agente, no lo que hacen los programas que
+ejecuta (un `dotnet format` o un `type` desde la terminal), y una búsqueda sobre todo el
+repositorio puede mostrar líneas de la implementación. La revisión humana sigue siendo la
+última barrera.
 
 ```
 Mensaje inicial de una sesión del tester:

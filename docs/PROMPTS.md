@@ -28,6 +28,8 @@ la especificación, detenete y explicá por qué, citando docs/ESPECIFICACION.md
 ```
 
 ## Antigravity CLI · tester
+Iniciar desde PowerShell con `$env:RRHH_ROL = "tester"; agy`, no en el chat (permisos del rol
+en `docs/AGENTES.md`).
 
 **Paso 2 · pruebas**
 ```
@@ -41,6 +43,7 @@ Actualizá la tabla de trazabilidad de docs/PLAN_PRUEBAS.md.
 ```
 
 ## Antigravity CLI · revisor (sesión nueva)
+Iniciar desde PowerShell con `$env:RRHH_ROL = "revisor"; agy`: el hook bloquea toda escritura.
 
 **Paso 4 · revisión**
 ```
