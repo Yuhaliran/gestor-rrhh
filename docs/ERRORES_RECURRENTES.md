@@ -52,11 +52,12 @@ Compilación, paquetes, pruebas, EF Core, git.
 
 ### E-004 · Avisos «LF will be replaced by CRLF» al hacer `git add`
 - Síntoma:       decenas de avisos de git al agregar archivos.
-- Causa:         el repositorio mezclaba archivos con finales de línea LF y CRLF, y git en Windows
-                 los convierte.
-- Solución:      `.gitattributes` con `* text=auto`: git guarda LF en el repositorio y cada
-                 máquina usa su propio formato.
-- Cómo evitarlo: no borrar `.gitattributes`. Los avisos son informativos y no rompen nada.
+- Causa:         git en Windows (`core.autocrlf=true`) guarda LF en el repositorio y usa CRLF en la
+                 copia de trabajo. Los archivos escritos con LF (por herramientas o agentes)
+                 generan el aviso porque en el próximo checkout van a pasar a CRLF.
+- Solución:      no hace falta hacer nada: el repositorio queda con LF. El `.gitattributes`
+                 (`* text=auto`) asegura lo mismo en máquinas sin esa configuración (Mac, Linux).
+- Cómo evitarlo: los avisos son informativos y no rompen nada; no borrar `.gitattributes`.
 - Origen:        tarea 1 · 2026-09-29 · implementador
 
 ## Funcionalidad
