@@ -1,20 +1,22 @@
 # Tareas
 
 Una tarea por vez. Al terminar cada una: `dotnet build`, `dotnet test`, y un commit
-con el mensaje sugerido. Al terminar cada fase: merge de la rama a `main` con `--no-ff`
-(o pull request).
+con el mensaje sugerido. Al terminar cada fase: pull request de la rama a `main` con la
+plantilla de `.github/`. `main` está protegida: no se hace merge local.
 
 ```
-git switch main && git switch -c <rama-de-la-fase>
+git switch main && git pull && git switch -c <rama-de-la-fase>
 ... tareas y commits ...
-git switch main && git merge --no-ff <rama-de-la-fase>
+git push -u origin <rama-de-la-fase>        # lo hace el responsable
+PR a main con la plantilla → revisión → merge commit (no squash)
+git switch main && git pull
 ```
 
 Convenciones y patrón de referencia: `docs/CODIFICACION.md`. Prompts de cada paso: `docs/PROMPTS.md`.
 
 En las tareas de la API (9 a 14) se sigue el ciclo de `docs/AGENTES.md`:
-contrato → pruebas (tester) → implementación (implementador) → revisión → merge.
-Cada paso es un commit propio.
+contrato → pruebas (tester) → implementación (implementador) → revisión.
+Cada paso es un commit propio; el merge se hace al cerrar la fase, con el PR.
 
 ## Fase 0 · rama `chore/estructura`
 - [ ] 1. Crear la solución, los proyectos de src/ y tests/ y sus referencias, Directory.Build.props
@@ -25,6 +27,9 @@ Cada paso es un commit propio.
         y permisos del tester en Antigravity CLI: sólo tests/, postman/, docs/PLAN_PRUEBAS.md
         y docs/ERRORES_RECURRENTES.md (`chore: permisos de los agentes por rol`)
 - [ ] 3. Pruebas de arquitectura ARQ1–ARQ4 (`test(arquitectura): reglas de dependencia entre capas`)
+- [ ] 3b. Integración continua con GitHub Actions: `dotnet build`, `dotnet test` y
+        `dotnet format --verify-no-changes` en cada PR; exigirla en el ruleset de `main`
+        (`ci: build, pruebas y formato en cada PR`)
 
 ## Fase 1 · rama `feature/dominio-datos`
 - [ ] 4. Entidades del dominio y cálculo de edad, con pruebas de valores límite
@@ -76,4 +81,5 @@ Cada paso es un commit propio.
 - [ ] 26. README final: ejecución, decisiones, pruebas por categoría y uso de IA (`docs: README`)
 - [ ] 27. Revisión final: `dotnet format`, sin advertencias, sin secretos, todo en verde
         (`chore: revisión final`)
-- [ ] 28. Merge a `main` y tag: `git tag -a v1.0.0 -m "Entrega de la evaluación"`
+- [ ] 28. PR de la fase 8 a `main`; después, tag sobre `main`:
+        `git tag -a v1.0.0 -m "Entrega de la evaluación"`

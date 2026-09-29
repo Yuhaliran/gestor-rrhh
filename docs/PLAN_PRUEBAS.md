@@ -58,7 +58,7 @@ U = unitaria · I = integración · A = aceptación (Postman) · E = E2E · R = 
 | CA5 | Pruebas unitarias correctas | U | Todo RRHH.UnitTests; cobertura con coverlet |
 | CA6 | La arquitectura se respeta | R | ARQ1–ARQ4 |
 | CA7 | Todos los servicios en Postman | A | Cada endpoint del PLAN.md tiene su request con pruebas |
-| CA8 | Git | — | Historial por ramas, Conventional Commits, tag v1.0.0 |
+| CA8 | Git | — | Historial por ramas, un PR por fase con la plantilla, Conventional Commits, tag v1.0.0 |
 | RN1 | No borrar geografía con dependencias | U, I | `Eliminar_PaisConDepartamentos_Conflicto` (y equivalentes por nivel) |
 | RN2 | No borrar empresa con colaboradores | U, I | `Eliminar_EmpresaConColaboradores_Conflicto` |
 | RN3 | Al menos una empresa | U, I | `Crear_ColaboradorSinEmpresas_Error`; `QuitarEmpresa_UltimaEmpresa_Conflicto` |

@@ -132,8 +132,10 @@ Listados paginados: `?pagina=1&tamanio=20&buscar=texto`.
   (`feat(api): ...`, `feat(web): ...`).
 - `main` siempre compila y pasa las pruebas.
 - Una rama por fase (ver `docs/TAREAS.md`), con commits pequeños.
-- Al cerrar cada fase: merge a `main` con `--no-ff` (o un pull request en GitHub, con
-  descripción), para que cada fase quede visible en el historial.
+- Al cerrar cada fase: pull request a `main` con la plantilla de `.github/`, con merge commit
+  para que cada fase quede visible en el historial.
+- `main` está protegida con un ruleset sin excepciones: sólo se modifica por PR, sin force push
+  ni borrado, y con la integración continua en verde (desde la tarea 3b).
 - Al terminar: tag `v1.0.0`.
 
 ## Convenciones de código

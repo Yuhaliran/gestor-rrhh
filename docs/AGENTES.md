@@ -34,7 +34,8 @@ Instrucciones de cada rol: `docs/agentes/implementador.md`, `docs/agentes/tester
                    sin tocar las pruebas.
                    commit: feat(x): implementación
 4. Revisión        Revisor compara el diff con la especificación y lista hallazgos.
-5. Decisión        Responsable resuelve discrepancias y hace merge.
+5. Decisión        Responsable resuelve discrepancias. Al cerrar la fase, los hallazgos
+                   van a la sección Revisión del PR y hace el merge.
 ```
 
 Si el implementador cree que una prueba está mal, **no la cambia**: lo explica. El
