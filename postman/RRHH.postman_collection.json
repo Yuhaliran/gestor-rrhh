@@ -2663,16 +2663,14 @@
 			"name": "Empresas Colaborador",
 			"item": [
 				{
-					"name": "Setup: Crear pais y municipio",
+					"name": "Setup: Crear pais",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
-									"pm.collectionVariables.set(\"t14Pais\", pm.response.json().id);",
-									"pm.collectionVariables.set(\"t14Depto\", pm.response.json().departamentos[0].id);",
-									"pm.collectionVariables.set(\"t14Muni\", pm.response.json().departamentos[0].municipios[0].id);"
+									"pm.environment.set(\"t14Pais\", pm.response.json().id);"
 								],
 								"type": "text/javascript"
 							}
@@ -2683,9 +2681,57 @@
 						"header": [{"key": "Content-Type","value": "application/json"}],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"nombre\":\"Pais T14\",\"codigoIso2\":\"T4\",\"edadMinima\":18,\"edadMaxima\":100,\"departamentos\":[{\"nombre\":\"Depto T14\",\"municipios\":[{\"nombre\":\"Muni T14\"}]}]}"
+							"raw": "{\"nombre\":\"Pais T14\",\"codigoIso2\":\"T4\",\"edadMinima\":18,\"edadMaxima\":100,\"regla29Febrero\":\"VeintiochoDeFebrero\"}"
 						},
 						"url": {"raw": "{{baseUrl}}/api/paises","host": ["{{baseUrl}}"],"path": ["api","paises"]}
+					}
+				},
+				{
+					"name": "Setup: Crear departamento",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+									"pm.environment.set(\"t14Depto\", pm.response.json().id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type","value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"paisId\":{{t14Pais}},\"nombre\":\"Depto T14\"}"
+						},
+						"url": {"raw": "{{baseUrl}}/api/departamentos","host": ["{{baseUrl}}"],"path": ["api","departamentos"]}
+					}
+				},
+				{
+					"name": "Setup: Crear municipio",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+									"pm.environment.set(\"t14Muni\", pm.response.json().id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type","value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"departamentoId\":{{t14Depto}},\"nombre\":\"Muni T14\"}"
+						},
+						"url": {"raw": "{{baseUrl}}/api/municipios","host": ["{{baseUrl}}"],"path": ["api","municipios"]}
 					}
 				},
 				{
@@ -2696,7 +2742,7 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
-									"pm.collectionVariables.set(\"t14Emp1\", pm.response.json().id);"
+									"pm.environment.set(\"t14Emp1\", pm.response.json().id);"
 								],
 								"type": "text/javascript"
 							}
@@ -2720,7 +2766,7 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
-									"pm.collectionVariables.set(\"t14Emp2\", pm.response.json().id);"
+									"pm.environment.set(\"t14Emp2\", pm.response.json().id);"
 								],
 								"type": "text/javascript"
 							}
@@ -2744,7 +2790,7 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
-									"pm.collectionVariables.set(\"t14Col\", pm.response.json().id);"
+									"pm.environment.set(\"t14Col\", pm.response.json().id);"
 								],
 								"type": "text/javascript"
 							}
@@ -2848,6 +2894,102 @@
 					}
 				},
 				{
+					"name": "Setup: Crear pais RN4",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+									"pm.environment.set(\"t14PaisRN4\", pm.response.json().id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type","value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombre\":\"Pais RN4\",\"codigoIso2\":\"R4\",\"edadMinima\":40,\"edadMaxima\":100,\"regla29Febrero\":\"VeintiochoDeFebrero\"}"
+						},
+						"url": {"raw": "{{baseUrl}}/api/paises","host": ["{{baseUrl}}"],"path": ["api","paises"]}
+					}
+				},
+				{
+					"name": "Setup: Crear depto RN4",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+									"pm.environment.set(\"t14DeptoRN4\", pm.response.json().id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type","value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"paisId\":{{t14PaisRN4}},\"nombre\":\"Depto RN4\"}"
+						},
+						"url": {"raw": "{{baseUrl}}/api/departamentos","host": ["{{baseUrl}}"],"path": ["api","departamentos"]}
+					}
+				},
+				{
+					"name": "Setup: Crear muni RN4",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+									"pm.environment.set(\"t14MuniRN4\", pm.response.json().id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type","value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"departamentoId\":{{t14DeptoRN4}},\"nombre\":\"Muni RN4\"}"
+						},
+						"url": {"raw": "{{baseUrl}}/api/municipios","host": ["{{baseUrl}}"],"path": ["api","municipios"]}
+					}
+				},
+				{
+					"name": "Setup: Crear empresa RN4",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+									"pm.environment.set(\"t14EmpRN4\", pm.response.json().id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type","value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"municipioId\":{{t14MuniRN4}},\"nit\":\"RN4\",\"razonSocial\":\"RN4\",\"nombreComercial\":\"RN4\",\"telefono\":\"4444\",\"correo\":\"r4@t.com\"}"
+						},
+						"url": {"raw": "{{baseUrl}}/api/empresas","host": ["{{baseUrl}}"],"path": ["api","empresas"]}
+					}
+				},
+				{
 					"name": "Asociar RN4",
 					"event": [
 						{
@@ -2865,9 +3007,9 @@
 						"header": [{"key": "Content-Type","value": "application/json"}],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"empresaId\":{{t14Emp1}},\"fechaIngreso\":\"2025-02-01\"}"
+							"raw": "{\"empresaId\":{{t14EmpRN4}},\"fechaIngreso\":\"2025-02-01\"}"
 						},
-						"url": {"raw": "{{baseUrl}}/api/colaboradores/9999/empresas","host": ["{{baseUrl}}"],"path": ["api","colaboradores","9999","empresas"]}
+						"url": {"raw": "{{baseUrl}}/api/colaboradores/{{t14Col}}/empresas","host": ["{{baseUrl}}"],"path": ["api","colaboradores","{{t14Col}}","empresas"]}
 					}
 				},
 				{
@@ -2976,7 +3118,210 @@
 					}
 				},
 				{
-					"name": "Teardown",
+					"name": "Listar 404",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": {"raw": "{{baseUrl}}/api/empresas/999999/colaboradores","host": ["{{baseUrl}}"],"path": ["api","empresas","999999","colaboradores"]}
+					}
+				},
+				{
+					"name": "Actualizar no asociada 404",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [{"key": "Content-Type","value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"empresaId\":{{t14EmpRN4}},\"fechaIngreso\":\"2025-02-01\"}"
+						},
+						"url": {"raw": "{{baseUrl}}/api/colaboradores/{{t14Col}}/empresas/{{t14EmpRN4}}","host": ["{{baseUrl}}"],"path": ["api","colaboradores","{{t14Col}}","empresas","{{t14EmpRN4}}"]}
+					}
+				},
+				{
+					"name": "Quitar no asociada 404",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"url": {"raw": "{{baseUrl}}/api/colaboradores/{{t14Col}}/empresas/{{t14EmpRN4}}","host": ["{{baseUrl}}"],"path": ["api","colaboradores","{{t14Col}}","empresas","{{t14EmpRN4}}"]}
+					}
+				},
+				{
+					"name": "Teardown: Colaborador",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"url": {"raw": "{{baseUrl}}/api/colaboradores/{{t14Col}}","host": ["{{baseUrl}}"],"path": ["api","colaboradores","{{t14Col}}"]}
+					}
+				},
+				{
+					"name": "Teardown: Empresa 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"url": {"raw": "{{baseUrl}}/api/empresas/{{t14Emp1}}","host": ["{{baseUrl}}"],"path": ["api","empresas","{{t14Emp1}}"]}
+					}
+				},
+				{
+					"name": "Teardown: Empresa 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"url": {"raw": "{{baseUrl}}/api/empresas/{{t14Emp2}}","host": ["{{baseUrl}}"],"path": ["api","empresas","{{t14Emp2}}"]}
+					}
+				},
+				{
+					"name": "Teardown: Empresa RN4",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"url": {"raw": "{{baseUrl}}/api/empresas/{{t14EmpRN4}}","host": ["{{baseUrl}}"],"path": ["api","empresas","{{t14EmpRN4}}"]}
+					}
+				},
+				{
+					"name": "Teardown: Municipio",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"url": {"raw": "{{baseUrl}}/api/municipios/{{t14Muni}}","host": ["{{baseUrl}}"],"path": ["api","municipios","{{t14Muni}}"]}
+					}
+				},
+				{
+					"name": "Teardown: Municipio RN4",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"url": {"raw": "{{baseUrl}}/api/municipios/{{t14MuniRN4}}","host": ["{{baseUrl}}"],"path": ["api","municipios","{{t14MuniRN4}}"]}
+					}
+				},
+				{
+					"name": "Teardown: Departamento",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"url": {"raw": "{{baseUrl}}/api/departamentos/{{t14Depto}}","host": ["{{baseUrl}}"],"path": ["api","departamentos","{{t14Depto}}"]}
+					}
+				},
+				{
+					"name": "Teardown: Departamento RN4",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"url": {"raw": "{{baseUrl}}/api/departamentos/{{t14DeptoRN4}}","host": ["{{baseUrl}}"],"path": ["api","departamentos","{{t14DeptoRN4}}"]}
+					}
+				},
+				{
+					"name": "Teardown: Pais",
 					"event": [
 						{
 							"listen": "test",
@@ -2991,6 +3336,24 @@
 					"request": {
 						"method": "DELETE",
 						"url": {"raw": "{{baseUrl}}/api/paises/{{t14Pais}}","host": ["{{baseUrl}}"],"path": ["api","paises","{{t14Pais}}"]}
+					}
+				},
+				{
+					"name": "Teardown: Pais RN4",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"url": {"raw": "{{baseUrl}}/api/paises/{{t14PaisRN4}}","host": ["{{baseUrl}}"],"path": ["api","paises","{{t14PaisRN4}}"]}
 					}
 				}
 			]

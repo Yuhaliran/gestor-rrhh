@@ -1005,7 +1005,6 @@ public class ColaboradoresServicioTests : IDisposable
 
         var dtoCrear = DtoCrearBase(e1.Id, new DateOnly(2025, 1, 1)) with { FechaNacimiento = new DateOnly(2004, 2, 29) };
         var c = await _servicio.CrearAsync(dtoCrear, TestContext.Current.CancellationToken);
-        Assert.Equal(23, c.Edad);
 
         var dto = new AsociarEmpresaDto { EmpresaId = e2.Id, FechaIngreso = new DateOnly(2024, 1, 1), Puesto = "X" };
 
@@ -1013,8 +1012,13 @@ public class ColaboradoresServicioTests : IDisposable
         var res = await _servicio.AsociarEmpresaAsync(c.Id, dto, TestContext.Current.CancellationToken);
 
         // Assert
+        Assert.Equal(23, c.Edad);
         Assert.Equal(2, res.Empresas.Count);
         Assert.Equal(22, res.Edad);
+
+        var guardado = await _servicio.ObtenerAsync(c.Id, TestContext.Current.CancellationToken);
+        var emp2 = guardado.Empresas.First(x => x.EmpresaId == e2.Id);
+        Assert.Equal("X", emp2.Puesto);
     }
 
     [Fact]
@@ -1033,6 +1037,7 @@ public class ColaboradoresServicioTests : IDisposable
         var p = await CrearPaisPruebaAsync("Pais AC 1", "B1");
         var d = await CrearDepartamentoPruebaAsync(p, "Depto AC 1");
         var m = await CrearMunicipioPruebaAsync(d, "Muni AC 1");
+        await CrearEmpresaPruebaAsync(m, "DUMMY1", "D1", "D1");
         var e1 = await CrearEmpresaPruebaAsync(m, "NB1", "RB1", "CB1");
         var e2 = await CrearEmpresaPruebaAsync(m, "NB2", "RB2", "CB2");
 
@@ -1050,6 +1055,7 @@ public class ColaboradoresServicioTests : IDisposable
         var p = await CrearPaisPruebaAsync("Pais AC 2", "B2");
         var d = await CrearDepartamentoPruebaAsync(p, "Depto AC 2");
         var m = await CrearMunicipioPruebaAsync(d, "Muni AC 2");
+        await CrearEmpresaPruebaAsync(m, "D2", "D2", "D2");
         var e = await CrearEmpresaPruebaAsync(m, "NB3", "RB3", "CB3");
 
         var c = await _servicio.CrearAsync(DtoCrearBase(e.Id, new DateOnly(2025, 1, 1)), TestContext.Current.CancellationToken);
@@ -1067,6 +1073,7 @@ public class ColaboradoresServicioTests : IDisposable
         var p = await CrearPaisPruebaAsync("Pais AC 3", "B3");
         var d = await CrearDepartamentoPruebaAsync(p, "Depto AC 3");
         var m = await CrearMunicipioPruebaAsync(d, "Muni AC 3");
+        await CrearEmpresaPruebaAsync(m, "D3", "D3", "D3");
         var e = await CrearEmpresaPruebaAsync(m, "NB4", "RB4", "CB4");
 
         var c = await _servicio.CrearAsync(DtoCrearBase(e.Id, new DateOnly(2025, 1, 1)), TestContext.Current.CancellationToken);
@@ -1100,6 +1107,7 @@ public class ColaboradoresServicioTests : IDisposable
         var p = await CrearPaisPruebaAsync("Pais Q 1", "Q1");
         var d = await CrearDepartamentoPruebaAsync(p, "Depto Q 1");
         var m = await CrearMunicipioPruebaAsync(d, "Muni Q 1");
+        await CrearEmpresaPruebaAsync(m, "D4", "D4", "D4");
         var e1 = await CrearEmpresaPruebaAsync(m, "NQ1", "RQ1", "CQ1");
         var e2 = await CrearEmpresaPruebaAsync(m, "NQ2", "RQ2", "CQ2");
 
@@ -1116,6 +1124,7 @@ public class ColaboradoresServicioTests : IDisposable
         var p = await CrearPaisPruebaAsync("Pais Q 2", "Q2");
         var d = await CrearDepartamentoPruebaAsync(p, "Depto Q 2");
         var m = await CrearMunicipioPruebaAsync(d, "Muni Q 2");
+        await CrearEmpresaPruebaAsync(m, "D5", "D5", "D5");
         var e = await CrearEmpresaPruebaAsync(m, "NQ3", "RQ3", "CQ3");
 
         var c = await _servicio.CrearAsync(DtoCrearBase(e.Id, new DateOnly(2025, 1, 1)), TestContext.Current.CancellationToken);
@@ -1131,6 +1140,7 @@ public class ColaboradoresServicioTests : IDisposable
         var p = await CrearPaisPruebaAsync("Pais Q 3", "Q3");
         var d = await CrearDepartamentoPruebaAsync(p, "Depto Q 3");
         var m = await CrearMunicipioPruebaAsync(d, "Muni Q 3");
+        await CrearEmpresaPruebaAsync(m, "D6", "D6", "D6");
         var e1 = await CrearEmpresaPruebaAsync(m, "NQ4", "RQ4", "CQ4");
         var e2 = await CrearEmpresaPruebaAsync(m, "NQ5", "RQ5", "CQ5");
 
@@ -1152,5 +1162,110 @@ public class ColaboradoresServicioTests : IDisposable
         var obtenido = await _servicio.ObtenerAsync(c.Id, TestContext.Current.CancellationToken);
         Assert.Single(obtenido.Empresas);
         Assert.Equal(e2.Id, obtenido.Empresas[0].EmpresaId);
+    }
+
+    [Fact]
+    public async Task AsociarEmpresaAsync_EdadEntraEnNuevaPeroNoEnAntigua_Permitido()
+    {
+        // Arrange
+        var p1 = await CrearPaisPruebaAsync("Pais AE N1", "N1", min: 18, max: 25);
+        var p2 = await CrearPaisPruebaAsync("Pais AE N2", "N2", min: 18, max: 100);
+        var d1 = await CrearDepartamentoPruebaAsync(p1, "Depto AE N1");
+        var d2 = await CrearDepartamentoPruebaAsync(p2, "Depto AE N2");
+        var m1 = await CrearMunicipioPruebaAsync(d1, "Muni AE N1");
+        var m2 = await CrearMunicipioPruebaAsync(d2, "Muni AE N2");
+        var e1 = await CrearEmpresaPruebaAsync(m1, "NN1", "RN1", "CN1");
+        var e2 = await CrearEmpresaPruebaAsync(m2, "NN2", "RN2", "CN2");
+
+        var col = await CrearColaboradorPruebaAsync("entra@nueva.com", new DateOnly(2000, 1, 1));
+        var rel = new EmpresaColaborador { EmpresaId = e1.Id, ColaboradorId = col.Id, FechaIngreso = new DateOnly(2025, 1, 1) };
+        _bd.Contexto.Set<EmpresaColaborador>().Add(rel);
+        await _bd.Contexto.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        var dto = new AsociarEmpresaDto { EmpresaId = e2.Id, FechaIngreso = new DateOnly(2025, 1, 1) };
+
+        // Act
+        var res = await _servicio.AsociarEmpresaAsync(col.Id, dto, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Equal(2, res.Empresas.Count);
+    }
+
+    [Fact]
+    public async Task AsociarEmpresaAsync_ErroresMultiples_LanzaRN4AntesQueRN9()
+    {
+        // Arrange
+        var p = await CrearPaisPruebaAsync("Pais AE M", "M1", min: 30, max: 100);
+        var d = await CrearDepartamentoPruebaAsync(p, "Depto AE M");
+        var m = await CrearMunicipioPruebaAsync(d, "Muni AE M");
+        var e = await CrearEmpresaPruebaAsync(m, "NM1", "RM1", "CM1");
+
+        var col = await _servicio.CrearAsync(DtoCrearBase(e.Id, new DateOnly(2025, 1, 1)) with { FechaNacimiento = new DateOnly(1990, 1, 1) }, TestContext.Current.CancellationToken);
+
+        var p2 = await CrearPaisPruebaAsync("Pais AE M2", "M2", min: 50, max: 100);
+        var d2 = await CrearDepartamentoPruebaAsync(p2, "Depto AE M2");
+        var m2 = await CrearMunicipioPruebaAsync(d2, "Muni AE M2");
+        var e2 = await CrearEmpresaPruebaAsync(m2, "NM2", "RM2", "CM2");
+
+        var dto = new AsociarEmpresaDto { EmpresaId = e2.Id, FechaIngreso = new DateOnly(2028, 1, 1) }; // Futuro
+
+        // Act & Assert
+        var ex = await Assert.ThrowsAsync<ValidacionException>(() => _servicio.AsociarEmpresaAsync(col.Id, dto, TestContext.Current.CancellationToken));
+        Assert.Equal("EmpresaId", ex.Campo);
+    }
+
+    [Fact]
+    public async Task AsociarEmpresaAsync_EmpresaYaAsociadaConFechaIngresoFutura_LanzaRN9AntesQueV4()
+    {
+        // Arrange
+        var p = await CrearPaisPruebaAsync("Pais AE E", "E1");
+        var d = await CrearDepartamentoPruebaAsync(p, "Depto AE E");
+        var m = await CrearMunicipioPruebaAsync(d, "Muni AE E");
+        var e = await CrearEmpresaPruebaAsync(m, "NE1", "RE1", "CE1");
+
+        var col = await _servicio.CrearAsync(DtoCrearBase(e.Id, new DateOnly(2025, 1, 1)), TestContext.Current.CancellationToken);
+
+        var dto = new AsociarEmpresaDto { EmpresaId = e.Id, FechaIngreso = new DateOnly(2028, 1, 1) };
+
+        // Act & Assert
+        var ex = await Assert.ThrowsAsync<ValidacionException>(() => _servicio.AsociarEmpresaAsync(col.Id, dto, TestContext.Current.CancellationToken));
+        Assert.Equal("FechaIngreso", ex.Campo);
+    }
+
+    [Fact]
+    public async Task AsociarEmpresaAsync_FechaIngresoAnteriorANacimiento_LanzaValidacionException()
+    {
+        // Arrange
+        var p = await CrearPaisPruebaAsync("Pais AE N", "N3");
+        var d = await CrearDepartamentoPruebaAsync(p, "Depto AE N");
+        var m = await CrearMunicipioPruebaAsync(d, "Muni AE N");
+        var e1 = await CrearEmpresaPruebaAsync(m, "NN3", "RN3", "CN3");
+        var e2 = await CrearEmpresaPruebaAsync(m, "NN4", "RN4", "CN4");
+
+        var col = await _servicio.CrearAsync(DtoCrearBase(e1.Id, new DateOnly(2025, 1, 1)) with { FechaNacimiento = new DateOnly(2000, 1, 1) }, TestContext.Current.CancellationToken);
+
+        var dto = new AsociarEmpresaDto { EmpresaId = e2.Id, FechaIngreso = new DateOnly(1999, 12, 31) };
+
+        // Act & Assert
+        var ex = await Assert.ThrowsAsync<ValidacionException>(() => _servicio.AsociarEmpresaAsync(col.Id, dto, TestContext.Current.CancellationToken));
+        Assert.Equal("FechaIngreso", ex.Campo);
+    }
+
+    [Fact]
+    public async Task ActualizarEmpresaAsync_FechaIngresoAnteriorANacimiento_LanzaValidacionException()
+    {
+        // Arrange
+        var p = await CrearPaisPruebaAsync("Pais AE A", "A4");
+        var d = await CrearDepartamentoPruebaAsync(p, "Depto AE A");
+        var m = await CrearMunicipioPruebaAsync(d, "Muni AE A");
+        var e = await CrearEmpresaPruebaAsync(m, "NA4", "RA4", "CA4");
+
+        var col = await _servicio.CrearAsync(DtoCrearBase(e.Id, new DateOnly(2025, 1, 1)) with { FechaNacimiento = new DateOnly(2000, 1, 1) }, TestContext.Current.CancellationToken);
+
+        var dto = new GuardarEmpresaColaboradorDto { FechaIngreso = new DateOnly(1999, 12, 31) };
+
+        // Act & Assert
+        var ex = await Assert.ThrowsAsync<ValidacionException>(() => _servicio.ActualizarEmpresaAsync(col.Id, e.Id, dto, TestContext.Current.CancellationToken));
+        Assert.Equal("FechaIngreso", ex.Campo);
     }
 }

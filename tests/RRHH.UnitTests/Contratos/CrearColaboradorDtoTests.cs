@@ -1,6 +1,7 @@
 using RRHH.Contratos.Colaboradores;
 
 using RRHH.UnitTests.Comun;
+
 using Xunit;
 
 namespace RRHH.UnitTests.Contratos;

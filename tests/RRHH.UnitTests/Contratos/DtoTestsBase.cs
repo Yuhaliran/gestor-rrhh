@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+
 using Xunit;
 
 namespace RRHH.UnitTests.Contratos;
