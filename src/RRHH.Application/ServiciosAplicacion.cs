@@ -11,6 +11,7 @@ public static class ServiciosAplicacion
     {
         servicios.AddScoped<IPaisesServicio, PaisesServicio>();
         servicios.AddScoped<IDepartamentosServicio, DepartamentosServicio>();
+        servicios.AddScoped<IMunicipiosServicio, MunicipiosServicio>();
         return servicios;
     }
 }
