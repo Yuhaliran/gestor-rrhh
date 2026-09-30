@@ -39,7 +39,7 @@ Cada paso es un commit propio; el merge se hace al cerrar la fase, con el PR.
 - [x] 5. RrhhDbContext y configuraciones con Fluent API (tipos, largos, únicos, FK con Restrict)
        (`feat(datos): contexto y configuraciones de EF Core`). Sus pruebas usan la base SQLite de la
        tarea 7, que el tester arma en el mismo paso
-- [ ] 6. Migración inicial y datos iniciales de Guatemala; verificar MIG1
+- [x] 6. Migración inicial y datos iniciales de Guatemala; verificar MIG1
        (`feat(datos): migración inicial y datos de Guatemala`)
 - [x] 7. Infraestructura de pruebas: fábrica de contexto SQLite en memoria para las unitarias
        (`test: base de pruebas con SQLite en memoria`). Se hace dentro de la tarea 5

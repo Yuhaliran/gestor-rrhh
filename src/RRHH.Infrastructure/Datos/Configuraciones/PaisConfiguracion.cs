@@ -17,5 +17,7 @@ public class PaisConfiguracion : IEntityTypeConfiguration<Pais>
         b.Property(p => p.Regla29Febrero).HasConversion<string>().HasMaxLength(20);   // legible en la base
         b.HasIndex(p => p.Nombre).IsUnique().HasDatabaseName("UQ_Pais_Nombre");
         b.HasIndex(p => p.CodigoIso2).IsUnique().HasDatabaseName("UQ_Pais_CodigoIso2");
+
+        b.HasData(DatosIniciales.Paises());
     }
 }

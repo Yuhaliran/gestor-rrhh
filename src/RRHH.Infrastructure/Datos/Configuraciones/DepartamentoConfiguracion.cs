@@ -19,5 +19,7 @@ public class DepartamentoConfiguracion : IEntityTypeConfiguration<Departamento>
          .HasForeignKey(d => d.PaisId)
          .OnDelete(DeleteBehavior.Restrict)
          .HasConstraintName("FK_Departamento_Pais");
+
+        b.HasData(DatosIniciales.Departamentos());
     }
 }

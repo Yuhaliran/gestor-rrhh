@@ -19,5 +19,7 @@ public class MunicipioConfiguracion : IEntityTypeConfiguration<Municipio>
          .HasForeignKey(m => m.DepartamentoId)
          .OnDelete(DeleteBehavior.Restrict)
          .HasConstraintName("FK_Municipio_Departamento");
+
+        b.HasData(DatosIniciales.Municipios());
     }
 }
