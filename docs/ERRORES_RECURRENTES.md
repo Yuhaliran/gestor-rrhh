@@ -185,6 +185,21 @@ Compilación, paquetes, pruebas, EF Core, git.
                  los datos de prueba, generar nombres y códigos únicos para cada entidad creada.
 - Origen:        tareas 10 y 11 · 2026-09-30 · implementador
 
+### E-015 · El tester edita archivos con scripts y rompe las pruebas
+- Síntoma:       pruebas con comentarios Arrange-Act-Assert insertados en cualquier lugar, código
+                 borrado o valores esperados copiados de otra prueba; comandos
+                 `node -e "eval(Buffer.from('…','base64'))"` que el responsable aprueba sin poder
+                 leerlos; archivos temporales (`inject.py`, `postman/update.js`).
+- Causa:         para editar muchas líneas, el tester genera scripts (a veces en base64, para
+                 esquivar el escapado de PowerShell) en lugar de usar la herramienta de edición.
+                 Un script no pasa por el control de escritura del hook, y como todos los comandos
+                 pedían aprobación, la de un script se perdía entre las demás.
+- Solución:      el hook bloquea los intérpretes para el tester (salvo validar un JSON) y permite
+                 sin aprobación sus comandos de cada tarea (docs/AGENTES.md).
+- Cómo evitarlo: editar sólo con la herramienta de edición, prueba por prueba. No aprobar un
+                 comando que no se puede leer.
+- Origen:        tareas 12 y 13 · 2026-09-30 · implementador
+
 ## Funcionalidad
 Comportamiento que no cumplía la especificación, detectado por pruebas o revisión.
 

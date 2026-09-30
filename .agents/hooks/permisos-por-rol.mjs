@@ -1,11 +1,14 @@
 // Hook PreToolUse de Antigravity CLI: impone los permisos de los roles tester y revisor
 // (docs/AGENTES.md). Responde siempre una decisión: agy trata una respuesta vacía como "deny".
-// Para no conceder más de lo habitual, lo permitido reproduce lo que agy hace por defecto:
-// "allow" en el repositorio y en sus propias carpetas, "ask" en lo demás y en los comandos.
+// En los archivos, lo permitido reproduce lo que agy hace por defecto: "allow" en el repositorio
+// y en sus propias carpetas, "ask" en lo demás.
 //
 // Rol: variable de entorno RRHH_ROL, "tester" (por defecto) o "revisor". Con un valor
 // desconocido se bloquea toda escritura en el repositorio. El revisor (y un rol desconocido)
-// sólo puede ejecutar comandos de lectura.
+// sólo puede ejecutar comandos de lectura, con aprobación. El tester ejecuta sin preguntar los
+// comandos de cada tarea, no puede usar los que ya causaron problemas (scripts que editan
+// archivos, PowerShell que escribe, borrar) y para el resto pregunta: así las aprobaciones que
+// quedan son las que importan.
 //
 // Entrada (stdin):  { "toolCall": { "name": "...", "args": { ... } }, "artifactDirectoryPath": "...", ... }
 // Salida (stdout):  { "decision": "allow" | "ask" | "deny", "reason": "..." }
@@ -42,8 +45,9 @@ const GIT_PUSH = /\bgit\b.*\bpush\b/i;
 const TERMINAL_LECTURA = new Set([
   'get-content', 'gc', 'cat', 'type', 'more', 'head', 'tail', 'select-string', 'sls', 'findstr', 'grep',
   'rg', 'get-childitem', 'gci', 'dir', 'ls', 'get-item', 'test-path', 'get-filehash', 'format-hex',
-  'measure-object', 'select-object', 'where-object', 'sort-object', 'format-table', 'format-list',
-  'out-string', 'wc', 'sort', 'uniq', 'echo', 'write-output', 'write-host', 'get-command', 'where',
+  'measure-object', 'measure', 'select-object', 'select', 'where-object', 'sort-object', 'format-table',
+  'format-list', 'out-string', 'wc', 'sort', 'uniq', 'echo', 'write-output', 'write-host', 'get-command',
+  'where',
 ]);
 const GIT_LECTURA = new Set([
   'diff', 'log', 'show', 'status', 'blame', 'grep', 'ls-files', 'ls-tree', 'rev-parse', 'rev-list',
@@ -59,6 +63,26 @@ const ESCRITURA_EN_COMANDO =
   /\b(Set-Content|Add-Content|Out-File|New-Item|Remove-Item|Copy-Item|Move-Item|Rename-Item|Clear-Content|Set-Item|Tee-Object|Invoke-Expression|Start-Process|Export-Csv|Export-Clixml|iex)\b|\[(System\.)?IO\./i;
 const REDIRECCION = /(?:\d|\*)?>>?\s*(&\d|[^\s|;&]+)/g;
 const DESTINO_INOFENSIVO = /^(\$null|nul|\/dev\/null|&\d)$/i;
+
+// Comandos del tester. Intérpretes: con ellos editó archivos por fuera de este hook (incluso con
+// código en base64) y rompió pruebas y codificaciones (E-013). Sólo se permite validar un JSON.
+const INTERPRETES = new Set([
+  'node', 'nodejs', 'npx', 'npm', 'python', 'python3', 'py', 'pwsh', 'powershell', 'cmd', 'bash', 'sh',
+  'wsl', 'deno', 'bun', 'wscript', 'cscript',
+]);
+const VALIDAR_JSON = /^node(?:\.exe)?\s+-e\s+"JSON\.parse\(require\('fs'\)\.readFileSync\('([^'"]+)'\s*,\s*'utf-?8'\)\)\s*;?"$/i;
+const BORRAR = new Set(['del', 'erase', 'rm', 'rmdir', 'rd', 'remove-item', 'ri', 'unlink']);
+// Git que no muestra el contenido de los archivos
+const GIT_RESUMEN_TESTER = new Set([
+  'status', 'log', 'branch', 'rev-parse', 'rev-list', 'ls-files', 'show-ref', 'describe', 'shortlog', 'merge-base',
+]);
+// Opciones de diff y show que no muestran el contenido, o muestran sólo lo que el tester preparó
+const DIFF_RESUMIDO = new Set(['--stat', '--shortstat', '--name-only', '--name-status', '--cached', '--staged']);
+// Lo que el tester puede ver completo en un diff: lo suyo y el contrato
+const DIFF_PERMITIDO_TESTER = [...ESCRITURA_TESTER, 'docs/', 'src/RRHH.Contratos/', 'src/RRHH.Application/Interfaces/'];
+// git commit que tomaría cambios ajenos o saltearía verificaciones (-a, --amend, -n)
+const COMMIT_PROHIBIDO = /^(--all|--amend|--no-verify|-[^-]*[an][^-]*)$/;
+const ADD_PROHIBIDO = new Set(['-A', '--all', '-u', '--update', '-f', '--force', '.', '*', ':/']);
 
 const permite = { decision: 'allow' };
 const pregunta = { decision: 'ask' };
@@ -199,10 +223,110 @@ function motivoComandoNoLectura(linea) {
   return noPermitido === undefined ? null : `«${noPermitido}» no está entre los comandos de lectura`;
 }
 
+// Ruta de un argumento, relativa al repositorio y con "/", o null si está fuera de él.
+function rutaDelRepositorio(argumento, cwd) {
+  const base = typeof cwd === 'string' && cwd !== '' ? cwd : raiz;
+  try {
+    return dentroDe(raiz, path.resolve(base, argumento));
+  } catch {
+    return null;
+  }
+}
+
+const todasEn = (lista, rutas, cwd) =>
+  rutas.length > 0 && rutas.every((r) => {
+    const ruta = rutaDelRepositorio(r, cwd);
+    return ruta !== null && cubre(lista, ruta);
+  });
+
+// git diff, show o log -p: sin preguntar si es un resumen, o si todas las rutas son del tester o
+// del contrato (hace falta al menos una: sin rutas mostraría también la implementación).
+function diffDelTester(resto, cwd) {
+  if (resto.some((a) => a.startsWith('--output') || a === '--ext-diff')) return false;
+  if (resto.some((a) => DIFF_RESUMIDO.has(a))) return true;
+  const separador = resto.indexOf('--');
+  const antes = separador === -1 ? resto : resto.slice(0, separador);
+  const rutas = [
+    ...antes.filter((a) => !a.startsWith('-') && /[/\\:]/.test(a)).map((a) => a.slice(a.lastIndexOf(':') + 1)),
+    ...(separador === -1 ? [] : resto.slice(separador + 1)),
+  ];
+  return todasEn(DIFF_PERMITIDO_TESTER, rutas, cwd);
+}
+
+function gitDelTester(args, cwd) {
+  const inicio = args[0] === '--no-pager' ? 1 : 0;
+  const [subcomando, ...resto] = args.slice(inicio);
+  if (subcomando === 'add') {
+    const rutas = resto.filter((a) => a !== '--' && !a.startsWith('-'));
+    return !resto.some((a) => ADD_PROHIBIDO.has(a)) && todasEn(ESCRITURA_TESTER, rutas, cwd);
+  }
+  if (subcomando === 'commit') return !resto.some((a) => COMMIT_PROHIBIDO.test(a));
+  if (subcomando === 'diff' || subcomando === 'show') return diffDelTester(resto, cwd);
+  if (subcomando === 'log' && resto.some((a) => ['-p', '-u', '--patch'].includes(a))) return diffDelTester(resto, cwd);
+  if (subcomando === 'branch') return gitDeLectura(args.slice(inicio));
+  return GIT_RESUMEN_TESTER.has(subcomando) && !resto.some((a) => a.startsWith('--output'));
+}
+
+// dotnet format sólo sobre archivos del tester: dotnet format [whitespace|style] --include <rutas>
+function formatDelTester(args, cwd) {
+  const rutas = [];
+  let enInclude = false;
+  for (const a of args.slice(1)) {
+    if (a === '--include') enInclude = true;
+    else if (a === '--no-restore' || (rutas.length === 0 && !enInclude && ['whitespace', 'style'].includes(a))) enInclude = false;
+    else if (enInclude && !a.startsWith('-')) rutas.push(a);
+    else return false;
+  }
+  return todasEn(ESCRITURA_TESTER, rutas, cwd);
+}
+
+function permitidoAlTester(segmento, cwd) {
+  if (VALIDAR_JSON.test(segmento)) {
+    return todasEn(ESCRITURA_TESTER, [segmento.match(VALIDAR_JSON)[1]], cwd);
+  }
+  const [programa = '', ...args] = palabras(segmento);
+  const nombre = programa.toLowerCase().replace(/\.exe$/, '');
+  if (nombre === 'git') return gitDelTester(args, cwd);
+  if (nombre === 'dotnet') return dotnetDeLectura(args) || (args[0] === 'format' && formatDelTester(args, cwd));
+  return TERMINAL_LECTURA.has(nombre);
+}
+
+// Programa de un segmento, también detrás de los operadores de llamada de PowerShell (& y .)
+function programaDe(segmento) {
+  const [primera = '', segunda = ''] = palabras(segmento);
+  const programa = primera === '&' || primera === '.' ? segunda : primera;
+  return path.basename(programa.replace(/\\/g, '/')).toLowerCase().replace(/\.exe$/, '');
+}
+
+function decidirComandoTester(linea, cwd) {
+  const normalizada = linea.replace(/\\/g, '/').toLowerCase();
+  const prohibida = LECTURA_PROHIBIDA_TESTER.find((ruta) => normalizada.includes(ruta.toLowerCase().replace(/\/$/, '')));
+  if (prohibida !== undefined) {
+    return niega(`El tester no lee la implementación ("${prohibida}"): las pruebas son de caja negra `
+      + '(docs/agentes/tester.md). Si el contrato no define algo, pedilo.');
+  }
+  for (const segmento of segmentos(linea)) {
+    const programa = programaDe(segmento);
+    if (INTERPRETES.has(programa) && !VALIDAR_JSON.test(segmento)) {
+      return niega('El tester no ejecuta scripts (node -e, python -c, código en base64…): con ellos se editaron '
+        + 'archivos por fuera de los permisos y se rompieron pruebas (E-013). Editá sólo con la herramienta de '
+        + "edición. Para validar un JSON: node -e \"JSON.parse(require('fs').readFileSync('<archivo>','utf8'))\".");
+    }
+    if (BORRAR.has(programa)) return niega('El tester no borra archivos: lo decide el responsable.');
+  }
+  const sinComillas = linea.replace(/"[^"]*"|'[^']*'/g, '""');
+  const redireccion = [...sinComillas.matchAll(REDIRECCION)].some((m) => !DESTINO_INOFENSIVO.test(m[1]));
+  if (redireccion || ESCRITURA_EN_COMANDO.test(linea)) {
+    return niega('El tester no escribe archivos con comandos ni redirecciones: PowerShell rompe la codificación '
+      + '(E-013). Usá la herramienta de edición.');
+  }
+  return segmentos(linea).every((s) => permitidoAlTester(s, cwd)) ? permite : pregunta;
+}
+
 function decidirComando(args) {
   const linea = String(args.CommandLine ?? '');
   if (GIT_PUSH.test(linea)) return niega('git push lo hace sólo el responsable (AGENTS.md, «No hacer»).');
-  if (rol === 'tester') return pregunta;
+  if (rol === 'tester') return decidirComandoTester(linea, args.Cwd);
   const motivo = motivoComandoNoLectura(linea);
   return motivo === null
     ? pregunta

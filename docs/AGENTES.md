@@ -77,8 +77,28 @@ de archivos y cada comando antes de que se ejecuten:
 
 | Rol (`RRHH_ROL`) | Escritura en el repositorio | Lectura | Comandos |
 |---|---|---|---|
-| `tester` (por defecto) | Sólo `tests/`, `postman/`, `docs/PLAN_PRUEBAS.md` y `docs/ERRORES_RECURRENTES.md` | Todo menos `src/RRHH.Application/Servicios/` y `src/RRHH.Infrastructure/` | Cualquiera, con aprobación |
+| `tester` (por defecto) | Sólo `tests/`, `postman/`, `docs/PLAN_PRUEBAS.md` y `docs/ERRORES_RECURRENTES.md` | Todo menos `src/RRHH.Application/Servicios/` y `src/RRHH.Infrastructure/` | Los de cada tarea, sin aprobación; scripts, escribir con comandos y borrar, bloqueados; el resto, con aprobación |
 | `revisor` | Nada | Todo | Sólo de lectura, con aprobación |
+
+Comandos del tester. Sin aprobación, los que usa en cada tarea, para que las aprobaciones que
+quedan sean las que importan:
+- `dotnet build`, `test` y `format --verify-no-changes`;
+- `dotnet format --include` sobre sus archivos;
+- `git status` y `log`;
+- `git diff` y `show` resumidos (`--stat`, `--cached`…) o de sus archivos y del contrato;
+- `git add` de sus rutas;
+- `git commit` sin `-a`, `--amend` ni `--no-verify`;
+- los de la terminal que sólo leen;
+- validar un JSON con `node -e "JSON.parse(require('fs').readFileSync('<archivo>','utf8'))"`.
+
+Bloqueados:
+- los intérpretes (`node`, `python`, `powershell`…). Con `node -e`, incluso con código en base64,
+  el tester editó archivos por fuera de este control y rompió pruebas (E-015);
+- escribir con comandos o redirecciones, que rompe la codificación (E-013);
+- borrar archivos;
+- mencionar la implementación que no lee.
+
+Para el resto (`git checkout`, un `diff` completo, `newman`…), pregunta.
 
 Comandos de lectura del revisor: `git` de consulta (`diff`, `log`, `show`, `status`, `blame`,
 `grep`, `branch` sin modificar…), `dotnet build`, `test`, `format --verify-no-changes` y
@@ -90,9 +110,9 @@ raíz del repositorio con `>` y `Set-Content`.
 
 Para los dos roles quedan bloqueados `git push` y los subagentes, porque las herramientas de un
 subagente no pasan por el hook. Un valor desconocido de `RRHH_ROL` bloquea toda escritura y
-limita los comandos como al revisor. Lo demás sigue como Antigravity lo hace por defecto: los
-comandos piden aprobación y, fuera del repositorio, se permiten sólo sus propias carpetas
-(artefactos, temporales y ayuda incorporada); para el resto, pregunta.
+limita los comandos como al revisor. En los archivos fuera del repositorio sigue como
+Antigravity lo hace por defecto: se permiten sólo sus propias carpetas (artefactos, temporales y
+ayuda incorporada); para el resto, pregunta.
 
 El rol se define en PowerShell antes de abrir `agy` (escrito en el chat no llega al hook):
 ```powershell
