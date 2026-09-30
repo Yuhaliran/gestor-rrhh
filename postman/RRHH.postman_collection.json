@@ -2083,6 +2083,575 @@
 					}
 				}
 			]
+		},
+		{
+			"name": "Colaboradores",
+			"item": [
+				{
+					"name": "Setup: Crear empresa",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+									"pm.environment.set(\"colEmpId\", pm.response.json().id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"municipioId\":1,\"nit\":\"EMP-COL\",\"razonSocial\":\"RS COL\",\"nombreComercial\":\"NC COL\",\"telefono\":\"1111-1111\",\"correo\":\"emp@col.com\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/empresas",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"empresas"
+							]
+						}
+					}
+				},
+				{
+					"name": "V1: Sin empresas",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"V1 Error\", function () { pm.response.to.have.status(400); pm.expect(pm.response.json().errors).to.have.property(\"Empresas\"); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombreCompleto\":\"Prueba V1\",\"fechaNacimiento\":\"2000-01-01\",\"telefono\":\"1111-1111\",\"correo\":\"v1@test.com\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/colaboradores",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"colaboradores"
+							]
+						}
+					}
+				},
+				{
+					"name": "V2: Correo invalido",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"V2 Error\", function () { pm.response.to.have.status(400); pm.expect(pm.response.json().errors).to.have.property(\"Correo\"); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombreCompleto\":\"Prueba V2\",\"fechaNacimiento\":\"2000-01-01\",\"telefono\":\"1111-1111\",\"correo\":\"invalid\",\"empresas\":[{\"empresaId\":{{colEmpId}},\"fechaIngreso\":\"2025-01-01\"}]}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/colaboradores",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"colaboradores"
+							]
+						}
+					}
+				},
+				{
+					"name": "V5: Telefono invalido",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"V5 Error\", function () { pm.response.to.have.status(400); pm.expect(pm.response.json().errors).to.have.property(\"Telefono\"); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombreCompleto\":\"Prueba V5\",\"fechaNacimiento\":\"2000-01-01\",\"telefono\":\"invalid\",\"correo\":\"v5@test.com\",\"empresas\":[{\"empresaId\":{{colEmpId}},\"fechaIngreso\":\"2025-01-01\"}]}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/colaboradores",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"colaboradores"
+							]
+						}
+					}
+				},
+				{
+					"name": "V4: Empresa inexistente",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"V4 Error\", function () { pm.response.to.have.status(400); pm.expect(pm.response.json().errors).to.have.property(\"Empresas[0].EmpresaId\"); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombreCompleto\":\"Prueba V4\",\"fechaNacimiento\":\"2000-01-01\",\"telefono\":\"1111-1111\",\"correo\":\"v4@test.com\",\"empresas\":[{\"empresaId\":99999,\"fechaIngreso\":\"2025-01-01\"}]}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/colaboradores",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"colaboradores"
+							]
+						}
+					}
+				},
+				{
+					"name": "RN9: Ingreso futuro",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"RN9 Error\", function () { pm.response.to.have.status(400); pm.expect(pm.response.json().errors).to.have.property(\"Empresas[0].FechaIngreso\"); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombreCompleto\":\"Prueba RN9\",\"fechaNacimiento\":\"2000-01-01\",\"telefono\":\"1111-1111\",\"correo\":\"rn9@test.com\",\"empresas\":[{\"empresaId\":{{colEmpId}},\"fechaIngreso\":\"2099-01-01\"}]}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/colaboradores",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"colaboradores"
+							]
+						}
+					}
+				},
+				{
+					"name": "RN4: Demasiado joven",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"RN4 Error\", function () { pm.response.to.have.status(400); pm.expect(pm.response.json().errors).to.have.property(\"FechaNacimiento\"); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombreCompleto\":\"Prueba RN4\",\"fechaNacimiento\":\"2027-01-01\",\"telefono\":\"1111-1111\",\"correo\":\"rn4@test.com\",\"empresas\":[{\"empresaId\":{{colEmpId}},\"fechaIngreso\":\"2027-01-02\"}]}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/colaboradores",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"colaboradores"
+							]
+						}
+					}
+				},
+				{
+					"name": "Crear colaborador",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+									"pm.test(\"Location header exists\", function () { pm.expect(pm.response.headers.get(\"Location\")).to.exist; });",
+									"pm.test(\"Edad exists\", function () { pm.expect(pm.response.json().edad).to.exist; });",
+									"pm.test(\"Empresas count\", function () { pm.expect(pm.response.json().empresas.length).to.eql(1); });",
+									"pm.environment.set(\"colId\", pm.response.json().id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombreCompleto\":\"Juan Valido\",\"fechaNacimiento\":\"1990-01-01\",\"telefono\":\"1111-1111\",\"correo\":\"unico@col.com\",\"empresas\":[{\"empresaId\":{{colEmpId}},\"fechaIngreso\":\"2020-01-01\"}]}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/colaboradores",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"colaboradores"
+							]
+						}
+					}
+				},
+				{
+					"name": "RN5: Correo repetido",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 409\", function () { pm.response.to.have.status(409); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombreCompleto\":\"Juan Rep\",\"fechaNacimiento\":\"1990-01-01\",\"telefono\":\"1111-1111\",\"correo\":\"  UNICO@COL.COM  \",\"empresas\":[{\"empresaId\":{{colEmpId}},\"fechaIngreso\":\"2020-01-01\"}]}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/colaboradores",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"colaboradores"
+							]
+						}
+					}
+				},
+				{
+					"name": "RN5: Empresa dos veces",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 409\", function () { pm.response.to.have.status(409); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombreCompleto\":\"Juan Emp Rep\",\"fechaNacimiento\":\"1990-01-01\",\"telefono\":\"1111-1111\",\"correo\":\"emp2@col.com\",\"empresas\":[{\"empresaId\":{{colEmpId}},\"fechaIngreso\":\"2020-01-01\"}, {\"empresaId\":{{colEmpId}},\"fechaIngreso\":\"2021-01-01\"}]}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/colaboradores",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"colaboradores"
+							]
+						}
+					}
+				},
+				{
+					"name": "Obtener colaborador",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/colaboradores/{{colId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"colaboradores",
+								"{{colId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Actualizar colaborador",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombreCompleto\":\"Juan Modificado\",\"fechaNacimiento\":\"1990-01-01\",\"telefono\":\"2222-2222\",\"correo\":\"unico@col.com\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/colaboradores/{{colId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"colaboradores",
+								"{{colId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Listar colaboradores",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+									"pm.test(\"Elements exist\", function () { pm.expect(pm.response.json().elementos.length).to.be.greaterThan(0); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/colaboradores?buscar=modificado",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"colaboradores"
+							],
+							"query": [
+								{
+									"key": "buscar",
+									"value": "modificado"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Obtener inexistente",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/colaboradores/999999",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"colaboradores",
+								"999999"
+							]
+						}
+					}
+				},
+				{
+					"name": "Eliminar colaborador",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/colaboradores/{{colId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"colaboradores",
+								"{{colId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Teardown: Eliminar empresa",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/empresas/{{colEmpId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"empresas",
+								"{{colEmpId}}"
+							]
+						}
+					}
+				}
+			]
 		}
 	]
 }
