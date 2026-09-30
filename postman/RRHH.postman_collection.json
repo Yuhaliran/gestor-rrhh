@@ -468,9 +468,11 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
-									"pm.test(\"Es arreglo\", function () {",
+									"pm.test(\"Es arreglo con datos correctos\", function () {",
 									"    var jsonData = pm.response.json();",
 									"    pm.expect(jsonData).to.be.an('array');",
+									"    pm.expect(jsonData.every(d => d.paisId === 1)).to.be.true;",
+									"    pm.expect(jsonData.some(d => d.nombre === 'Guatemala')).to.be.true;",
 									"});"
 								],
 								"type": "text/javascript"
@@ -536,8 +538,12 @@
 								"exec": [
 									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
 									"pm.test(\"Cabecera Location\", function () { pm.response.to.have.header('Location'); });",
-									"pm.test(\"Guarda ID\", function () {",
+									"pm.test(\"Guarda ID y datos\", function () {",
 									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.id).to.be.a('number');",
+									"    pm.expect(jsonData.nombre).to.eql('Depto Postman');",
+									"    pm.expect(jsonData.paisId).to.eql(1);",
+									"    pm.expect(jsonData.paisNombre).to.eql('Guatemala');",
 									"    pm.environment.set('departamentoId', jsonData.id);",
 									"});"
 								],
@@ -597,7 +603,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"paisId\":1,\"nombre\":\"Depto Postman\"}"
+							"raw": "{\"paisId\":1,\"nombre\":\"  DEPTO POSTMAN  \"}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/departamentos",
@@ -640,6 +646,82 @@
 						"body": {
 							"mode": "raw",
 							"raw": "{\"nombre\":\"Depto Invalido\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/departamentos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"departamentos"
+							]
+						}
+					}
+				},
+				{
+					"name": "Listar por país inexistente",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+									"pm.test(\"ProblemDetails title y detail\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.exist;",
+									"    pm.expect(jsonData.detail).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/paises/999999/departamentos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"paises",
+								"999999",
+								"departamentos"
+							]
+						}
+					}
+				},
+				{
+					"name": "Crear con país inexistente",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });",
+									"pm.test(\"Error en campo PaisId\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.errors).to.exist;",
+									"    pm.expect(jsonData.errors).to.have.property('PaisId');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"paisId\":999999,\"nombre\":\"Depto Invalido\"}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/departamentos",

@@ -2,7 +2,8 @@ using RRHH.Application.Excepciones;
 using RRHH.Application.Servicios;
 using RRHH.Contratos.Comun;
 using RRHH.Contratos.Departamentos;
-using RRHH.Contratos.Paises;
+using RRHH.Domain.Entidades;
+using RRHH.Domain.Reglas;
 using RRHH.UnitTests.Datos;
 
 namespace RRHH.UnitTests.Application;
@@ -11,19 +12,17 @@ public class DepartamentosServicioTests : IDisposable
 {
     private readonly BaseDatosPrueba _bd = new();
     private readonly DepartamentosServicio _servicio;
-    private readonly PaisesServicio _paisesServicio;
 
     public DepartamentosServicioTests()
     {
         _servicio = new DepartamentosServicio(_bd.Contexto);
-        _paisesServicio = new PaisesServicio(_bd.Contexto);
     }
 
     public void Dispose() => _bd.Dispose();
 
-    private async Task<PaisDto> CrearPaisPruebaAsync(string nombre, string codigo)
+    private async Task<Pais> CrearPaisPruebaAsync(string nombre, string codigo)
     {
-        var dto = new GuardarPaisDto
+        var pais = new Pais
         {
             Nombre = nombre,
             CodigoIso2 = codigo,
@@ -31,7 +30,9 @@ public class DepartamentosServicioTests : IDisposable
             EdadMaxima = 100,
             Regla29Febrero = Regla29Febrero.VeintiochoDeFebrero
         };
-        return await _paisesServicio.CrearAsync(dto, TestContext.Current.CancellationToken);
+        _bd.Contexto.Set<Pais>().Add(pais);
+        await _bd.Contexto.SaveChangesAsync();
+        return pais;
     }
 
     private GuardarDepartamentoDto DtoBase(int paisId) => new GuardarDepartamentoDto
@@ -49,7 +50,7 @@ public class DepartamentosServicioTests : IDisposable
 
         await _servicio.CrearAsync(DtoBase(p1.Id) with { Nombre = "Depto B" }, TestContext.Current.CancellationToken);
         await _servicio.CrearAsync(DtoBase(p1.Id) with { Nombre = "Depto A" }, TestContext.Current.CancellationToken);
-
+        
         await _servicio.CrearAsync(DtoBase(p2.Id) with { Nombre = "Depto Z" }, TestContext.Current.CancellationToken);
         await _servicio.CrearAsync(DtoBase(p2.Id) with { Nombre = "Depto Y" }, TestContext.Current.CancellationToken);
 
@@ -59,40 +60,46 @@ public class DepartamentosServicioTests : IDisposable
         var pagina = await _servicio.ListarAsync(c, TestContext.Current.CancellationToken);
 
         // Assert
-        // Filtramos solo los de estos paises para evitar problemas con los iniciales (Guatemala)
         var creados = pagina.Elementos.Where(d => d.PaisId == p1.Id || d.PaisId == p2.Id).ToList();
-
+        
         Assert.Equal(4, creados.Count);
         Assert.Equal("Pais A", creados[0].PaisNombre);
         Assert.Equal("Depto Y", creados[0].Nombre);
-
+        
         Assert.Equal("Pais A", creados[1].PaisNombre);
         Assert.Equal("Depto Z", creados[1].Nombre);
-
+        
         Assert.Equal("Pais Z", creados[2].PaisNombre);
         Assert.Equal("Depto A", creados[2].Nombre);
-
+        
         Assert.Equal("Pais Z", creados[3].PaisNombre);
         Assert.Equal("Depto B", creados[3].Nombre);
     }
 
-    [Theory]
-    [InlineData("peten")]
-    [InlineData("PETEN")]
-    [InlineData("Petén")]
-    public async Task ListarAsync_Buscar_NoDistingueMayusculasNiTildes(string buscar)
+    [Fact]
+    public async Task ListarAsync_Buscar_NoDistingueMayusculasPeroSiTildes()
     {
         // Arrange
         var p = await CrearPaisPruebaAsync("Pais Tildes", "TI");
+        await _servicio.CrearAsync(DtoBase(p.Id) with { Nombre = "Peten" }, TestContext.Current.CancellationToken);
         await _servicio.CrearAsync(DtoBase(p.Id) with { Nombre = "Petén" }, TestContext.Current.CancellationToken);
+        await _servicio.CrearAsync(DtoBase(p.Id) with { Nombre = "Otro" }, TestContext.Current.CancellationToken);
 
-        var c = new Consulta { Buscar = buscar };
+        var c1 = new Consulta { Buscar = "PETEN" };
+        var c2 = new Consulta { Buscar = "Petén" };
 
         // Act
-        var pagina = await _servicio.ListarAsync(c, TestContext.Current.CancellationToken);
+        var pagina1 = await _servicio.ListarAsync(c1, TestContext.Current.CancellationToken);
+        var pagina2 = await _servicio.ListarAsync(c2, TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.Contains(pagina.Elementos, d => d.Nombre == "Petén");
+        var elementos1 = pagina1.Elementos.Where(d => d.PaisId == p.Id).ToList();
+        Assert.Single(elementos1);
+        Assert.Equal("Peten", elementos1[0].Nombre);
+
+        var elementos2 = pagina2.Elementos.Where(d => d.PaisId == p.Id).ToList();
+        Assert.Single(elementos2);
+        Assert.Equal("Petén", elementos2[0].Nombre);
     }
 
     [Fact]
@@ -183,6 +190,52 @@ public class DepartamentosServicioTests : IDisposable
     }
 
     [Fact]
+    public async Task CrearAsync_NombreDuplicadoDiferentesMayusculasOEspacios_LanzaConflictoException()
+    {
+        // Arrange
+        var p = await CrearPaisPruebaAsync("Pais Duplicado Mayus", "C2");
+        await _servicio.CrearAsync(DtoBase(p.Id) with { Nombre = "Unico" }, TestContext.Current.CancellationToken);
+        var dto = DtoBase(p.Id) with { Nombre = "  unico  " };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ConflictoException>(() => _servicio.CrearAsync(dto, TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public async Task CrearAsync_MismoNombreDiferenteTilde_Permitido()
+    {
+        // Arrange
+        var p = await CrearPaisPruebaAsync("Pais Tildes 2", "T2");
+        await _servicio.CrearAsync(DtoBase(p.Id) with { Nombre = "Comun" }, TestContext.Current.CancellationToken);
+        var dto = DtoBase(p.Id) with { Nombre = "Común" };
+
+        // Act
+        var creado = await _servicio.CrearAsync(dto, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.True(creado.Id > 0);
+        Assert.Equal("Común", creado.Nombre);
+    }
+
+    [Fact]
+    public async Task CrearAsync_MismoNombreEnOtroPais_Permitido()
+    {
+        // Arrange
+        var p1 = await CrearPaisPruebaAsync("Pais N1", "N1");
+        var p2 = await CrearPaisPruebaAsync("Pais N2", "N2");
+        await _servicio.CrearAsync(DtoBase(p1.Id) with { Nombre = "Norte" }, TestContext.Current.CancellationToken);
+        var dto = DtoBase(p2.Id) with { Nombre = "Norte" };
+
+        // Act
+        var creado = await _servicio.CrearAsync(dto, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.True(creado.Id > 0);
+        Assert.Equal("Norte", creado.Nombre);
+        Assert.Equal(p2.Id, creado.PaisId);
+    }
+
+    [Fact]
     public async Task CrearAsync_DatosValidos_GuardaSinEspacios()
     {
         // Arrange
@@ -191,9 +244,11 @@ public class DepartamentosServicioTests : IDisposable
 
         // Act
         var creado = await _servicio.CrearAsync(dto, TestContext.Current.CancellationToken);
+        var guardado = await _servicio.ObtenerAsync(creado.Id, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal("Con Espacios", creado.Nombre);
+        Assert.Equal("Con Espacios", guardado.Nombre);
     }
 
     [Fact]
@@ -208,12 +263,22 @@ public class DepartamentosServicioTests : IDisposable
     }
 
     [Fact]
+    public async Task ActualizarAsync_InexistenteYPaisInexistente_LanzaNoEncontradoException()
+    {
+        // Arrange
+        var dto = DtoBase(999); // País inexistente
+
+        // Act & Assert
+        await Assert.ThrowsAsync<NoEncontradoException>(() => _servicio.ActualizarAsync(999, dto, TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
     public async Task ActualizarAsync_PaisInexistente_LanzaValidacionExceptionEnPaisId()
     {
         // Arrange
         var p = await CrearPaisPruebaAsync("Pais Act 400", "A0");
         var creado = await _servicio.CrearAsync(DtoBase(p.Id), TestContext.Current.CancellationToken);
-
+        
         var dtoInvalido = DtoBase(999);
 
         // Act
@@ -224,17 +289,32 @@ public class DepartamentosServicioTests : IDisposable
     }
 
     [Fact]
-    public async Task ActualizarAsync_DuplicadoEnPaisDestino_LanzaConflictoException()
+    public async Task ActualizarAsync_DuplicadoEnMismoPais_LanzaConflictoException()
     {
         // Arrange
-        var p = await CrearPaisPruebaAsync("Pais Act 409", "A9");
+        var p = await CrearPaisPruebaAsync("Pais Act 409 A", "A9");
         await _servicio.CrearAsync(DtoBase(p.Id) with { Nombre = "Depto Existente" }, TestContext.Current.CancellationToken);
         var creado = await _servicio.CrearAsync(DtoBase(p.Id) with { Nombre = "Depto Nuevo" }, TestContext.Current.CancellationToken);
-
+        
         var dtoDuplicado = DtoBase(p.Id) with { Nombre = "Depto Existente" };
 
         // Act & Assert
         await Assert.ThrowsAsync<ConflictoException>(() => _servicio.ActualizarAsync(creado.Id, dtoDuplicado, TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public async Task ActualizarAsync_DuplicadoEnPaisDestino_LanzaConflictoException()
+    {
+        // Arrange
+        var p1 = await CrearPaisPruebaAsync("Pais Act 409 B1", "B1");
+        var p2 = await CrearPaisPruebaAsync("Pais Act 409 B2", "B2");
+        await _servicio.CrearAsync(DtoBase(p2.Id) with { Nombre = "Depto Existente" }, TestContext.Current.CancellationToken);
+        var creado = await _servicio.CrearAsync(DtoBase(p1.Id) with { Nombre = "Depto Nuevo" }, TestContext.Current.CancellationToken);
+        
+        var dtoMoverDuplicado = DtoBase(p2.Id) with { Nombre = "Depto Existente" };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ConflictoException>(() => _servicio.ActualizarAsync(creado.Id, dtoMoverDuplicado, TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -244,15 +324,21 @@ public class DepartamentosServicioTests : IDisposable
         var p1 = await CrearPaisPruebaAsync("Pais Origen", "O1");
         var p2 = await CrearPaisPruebaAsync("Pais Destino", "D2");
         var creado = await _servicio.CrearAsync(DtoBase(p1.Id) with { Nombre = "Moviendo" }, TestContext.Current.CancellationToken);
-
+        
         var dtoActualizar = DtoBase(p2.Id) with { Nombre = "Moviendo" };
 
         // Act
         var actualizado = await _servicio.ActualizarAsync(creado.Id, dtoActualizar, TestContext.Current.CancellationToken);
+        var guardado = await _servicio.ObtenerAsync(creado.Id, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(p2.Id, actualizado.PaisId);
+        Assert.Equal(p2.Nombre, actualizado.PaisNombre);
         Assert.Equal("Moviendo", actualizado.Nombre);
+
+        Assert.Equal(p2.Id, guardado.PaisId);
+        Assert.Equal(p2.Nombre, guardado.PaisNombre);
+        Assert.Equal("Moviendo", guardado.Nombre);
     }
 
     [Fact]
@@ -261,7 +347,7 @@ public class DepartamentosServicioTests : IDisposable
         // Arrange
         var p = await CrearPaisPruebaAsync("Pais Mismo", "SM");
         var creado = await _servicio.CrearAsync(DtoBase(p.Id) with { Nombre = "Mismo Nombre" }, TestContext.Current.CancellationToken);
-
+        
         var dto = DtoBase(p.Id) with { Nombre = "Mismo Nombre" };
 
         // Act
@@ -282,7 +368,7 @@ public class DepartamentosServicioTests : IDisposable
     public async Task EliminarAsync_GuatemalaConMunicipios_LanzaConflictoException()
     {
         // Arrange: El departamento 1 (Guatemala) tiene municipios por defecto.
-
+        
         // Act & Assert
         await Assert.ThrowsAsync<ConflictoException>(() => _servicio.EliminarAsync(1, TestContext.Current.CancellationToken));
     }
@@ -291,7 +377,7 @@ public class DepartamentosServicioTests : IDisposable
     public async Task EliminarAsync_SinMunicipios_LoElimina()
     {
         // Arrange
-        var p = await CrearPaisPruebaAsync("Pais Borrar", "B1");
+        var p = await CrearPaisPruebaAsync("Pais Borrar", "B3");
         var creado = await _servicio.CrearAsync(DtoBase(p.Id), TestContext.Current.CancellationToken);
 
         // Act
