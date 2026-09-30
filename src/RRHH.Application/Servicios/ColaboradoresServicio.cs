@@ -151,6 +151,20 @@ public class ColaboradoresServicio(IRrhhDbContext db, TimeProvider reloj) : ICol
         await db.SaveChangesAsync(ct);
     }
 
+    // Contrato de la tarea 14: se implementa después de las pruebas del tester.
+    public Task<Pagina<ColaboradorDto>> ListarPorEmpresaAsync(int empresaId, Consulta consulta, CancellationToken ct) =>
+        throw Pendiente();
+
+    public Task<ColaboradorDto> AsociarEmpresaAsync(int id, AsociarEmpresaDto dto, CancellationToken ct) => throw Pendiente();
+
+    public Task<ColaboradorDto> ActualizarEmpresaAsync(int id, int empresaId, GuardarEmpresaColaboradorDto dto, CancellationToken ct) =>
+        throw Pendiente();
+
+    public Task QuitarEmpresaAsync(int id, int empresaId, CancellationToken ct) => throw Pendiente();
+
+    private static NotImplementedException Pendiente() =>
+        new("Contrato de la tarea 14: se implementa después de las pruebas.");
+
     private DateOnly Hoy() => DateOnly.FromDateTime(reloj.GetLocalNow().DateTime);
 
     // La edad que se muestra usa la regla del país de la empresa más antigua (RN7): Empresas ya
