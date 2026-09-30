@@ -67,11 +67,11 @@ Cada paso es un commit propio; el merge se hace al cerrar la fase, con el PR.
         (`test: completar trazabilidad de reglas`)
 
 ## Fase 5 · rama `feature/web`
-- [ ] 17. Cliente HTTP tipado y layout base (`feat(web): cliente de la API y layout`)
-- [ ] 18. Mantenimientos de país, departamento y municipio (`feat(web): geografía`)
-- [ ] 19. Mantenimiento de empresas con listas en cascada (`feat(web): empresas`)
-- [ ] 20. Mantenimiento de colaboradores con selección de empresas (`feat(web): colaboradores`)
-- [ ] 21. Mensajes de error de la API en los formularios (`feat(web): validaciones`)
+- [x] 17. Cliente HTTP tipado y layout base (`feat(web): cliente de la API y layout`)
+- [x] 18. Mantenimientos de país, departamento y municipio (`feat(web): geografía`)
+- [x] 19. Mantenimiento de empresas con listas en cascada (`feat(web): empresas`)
+- [x] 20. Mantenimiento de colaboradores con selección de empresas (`feat(web): colaboradores`)
+- [x] 21. Mensajes de error de la API en los formularios (`feat(web): validaciones`)
 
 ## Fase 6 · rama `docs/postman`
 - [ ] 22. Colección y entorno de Postman con pruebas en cada request; correr con Newman
