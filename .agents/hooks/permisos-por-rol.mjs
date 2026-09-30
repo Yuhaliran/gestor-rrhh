@@ -4,7 +4,8 @@
 // "allow" en el repositorio y en sus propias carpetas, "ask" en lo demás y en los comandos.
 //
 // Rol: variable de entorno RRHH_ROL, "tester" (por defecto) o "revisor". Con un valor
-// desconocido se bloquea toda escritura en el repositorio.
+// desconocido se bloquea toda escritura en el repositorio. El revisor (y un rol desconocido)
+// sólo puede ejecutar comandos de lectura.
 //
 // Entrada (stdin):  { "toolCall": { "name": "...", "args": { ... } }, "artifactDirectoryPath": "...", ... }
 // Salida (stdout):  { "decision": "allow" | "ask" | "deny", "reason": "..." }
@@ -35,6 +36,29 @@ const TEMPORALES = os.tmpdir();
 const AYUDA_AGY = path.join(os.homedir(), '.gemini', 'antigravity-cli', 'builtin');
 
 const GIT_PUSH = /\bgit\b.*\bpush\b/i;
+
+// Comandos de sólo lectura para el revisor (docs/agentes/revisor.md: no modifica nada).
+// Es una lista de lo permitido: un comando que no esté acá se bloquea.
+const TERMINAL_LECTURA = new Set([
+  'get-content', 'gc', 'cat', 'type', 'more', 'head', 'tail', 'select-string', 'sls', 'findstr', 'grep',
+  'rg', 'get-childitem', 'gci', 'dir', 'ls', 'get-item', 'test-path', 'get-filehash', 'format-hex',
+  'measure-object', 'select-object', 'where-object', 'sort-object', 'format-table', 'format-list',
+  'out-string', 'wc', 'sort', 'uniq', 'echo', 'write-output', 'write-host', 'get-command', 'where',
+]);
+const GIT_LECTURA = new Set([
+  'diff', 'log', 'show', 'status', 'blame', 'grep', 'ls-files', 'ls-tree', 'rev-parse', 'rev-list',
+  'merge-base', 'show-ref', 'cat-file', 'shortlog', 'describe', 'branch',
+]);
+const GIT_BRANCH_MODIFICA = new Set([
+  '-d', '-D', '--delete', '-m', '-M', '--move', '-c', '-C', '--copy', '-f', '--force', '-u',
+  '--set-upstream-to', '--unset-upstream', '--edit-description',
+]);
+const DOTNET_LECTURA = new Set(['build', 'test', 'list', '--version', '--info', '--list-sdks', '--list-runtimes']);
+// Aunque el comando principal sea de lectura, esto escribe o ejecuta código ($(...), script blocks).
+const ESCRITURA_EN_COMANDO =
+  /\b(Set-Content|Add-Content|Out-File|New-Item|Remove-Item|Copy-Item|Move-Item|Rename-Item|Clear-Content|Set-Item|Tee-Object|Invoke-Expression|Start-Process|Export-Csv|Export-Clixml|iex)\b|\[(System\.)?IO\./i;
+const REDIRECCION = /(?:\d|\*)?>>?\s*(&\d|[^\s|;&]+)/g;
+const DESTINO_INOFENSIVO = /^(\$null|nul|\/dev\/null|&\d)$/i;
 
 const permite = { decision: 'allow' };
 const pregunta = { decision: 'ask' };
@@ -108,17 +132,91 @@ function decidirLectura(args, artefactos) {
   return todasPermitidas ? permite : pregunta;
 }
 
+// Partes de una línea de comandos separadas por |, ;, &&, || o saltos de línea (fuera de comillas).
+function segmentos(linea) {
+  const partes = [];
+  let actual = '';
+  let comilla = null;
+  for (let i = 0; i < linea.length; i++) {
+    const c = linea[i];
+    if (comilla) {
+      actual += c;
+      if (c === comilla) comilla = null;
+    } else if (c === '"' || c === "'") {
+      comilla = c;
+      actual += c;
+    } else if (c === '|' || c === ';' || c === '\n' || (c === '&' && linea[i + 1] === '&')) {
+      partes.push(actual);
+      actual = '';
+      if (linea[i + 1] === c) i++;
+    } else {
+      actual += c;
+    }
+  }
+  partes.push(actual);
+  return partes.map((p) => p.trim()).filter((p) => p !== '');
+}
+
+const palabras = (segmento) => [...segmento.matchAll(/"([^"]*)"|'([^']*)'|(\S+)/g)].map((m) => m[1] ?? m[2] ?? m[3]);
+
+function gitDeLectura(args) {
+  let i = 0;
+  while (args[i]?.startsWith('-')) {
+    if (args[i] === '--no-pager') i += 1;
+    else if (args[i] === '-C') i += 2;
+    else return false;                       // otras opciones globales (como -c) pueden ejecutar programas
+  }
+  const [subcomando, ...resto] = args.slice(i);
+  if (!GIT_LECTURA.has(subcomando) || resto.some((a) => a.startsWith('--output'))) return false;
+  return subcomando !== 'branch' || resto.every((a) => a.startsWith('-') && !GIT_BRANCH_MODIFICA.has(a));
+}
+
+function dotnetDeLectura([subcomando, ...resto]) {
+  if (DOTNET_LECTURA.has(subcomando)) return true;
+  if (subcomando === 'format') return resto.includes('--verify-no-changes');
+  if (subcomando === 'ef') {
+    return (resto[0] === 'migrations' && ['list', 'has-pending-model-changes'].includes(resto[1]))
+      || (resto[0] === 'dbcontext' && ['info', 'list'].includes(resto[1]));
+  }
+  return false;
+}
+
+function comandoDeLectura(segmento) {
+  const [programa = '', ...args] = palabras(segmento);
+  const nombre = programa.toLowerCase().replace(/\.exe$/, '');
+  if (nombre === 'git') return gitDeLectura(args);
+  if (nombre === 'dotnet') return dotnetDeLectura(args);
+  return TERMINAL_LECTURA.has(nombre);
+}
+
+// Motivo por el que el comando no es de sólo lectura, o null si lo es.
+function motivoComandoNoLectura(linea) {
+  const sinComillas = linea.replace(/"[^"]*"|'[^']*'/g, '""');
+  const redireccion = [...sinComillas.matchAll(REDIRECCION)].find((m) => !DESTINO_INOFENSIVO.test(m[1]));
+  if (redireccion) return `redirige la salida a «${redireccion[1]}»`;
+  if (ESCRITURA_EN_COMANDO.test(linea)) return 'usa un comando que escribe archivos o ejecuta código';
+  const noPermitido = segmentos(linea).find((s) => !comandoDeLectura(s));
+  return noPermitido === undefined ? null : `«${noPermitido}» no está entre los comandos de lectura`;
+}
+
+function decidirComando(args) {
+  const linea = String(args.CommandLine ?? '');
+  if (GIT_PUSH.test(linea)) return niega('git push lo hace sólo el responsable (AGENTS.md, «No hacer»).');
+  if (rol === 'tester') return pregunta;
+  const motivo = motivoComandoNoLectura(linea);
+  return motivo === null
+    ? pregunta
+    : niega(`${rol === 'revisor' ? 'El revisor' : `El rol «${rol}»`} sólo usa comandos de lectura (docs/agentes/revisor.md): ${motivo}. `
+      + 'Para leer el diff, por partes: git diff main...HEAD -- <ruta>.');
+}
+
 function decidir(entrada) {
   const llamada = entrada?.toolCall ?? {};
   const herramienta = llamada.name;
   const args = typeof llamada.args === 'string' ? JSON.parse(llamada.args) : (llamada.args ?? {});
   const artefactos = entrada?.artifactDirectoryPath;
 
-  if (herramienta === 'run_command') {
-    return GIT_PUSH.test(String(args.CommandLine ?? ''))
-      ? niega('git push lo hace sólo el responsable (AGENTS.md, «No hacer»).')
-      : pregunta;
-  }
+  if (herramienta === 'run_command') return decidirComando(args);
   if (HERRAMIENTAS_SUBAGENTES.has(herramienta)) {
     return niega('Los subagentes no pasan por este hook y podrían saltear los permisos del rol: no se usan.');
   }

@@ -39,6 +39,14 @@ jobs:
       - name: Compilar
         run: dotnet build --no-restore
 
+      # dotnet-ef con la versión fijada en dotnet-tools.json.
+      - name: Restaurar herramientas
+        run: dotnet tool restore
+
+      # MIG1: falla si el modelo cambió y falta su migración.
+      - name: Migraciones al día (MIG1)
+        run: dotnet ef migrations has-pending-model-changes -p src/RRHH.Infrastructure -s src/RRHH.Api --no-build
+
       - name: Verificar formato
         run: dotnet format --verify-no-changes --no-restore
 

@@ -64,7 +64,9 @@ docs/
 - Un commit por tarea terminada, con el mensaje sugerido en TAREAS.md.
 - Cada fase se cierra con un pull request a `main` (plantilla en `.github/`); `main` está protegida.
 - La integración continua (`.github/workflows/ci.yml`) corre en cada PR: restauración con
-  `--locked-mode`, build, `dotnet format --verify-no-changes` y pruebas. Tiene que quedar en verde.
+  `--locked-mode`, build, MIG1 (modelo sin migraciones pendientes), `dotnet format --verify-no-changes`
+  y pruebas. Tiene que quedar en verde.
+- `dotnet-ef` se usa con la versión fijada en `dotnet-tools.json`: `dotnet tool restore` la instala.
 
 ## Roles
 Este proyecto separa roles entre agentes de distintos modelos (ver `docs/AGENTES.md`):

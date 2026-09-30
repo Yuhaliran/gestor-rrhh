@@ -64,20 +64,24 @@ public class Pais
     public int Id { get; set; }
     public string Nombre { get; set; } = "";
     public string CodigoIso2 { get; set; } = "";
+    public int EdadMinima { get; set; } = 18;                  // legislación de cada país (RN4)
+    public int EdadMaxima { get; set; } = 100;
+    public Regla29Febrero Regla29Febrero { get; set; } = Regla29Febrero.VeintiochoDeFebrero;   // RN7
     public ICollection<Departamento> Departamentos { get; set; } = [];
 }
 ```
 
-Regla de dominio con la fecha actual como parámetro (así se prueba sin depender del día):
+Regla de dominio con la fecha actual como parámetro (así se prueba sin depender del día).
+Sólo la firma: la implementación es de la tarea 4 y el tester no debe verla (pruebas de caja negra).
 ```csharp
+namespace RRHH.Domain.Reglas;
+
+public enum Regla29Febrero { VeintiochoDeFebrero, PrimeroDeMarzo }
+
 public static class Edad
 {
-    public static int Calcular(DateOnly fechaNacimiento, DateOnly hoy)
-    {
-        var edad = hoy.Year - fechaNacimiento.Year;
-        if (fechaNacimiento > hoy.AddYears(-edad)) edad--;   // todavía no cumplió este año
-        return edad;
-    }
+    // Años cumplidos a la fecha `hoy` (RN7). Negativa si la fecha de nacimiento es posterior.
+    public static int Calcular(DateOnly fechaNacimiento, DateOnly hoy, Regla29Febrero regla);
 }
 ```
 

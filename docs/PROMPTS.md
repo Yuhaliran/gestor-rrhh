@@ -43,12 +43,14 @@ Actualizá la tabla de trazabilidad de docs/PLAN_PRUEBAS.md.
 ```
 
 ## Antigravity CLI · revisor (sesión nueva)
-Iniciar desde PowerShell con `$env:RRHH_ROL = "revisor"; agy`: el hook bloquea toda escritura.
+Iniciar desde PowerShell con `$env:RRHH_ROL = "revisor"; agy`: el hook bloquea toda escritura y
+sólo permite comandos de lectura (ver `docs/AGENTES.md`).
 
 **Paso 4 · revisión**
 ```
 Actuás con el rol de docs/agentes/revisor.md. Revisá `git diff main...HEAD` contra
-docs/ESPECIFICACION.md y docs/CODIFICACION.md. No modifiques archivos.
+docs/ESPECIFICACION.md y docs/CODIFICACION.md. No modifiques archivos ni crees archivos
+temporales: leé el diff por partes (git diff main...HEAD -- <ruta>).
 Devolvé la lista de hallazgos con archivo, gravedad, qué pasa y qué dice la especificación.
 ```
 

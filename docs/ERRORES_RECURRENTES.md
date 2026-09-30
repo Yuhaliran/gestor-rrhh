@@ -54,7 +54,11 @@ Compilación, paquetes, pruebas, EF Core, git.
                  (UTF-8 sin BOM).
 - Solución:      correr `dotnet format` y volver a verificar.
 - Cómo evitarlo: después de cada `dotnet new` (proyecto o elemento), correr `dotnet format`.
-- Origen:        tarea 1 · 2026-09-29 · implementador
+                 Otras herramientas también escriben BOM: `dotnet user-secrets init` y
+                 `dotnet add package` en los `.csproj`, y `dotnet ef migrations add` en los archivos
+                 generados. `dotnet format` no revisa ninguno de esos, así que hay que quitarlo a mano
+                 (en Git Bash: `sed -i '1s/^\xEF\xBB\xBF//' <archivo>`).
+- Origen:        tarea 1 · 2026-09-29 · implementador; ampliado en la revisión de la fase 1
 
 ### E-004 · Avisos «LF will be replaced by CRLF» al hacer `git add`
 - Síntoma:       decenas de avisos de git al agregar archivos.
@@ -109,6 +113,42 @@ Compilación, paquetes, pruebas, EF Core, git.
                  `git checkout -- .`, que incluye los lock files. Antes de commitear, revisar el
                  diff de cada `packages.lock.json`.
 - Origen:        tarea 3 · 2026-09-29 · implementador
+
+### E-009 · «The process cannot access the file ... because it is being used by another process»
+- Síntoma:       `dotnet build` o `dotnet test` falla con MSB4024 u otro error de archivo bloqueado en
+                 `obj/`, justo después de cambiar un `.csproj`.
+- Causa:         Visual Studio tiene la solución abierta y restaura o compila al detectar el cambio,
+                 al mismo tiempo que el comando del agente.
+- Solución:      esperar unos segundos y volver a correr el comando.
+- Cómo evitarlo: no compilar en Visual Studio mientras un agente compila, aceptar la recarga de
+                 archivos cuando Visual Studio la pida y no editar ahí los archivos que un agente
+                 está modificando. Si el error se repite, cerrar Visual Studio durante la tarea.
+- Origen:        tarea 3 · 2026-09-29 · implementador
+
+### E-010 · Visual Studio 2022 deja los `packages.lock.json` sin paquetes
+- Síntoma:       después de cambiar de rama con la solución abierta, los lock files de RRHH.Api y de
+                 los proyectos de pruebas pierden todos sus paquetes (quedan sólo los proyectos).
+- Causa:         Visual Studio 2022 (17.14) no es compatible con .NET 10 (el soporte llega con
+                 Visual Studio 2026); al restaurar, evalúa mal los proyectos y reescribe los lock.
+- Solución:      `git checkout -- <lock files>`; la versión commiteada es la correcta.
+- Cómo evitarlo: no abrir la solución con Visual Studio 2022: usar VS Code con C# Dev Kit
+                 (docs/ENTORNO.md) o Visual Studio 2026. Antes de commitear, revisar el diff de los
+                 lock files (E-008); la integración continua los verifica con `--locked-mode`.
+- Origen:        tarea 4 · 2026-09-29 · implementador
+
+### E-011 · «The requested configuration is not stored in the read-optimized model»
+- Síntoma:       una prueba que lee las restricciones CHECK desde `Contexto.Model` lanza
+                 `InvalidOperationException`, con o sin la configuración hecha (parece un rojo esperado).
+- Causa:         en ejecución, EF Core usa un modelo optimizado que no guarda los CHECK ni otros datos
+                 que sólo sirven para crear la base.
+- Solución:      leerlos del modelo de diseño:
+                 `Contexto.GetService<IDesignTimeModel>().Model.FindEntityType(...)!.GetCheckConstraints()`.
+                 `IDesignTimeModel` está en `Microsoft.EntityFrameworkCore.Metadata` (EF Core, sin el
+                 paquete Design) y `GetService<T>()` en `Microsoft.EntityFrameworkCore.Infrastructure`.
+- Cómo evitarlo: una prueba en rojo tiene que fallar en su `Assert`, no con una excepción; revisar el
+                 motivo antes de darla por buena. Para comprobar un CHECK, preferir la prueba de
+                 comportamiento: SQLite sí aplica los CHECK.
+- Origen:        tarea 5 · 2026-09-29 · implementador
 
 ## Funcionalidad
 Comportamiento que no cumplía la especificación, detectado por pruebas o revisión.

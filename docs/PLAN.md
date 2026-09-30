@@ -38,18 +38,28 @@ Pais 1──N Departamento 1──N Municipio 1──N Empresa
 
 | Tabla | Columnas principales | Restricciones |
 |---|---|---|
-| Pais | Id, Nombre, CodigoIso2 | UQ Nombre, UQ CodigoIso2 |
+| Pais | Id, Nombre, CodigoIso2, EdadMinima, EdadMaxima, Regla29Febrero | UQ Nombre, UQ CodigoIso2, CK_Pais_RangoEdad (0 ≤ EdadMinima ≤ EdadMaxima) |
 | Departamento | Id, PaisId, Nombre | FK Pais (Restrict), UQ (PaisId, Nombre) |
 | Municipio | Id, DepartamentoId, Nombre | FK Departamento (Restrict), UQ (DepartamentoId, Nombre) |
-| Empresa | Id, MunicipioId, Nit, RazonSocial, NombreComercial, Telefono, Correo | FK Municipio (Restrict), UQ Nit |
+| Empresa | Id, MunicipioId, Nit, RazonSocial, NombreComercial, Telefono, Correo | FK Municipio (Restrict), IX Nit (no único: la unicidad por país la valida el servicio, RN5) |
 | Colaborador | Id, NombreCompleto, FechaNacimiento, Telefono, Correo | UQ Correo |
 | EmpresaColaborador | EmpresaId, ColaboradorId, FechaIngreso, Puesto | PK compuesta; FK Empresa (Restrict), FK Colaborador (Cascade) |
 
 Tipos: textos con largo máximo (`nvarchar(n)`), fechas `date`, todo `NOT NULL` salvo Puesto.
+`Regla29Febrero` es un enum del dominio guardado como texto (`VeintiochoDeFebrero` o
+`PrimeroDeMarzo`), legible en la base. Valores por defecto de país: 18, 100 y `VeintiochoDeFebrero`,
+definidos en el dominio y no en la base: son una decisión de negocio, y con un `DEFAULT` EF Core
+no enviaría un 0 explícito (la base guardaría 18 sin avisar). La base garantiza las invariantes
+(`CK_Pais_RangoEdad`: edad mínima ≥ 0 y ≤ máxima).
+
+Largos máximos (V3): nombres de país, departamento y municipio 100; `CodigoIso2` 2 (fijo); `Nit` 20;
+`RazonSocial` y `NombreComercial` 200; teléfonos 20; correos 254; `NombreCompleto` 200; `Puesto` 100;
+`Regla29Febrero` 20.
 
 ### Diagrama entidad-relación
 `||--|{` indica que un colaborador tiene al menos una empresa (RN3, se valida en el servicio).
-La edad no se guarda: se calcula a partir de `FechaNacimiento`.
+La edad no se guarda: se calcula a partir de `FechaNacimiento`, con la regla del país (RN7).
+Los valores iniciales de país (18, 100, `VeintiochoDeFebrero`) están en el dominio, no en la base.
 
 ```mermaid
 erDiagram
@@ -63,40 +73,67 @@ erDiagram
         int Id PK
         nvarchar(100) Nombre UK
         char(2) CodigoIso2 UK
+        int EdadMinima "CK: 0 a EdadMaxima"
+        int EdadMaxima
+        nvarchar(20) Regla29Febrero
     }
     Departamento {
         int Id PK
         int PaisId FK "UQ con Nombre"
-        nvarchar Nombre
+        nvarchar(100) Nombre
     }
     Municipio {
         int Id PK
         int DepartamentoId FK "UQ con Nombre"
-        nvarchar Nombre
+        nvarchar(100) Nombre
     }
     Empresa {
         int Id PK
         int MunicipioId FK
-        nvarchar Nit UK
-        nvarchar RazonSocial
-        nvarchar NombreComercial
-        nvarchar Telefono
-        nvarchar Correo
+        nvarchar(20) Nit "IX; único por país en el servicio"
+        nvarchar(200) RazonSocial
+        nvarchar(200) NombreComercial
+        nvarchar(20) Telefono
+        nvarchar(254) Correo
     }
     Colaborador {
         int Id PK
-        nvarchar NombreCompleto
+        nvarchar(200) NombreCompleto
         date FechaNacimiento
-        nvarchar Telefono
-        nvarchar Correo UK
+        nvarchar(20) Telefono
+        nvarchar(254) Correo UK
     }
     EmpresaColaborador {
         int EmpresaId PK,FK
         int ColaboradorId PK,FK
         date FechaIngreso
-        nvarchar Puesto "NULL"
+        nvarchar(100) Puesto "NULL"
     }
 ```
+
+### Datos iniciales
+Fuente: codificación nacional de departamentos y municipios del INE (lista publicada por SEGEPLAN),
+contrastada con Wikipedia, «Anexo:Municipios de Guatemala».
+
+- **País:** Guatemala, `GT`, id 1, con los valores por defecto (edad 18 a 100; cumpleaños del
+  29 de febrero, el 28 de febrero).
+- **Departamentos:** los 22, con su código del INE como id.
+- **Municipios (muestra):** la cabecera de cada departamento (código del INE `DD01`), con el mismo
+  id que su departamento. Los que se creen después siguen desde el id 23.
+
+| Id | Departamento | Cabecera | | Id | Departamento | Cabecera |
+|---|---|---|---|---|---|---|
+| 1 | Guatemala | Guatemala | | 12 | San Marcos | San Marcos |
+| 2 | El Progreso | Guastatoya | | 13 | Huehuetenango | Huehuetenango |
+| 3 | Sacatepéquez | Antigua Guatemala | | 14 | Quiché | Santa Cruz del Quiché |
+| 4 | Chimaltenango | Chimaltenango | | 15 | Baja Verapaz | Salamá |
+| 5 | Escuintla | Escuintla | | 16 | Alta Verapaz | Cobán |
+| 6 | Santa Rosa | Cuilapa | | 17 | Petén | Flores |
+| 7 | Sololá | Sololá | | 18 | Izabal | Puerto Barrios |
+| 8 | Totonicapán | Totonicapán | | 19 | Zacapa | Zacapa |
+| 9 | Quetzaltenango | Quetzaltenango | | 20 | Chiquimula | Chiquimula |
+| 10 | Suchitepéquez | Mazatenango | | 21 | Jalapa | Jalapa |
+| 11 | Retalhuleu | Retalhuleu | | 22 | Jutiapa | Jutiapa |
 
 ## API
 | Método | Ruta | Descripción |
@@ -122,9 +159,9 @@ Listados paginados: `?pagina=1&tamanio=20&buscar=texto`.
   Opcional: `docker-compose.yml` con SQL Server para quien prefiera Docker.
 - No hace falta SSMS: `dotnet ef database update` crea la base y carga los datos iniciales.
 - Cadena de conexión en user-secrets de RRHH.Api (nunca en el repositorio):
-  `dotnet user-secrets set "ConnectionStrings:Rrhh" "Server=(localdb)\\MSSQLLocalDB;Database=Rrhh;Trusted_Connection=True;TrustServerCertificate=True" --project src/RRHH.Api`
+  `dotnet user-secrets set "ConnectionStrings:Rrhh" "Server=(localdb)\MSSQLLocalDB;Database=Rrhh;Trusted_Connection=True;TrustServerCertificate=True" --project src/RRHH.Api`
 - Las pruebas automatizadas usan SQLite en memoria: corren sin instalar ningún motor.
-- Datos iniciales: Guatemala, sus 22 departamentos y una muestra de municipios.
+- Datos iniciales: Guatemala, sus 22 departamentos y la cabecera de cada uno (ver «Datos iniciales»).
 
 ## Repositorio y ramas
 - **Un solo repositorio** para API, web, pruebas, Postman y documentación. La separación es
