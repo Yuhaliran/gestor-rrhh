@@ -1,13 +1,14 @@
 @page
 @model ErrorModel
 @{
-    ViewData["Title"] = "Error";
+    var (titulo, mensaje) = Model.Explicacion;
+    ViewData["Title"] = titulo;
 }
 
-<h1 class="text-danger">No se pudo completar la operación</h1>
-<p>Ocurrió un error inesperado. Verificá que la API esté en ejecución y volvé a intentarlo.</p>
+<h1 class="text-danger">@titulo</h1>
+<p>@mensaje</p>
 
-@if (Model.ShowRequestId)
+@if (Model.MostrarId)
 {
     <p>
         <strong>Identificador del pedido:</strong> <code>@Model.RequestId</code>
