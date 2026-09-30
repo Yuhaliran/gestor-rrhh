@@ -13,6 +13,9 @@ public static class ServiciosInfraestructura
     {
         servicios.AddDbContext<RrhhDbContext>(o => o.UseSqlServer(cadenaConexion));
         servicios.AddScoped<IRrhhDbContext>(proveedor => proveedor.GetRequiredService<RrhhDbContext>());
+
+        // /health verifica también que se llega a la base (PLAN.md, «API»)
+        servicios.AddHealthChecks().AddDbContextCheck<RrhhDbContext>("base-de-datos");
         return servicios;
     }
 }

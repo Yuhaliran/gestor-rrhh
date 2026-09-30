@@ -47,7 +47,7 @@ Cada paso es un commit propio; el merge se hace al cerrar la fase, con el PR.
        (`test: base de pruebas con SQLite en memoria`). Se hace dentro de la tarea 5
 
 ## Fase 2 · rama `feature/api-geografia`
-- [ ] 8. Manejo global de errores con ProblemDetails, paginación común y /health
+- [x] 8. Manejo global de errores con ProblemDetails, paginación común y /health
        (`feat(api): errores, paginación y health check`)
 - [ ] 9. Países: servicio, endpoints y pruebas (`feat(api): mantenimiento de países`)
 - [ ] 10. Departamentos, con listado por país (`feat(api): mantenimiento de departamentos`)
