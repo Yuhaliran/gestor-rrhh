@@ -54,7 +54,11 @@ Compilación, paquetes, pruebas, EF Core, git.
                  (UTF-8 sin BOM).
 - Solución:      correr `dotnet format` y volver a verificar.
 - Cómo evitarlo: después de cada `dotnet new` (proyecto o elemento), correr `dotnet format`.
-- Origen:        tarea 1 · 2026-09-29 · implementador
+                 Otras herramientas también escriben BOM: `dotnet user-secrets init` y
+                 `dotnet add package` en los `.csproj`, y `dotnet ef migrations add` en los archivos
+                 generados. `dotnet format` no revisa ninguno de esos, así que hay que quitarlo a mano
+                 (en Git Bash: `sed -i '1s/^\xEF\xBB\xBF//' <archivo>`).
+- Origen:        tarea 1 · 2026-09-29 · implementador; ampliado en la revisión de la fase 1
 
 ### E-004 · Avisos «LF will be replaced by CRLF» al hacer `git add`
 - Síntoma:       decenas de avisos de git al agregar archivos.
