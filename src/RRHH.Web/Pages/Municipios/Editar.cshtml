@@ -1,0 +1,53 @@
+@page "{id:int?}"
+@model RRHH.Web.Pages.Municipios.EditarModel
+@using RRHH.Contratos.Departamentos
+@using RRHH.Contratos.Paises
+@{
+    ViewData["Title"] = Model.Id is null ? "Nuevo municipio" : "Editar municipio";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<form method="post" class="col-md-8 col-lg-6">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    @if (Model.Id is null)
+    {
+        <div class="mb-3">
+            <label asp-for="PaisId" class="form-label">País</label>
+            <select asp-for="PaisId" asp-items="new SelectList(Model.Paises, nameof(PaisDto.Id), nameof(PaisDto.Nombre))" class="form-select"
+                    data-cascada-destino="#Datos_DepartamentoId" data-cascada-url="@Url.Content("~/cascada/paises/{id}/departamentos")">
+                <option value="">Elegí un país…</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Datos.DepartamentoId" class="form-label">Departamento</label>
+            <select asp-for="Datos.DepartamentoId" asp-items="new SelectList(Model.Departamentos, nameof(DepartamentoDto.Id), nameof(DepartamentoDto.Nombre))" class="form-select">
+                <option value="">Elegí un departamento…</option>
+            </select>
+            <span asp-validation-for="Datos.DepartamentoId" class="text-danger"></span>
+        </div>
+    }
+    else
+    {
+        @* RN8: el departamento (y su país) no cambian al editar *@
+        <input type="hidden" asp-for="Datos.DepartamentoId" />
+        <div class="mb-3">
+            <label class="form-label" for="ubicacion">Departamento y país</label>
+            <input id="ubicacion" class="form-control" value="@Model.Actual?.DepartamentoNombre, @Model.Actual?.PaisNombre" readonly />
+            <span asp-validation-for="Datos.DepartamentoId" class="text-danger"></span>
+        </div>
+    }
+    <div class="mb-3">
+        <label asp-for="Datos.Nombre" class="form-label">Nombre</label>
+        <input asp-for="Datos.Nombre" class="form-control" maxlength="100" />
+        <span asp-validation-for="Datos.Nombre" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <a class="btn btn-link" asp-page="Index">Cancelar</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

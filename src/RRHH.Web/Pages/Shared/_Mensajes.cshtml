@@ -1,0 +1,9 @@
+@* Resultado de la última operación (alta, edición o baja), guardado en TempData antes de redirigir *@
+@if (TempData["Mensaje"] is string mensaje)
+{
+    <div class="alert alert-success" role="status">@mensaje</div>
+}
+@if (TempData["Error"] is string error)
+{
+    <div class="alert alert-danger" role="alert">@error</div>
+}

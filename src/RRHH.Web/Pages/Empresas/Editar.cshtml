@@ -1,0 +1,87 @@
+@page "{id:int?}"
+@model RRHH.Web.Pages.Empresas.EditarModel
+@using RRHH.Contratos.Departamentos
+@using RRHH.Contratos.Municipios
+@using RRHH.Contratos.Paises
+@{
+    ViewData["Title"] = Model.Id is null ? "Nueva empresa" : "Editar empresa";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<form method="post" class="col-lg-8">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <fieldset class="mb-3">
+        <legend class="h5">Ubicación</legend>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label asp-for="PaisId" class="form-label">País</label>
+                @if (Model.Id is null)
+                {
+                    <select asp-for="PaisId" asp-items="new SelectList(Model.Paises, nameof(PaisDto.Id), nameof(PaisDto.Nombre))" class="form-select"
+                            data-cascada-destino="#DepartamentoId" data-cascada-url="@Url.Content("~/cascada/paises/{id}/departamentos")">
+                        <option value="">Elegí un país…</option>
+                    </select>
+                }
+                else
+                {
+                    @* RN8: la empresa se muda sólo dentro de su país *@
+                    <input type="hidden" asp-for="PaisId" />
+                    <input class="form-control" value="@Model.PaisNombre" readonly />
+                }
+            </div>
+            <div class="col-md-4 mb-3">
+                <label asp-for="DepartamentoId" class="form-label">Departamento</label>
+                <select asp-for="DepartamentoId" asp-items="new SelectList(Model.Departamentos, nameof(DepartamentoDto.Id), nameof(DepartamentoDto.Nombre))" class="form-select"
+                        data-cascada-destino="#Datos_MunicipioId" data-cascada-url="@Url.Content("~/cascada/departamentos/{id}/municipios")">
+                    <option value="">Elegí un departamento…</option>
+                </select>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label asp-for="Datos.MunicipioId" class="form-label">Municipio</label>
+                <select asp-for="Datos.MunicipioId" asp-items="new SelectList(Model.Municipios, nameof(MunicipioDto.Id), nameof(MunicipioDto.Nombre))" class="form-select">
+                    <option value="">Elegí un municipio…</option>
+                </select>
+                <span asp-validation-for="Datos.MunicipioId" class="text-danger"></span>
+            </div>
+        </div>
+    </fieldset>
+
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <label asp-for="Datos.Nit" class="form-label">NIT</label>
+            <input asp-for="Datos.Nit" class="form-control text-uppercase" maxlength="20" />
+            <span asp-validation-for="Datos.Nit" class="text-danger"></span>
+        </div>
+        <div class="col-md-8 mb-3">
+            <label asp-for="Datos.RazonSocial" class="form-label">Razón social</label>
+            <input asp-for="Datos.RazonSocial" class="form-control" maxlength="200" />
+            <span asp-validation-for="Datos.RazonSocial" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Datos.NombreComercial" class="form-label">Nombre comercial</label>
+        <input asp-for="Datos.NombreComercial" class="form-control" maxlength="200" />
+        <span asp-validation-for="Datos.NombreComercial" class="text-danger"></span>
+    </div>
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <label asp-for="Datos.Telefono" class="form-label">Teléfono</label>
+            <input asp-for="Datos.Telefono" class="form-control" maxlength="20" type="tel" />
+            <span asp-validation-for="Datos.Telefono" class="text-danger"></span>
+        </div>
+        <div class="col-md-8 mb-3">
+            <label asp-for="Datos.Correo" class="form-label">Correo electrónico</label>
+            <input asp-for="Datos.Correo" class="form-control" maxlength="254" />
+            <span asp-validation-for="Datos.Correo" class="text-danger"></span>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <a class="btn btn-link" asp-page="Index">Cancelar</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

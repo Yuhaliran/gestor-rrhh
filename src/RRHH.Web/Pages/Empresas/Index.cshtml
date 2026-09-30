@@ -1,0 +1,54 @@
+@page
+@model RRHH.Web.Pages.Empresas.IndexModel
+@{
+    ViewData["Title"] = "Empresas";
+    ViewData["Placeholder"] = "NIT, razón social o nombre comercial";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Empresas</h1>
+    <a class="btn btn-primary" asp-page="Editar">Nueva empresa</a>
+</div>
+
+<partial name="_Busqueda" model="Model.Buscar" view-data="ViewData" />
+
+<div class="table-responsive">
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th>Nombre comercial</th>
+                <th>Razón social</th>
+                <th>NIT</th>
+                <th>Ubicación</th>
+                <th>Contacto</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var empresa in Model.Empresas.Elementos)
+            {
+                <tr>
+                    <td>@empresa.NombreComercial</td>
+                    <td>@empresa.RazonSocial</td>
+                    <td>@empresa.Nit</td>
+                    <td>@empresa.MunicipioNombre, @empresa.DepartamentoNombre, @empresa.PaisNombre</td>
+                    <td>@empresa.Telefono<br /><span class="text-muted">@empresa.Correo</span></td>
+                    <td class="text-end text-nowrap">
+                        <a class="btn btn-sm btn-outline-secondary" asp-page="Colaboradores" asp-route-id="@empresa.Id">Colaboradores</a>
+                        <a class="btn btn-sm btn-outline-secondary" asp-page="Editar" asp-route-id="@empresa.Id">Editar</a>
+                        <form method="post" asp-page-handler="Eliminar" asp-route-id="@empresa.Id" asp-route-pagina="@Model.NumeroPagina"
+                              asp-route-buscar="@Model.Buscar" class="d-inline" data-confirmar="¿Eliminar la empresa «@empresa.NombreComercial»?">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            @if (Model.Empresas.Elementos.Count == 0)
+            {
+                <tr><td colspan="6" class="text-muted">No hay empresas@(string.IsNullOrEmpty(Model.Buscar) ? "" : " con ese texto").</td></tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<partial name="_Paginacion" model="Paginacion.De(Model.Empresas, Model.Buscar)" />

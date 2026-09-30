@@ -1,0 +1,50 @@
+@page
+@model RRHH.Web.Pages.Paises.IndexModel
+@using RRHH.Contratos.Paises
+@{
+    ViewData["Title"] = "Países";
+    ViewData["Placeholder"] = "Nombre o código ISO";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Países</h1>
+    <a class="btn btn-primary" asp-page="Editar">Nuevo país</a>
+</div>
+
+<partial name="_Busqueda" model="Model.Buscar" view-data="ViewData" />
+
+<table class="table table-striped align-middle">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Código ISO</th>
+            <th>Edad laboral</th>
+            <th>Cumpleaños del 29 de febrero</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var pais in Model.Paises.Elementos)
+        {
+            <tr>
+                <td>@pais.Nombre</td>
+                <td>@pais.CodigoIso2</td>
+                <td>@pais.EdadMinima a @pais.EdadMaxima años</td>
+                <td>@(pais.Regla29Febrero == Regla29Febrero.PrimeroDeMarzo ? "1 de marzo" : "28 de febrero")</td>
+                <td class="text-end text-nowrap">
+                    <a class="btn btn-sm btn-outline-secondary" asp-page="Editar" asp-route-id="@pais.Id">Editar</a>
+                    <form method="post" asp-page-handler="Eliminar" asp-route-id="@pais.Id" asp-route-pagina="@Model.NumeroPagina"
+                          asp-route-buscar="@Model.Buscar" class="d-inline" data-confirmar="¿Eliminar el país «@pais.Nombre»?">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        @if (Model.Paises.Elementos.Count == 0)
+        {
+            <tr><td colspan="5" class="text-muted">No hay países@(string.IsNullOrEmpty(Model.Buscar) ? "" : " con ese texto").</td></tr>
+        }
+    </tbody>
+</table>
+
+<partial name="_Paginacion" model="Paginacion.De(Model.Paises, Model.Buscar)" />
