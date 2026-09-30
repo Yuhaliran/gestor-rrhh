@@ -17,14 +17,15 @@ public interface IColaboradoresServicio
 
     // Primero los 400 (ValidacionException), en este orden:
     //   "Empresas[i].EmpresaId" si la empresa no existe (V4);
-    //   "Empresas[i].FechaIngreso" si es posterior a hoy o anterior a la fecha de nacimiento (RN9);
-    //   "FechaNacimiento" si la edad de hoy está fuera del rango del país de alguna empresa (RN4).
+    //   "FechaNacimiento" si la edad de hoy está fuera del rango del país de alguna empresa (RN4;
+    //   una fecha de nacimiento futura da una edad negativa, RN7);
+    //   "Empresas[i].FechaIngreso" si es posterior a hoy o anterior a la fecha de nacimiento (RN9).
     // Después los 409 (ConflictoException): una empresa repetida en la lista, o el correo de otro
     // colaborador (RN5). Guarda los textos sin espacios en los extremos.
     Task<ColaboradorDto> CrearAsync(CrearColaboradorDto dto, CancellationToken ct);
 
     // NoEncontradoException (404) si no existe. Si cambia la fecha de nacimiento, revalida contra sus
-    // empresas: RN9 y RN4, los dos con ValidacionException (400) en "FechaNacimiento". Después,
+    // empresas: RN4 y RN9, los dos con ValidacionException (400) en "FechaNacimiento". Después,
     // ConflictoException (409) si el correo es de otro colaborador (RN5). Sus empresas no cambian.
     Task<ColaboradorDto> ActualizarAsync(int id, GuardarColaboradorDto dto, CancellationToken ct);
 
