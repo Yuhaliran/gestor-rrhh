@@ -83,6 +83,8 @@ public class GuardarEmpresaDtoTests
     [InlineData("5555-1234")]
     [InlineData("+502 5555 1234")]
     [InlineData("(502) 5555-1234")]
+    [InlineData("1234567")]
+    [InlineData("12345678901234567890")]
     public void Telefono_Validos_ValidaCorrectamente(string tel)
     {
         AssertValido(DtoValido() with { Telefono = tel });
@@ -107,10 +109,10 @@ public class GuardarEmpresaDtoTests
         AssertInvalido(DtoValido() with { Correo = string.Empty }, "Correo");
 
         // 254 chars max
-        var largoValido = new string('a', 244) + "@a.com"; // 244 + 6 = 250
+        var largoValido = new string('a', 248) + "@a.com"; // 248 + 6 = 254
         AssertValido(DtoValido() with { Correo = largoValido });
 
-        var largoInvalido = new string('a', 250) + "@a.com"; // 256
+        var largoInvalido = new string('a', 249) + "@a.com"; // 249 + 6 = 255
         AssertInvalido(DtoValido() with { Correo = largoInvalido }, "Correo");
     }
 

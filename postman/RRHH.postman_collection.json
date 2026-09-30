@@ -1432,6 +1432,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
 									"pm.environment.set(\"empPaisId\", pm.response.json().id);"
 								],
 								"type": "text/javascript"
@@ -1448,7 +1449,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"nombre\":\"Pais Empresa\",\"codigoIso2\":\"PE\",\"edadMinima\":18,\"edadMaxima\":100,\"regla29Febrero\":\"VeintiochoDeFebrero\"}"
+							"raw": "{\"nombre\":\"Pais Empresa\",\"codigoIso2\":\"XE\",\"edadMinima\":18,\"edadMaxima\":100,\"regla29Febrero\":\"VeintiochoDeFebrero\"}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/paises",
@@ -1469,6 +1470,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
 									"pm.environment.set(\"empDeptoId\", pm.response.json().id);"
 								],
 								"type": "text/javascript"
@@ -1506,6 +1508,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
+									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
 									"pm.environment.set(\"empMuniId\", pm.response.json().id);"
 								],
 								"type": "text/javascript"
@@ -1537,7 +1540,7 @@
 					}
 				},
 				{
-					"name": "Listar empresas vacio",
+					"name": "Listar empresas",
 					"event": [
 						{
 							"listen": "test",
@@ -1577,6 +1580,10 @@
 									"    pm.expect(jsonData.municipioId).to.eql(pm.environment.get(\"empMuniId\"));",
 									"    pm.expect(jsonData.departamentoId).to.eql(pm.environment.get(\"empDeptoId\"));",
 									"    pm.expect(jsonData.paisId).to.eql(pm.environment.get(\"empPaisId\"));",
+									"    pm.expect(jsonData.nit).to.eql(\"NIT-EMP\");",
+									"    pm.expect(jsonData.municipioNombre).to.exist;",
+									"    pm.expect(jsonData.departamentoNombre).to.exist;",
+									"    pm.expect(jsonData.paisNombre).to.exist;",
 									"    pm.environment.set(\"empresaId\", jsonData.id);",
 									"});"
 								],
