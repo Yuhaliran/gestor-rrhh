@@ -32,7 +32,8 @@ Cada paso es un commit propio; el merge se hace al cerrar la fase, con el PR.
         (`ci: build, pruebas y formato en cada PR`)
 
 ## Fase 1 · rama `feature/dominio-datos`
-- [ ] 4. Entidades del dominio y cálculo de edad, con pruebas de valores límite
+- [ ] 4. Entidades del dominio y cálculo de edad con la regla del 29 de febrero por país (RN7),
+       con pruebas de valores límite
        (`feat(dominio): entidades y cálculo de edad`). Con la primera prueba unitaria, quitar el
        `--ignore-exit-code 8` de RRHH.UnitTests.csproj (E-002)
 - [ ] 5. RrhhDbContext y configuraciones con Fluent API (tipos, largos, únicos, FK con Restrict)

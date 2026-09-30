@@ -62,13 +62,16 @@ U = unitaria · I = integración · A = aceptación (Postman) · E = E2E · R = 
 | RN1 | No borrar geografía con dependencias | U, I | `Eliminar_PaisConDepartamentos_Conflicto` (y equivalentes por nivel) |
 | RN2 | No borrar empresa con colaboradores | U, I | `Eliminar_EmpresaConColaboradores_Conflicto` |
 | RN3 | Al menos una empresa | U, I | `Crear_ColaboradorSinEmpresas_Error`; `QuitarEmpresa_UltimaEmpresa_Conflicto` |
-| RN4 | Edad entre 18 y 100 | U | `Validar_Edad17_Error`, `Validar_Edad18_Valido`, `Validar_Edad100_Valido`, `Validar_Edad101_Error` (valores límite) |
+| RN4 | Edad dentro del rango del país de cada empresa (por defecto 18 a 100) | U | Valores límite contra el rango del país (mínima − 1, mínima, máxima, máxima + 1) y colaborador en dos países con rangos distintos |
 | RN5 | Sin duplicados | U, I | `Crear_NitDuplicado_Conflicto`, `Crear_CorreoDuplicado_Conflicto`, `AsociarEmpresa_YaAsociada_Conflicto`, ... |
 | RN6 | Geografía en cascada | I, E | `GetMunicipiosDeDepartamento_*`; E2E «Crear empresa eligiendo geografía» |
+| RN7 | Cálculo de edad; 29 de febrero según el país | U | `Calcular_*`: casos límite de «Pruebas de dominio y validaciones» |
 | V1–V4 | Validaciones de entrada | U, I | Pruebas de validadores con `[Theory]`; `Post*_DatosInvalidos_Devuelve400ConDetalle` |
 
 ## Pruebas de dominio y validaciones (unitarias)
-- **Cálculo de edad**, con casos límite: cumpleaños hoy, mañana, ayer, 29 de febrero.
+- **Cálculo de edad (RN7)**, con casos límite: cumpleaños hoy, mañana, ayer; nacidos el 29 de
+  febrero en años no bisiestos, con las dos reglas (28 de febrero y 1 de marzo), y en años
+  bisiestos; fecha de nacimiento igual a hoy (0) y posterior a hoy (negativa).
   El cálculo recibe la fecha actual como parámetro (o un `TimeProvider`) para que las
   pruebas no dependan del día en que se corren.
 - **Validadores** con `[Theory]` e `[InlineData]` para cada campo.

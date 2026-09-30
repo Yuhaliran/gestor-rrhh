@@ -38,7 +38,7 @@ Pais 1──N Departamento 1──N Municipio 1──N Empresa
 
 | Tabla | Columnas principales | Restricciones |
 |---|---|---|
-| Pais | Id, Nombre, CodigoIso2 | UQ Nombre, UQ CodigoIso2 |
+| Pais | Id, Nombre, CodigoIso2, EdadMinima, EdadMaxima, Regla29Febrero | UQ Nombre, UQ CodigoIso2, CK EdadMinima ≤ EdadMaxima |
 | Departamento | Id, PaisId, Nombre | FK Pais (Restrict), UQ (PaisId, Nombre) |
 | Municipio | Id, DepartamentoId, Nombre | FK Departamento (Restrict), UQ (DepartamentoId, Nombre) |
 | Empresa | Id, MunicipioId, Nit, RazonSocial, NombreComercial, Telefono, Correo | FK Municipio (Restrict), UQ Nit |
@@ -46,10 +46,12 @@ Pais 1──N Departamento 1──N Municipio 1──N Empresa
 | EmpresaColaborador | EmpresaId, ColaboradorId, FechaIngreso, Puesto | PK compuesta; FK Empresa (Restrict), FK Colaborador (Cascade) |
 
 Tipos: textos con largo máximo (`nvarchar(n)`), fechas `date`, todo `NOT NULL` salvo Puesto.
+`Regla29Febrero` es un enum del dominio guardado como texto (`VeintiochoDeFebrero` o
+`PrimeroDeMarzo`), legible en la base. Valores por defecto de país: 18, 100 y `VeintiochoDeFebrero`.
 
 ### Diagrama entidad-relación
 `||--|{` indica que un colaborador tiene al menos una empresa (RN3, se valida en el servicio).
-La edad no se guarda: se calcula a partir de `FechaNacimiento`.
+La edad no se guarda: se calcula a partir de `FechaNacimiento`, con la regla del país (RN7).
 
 ```mermaid
 erDiagram
@@ -63,6 +65,9 @@ erDiagram
         int Id PK
         nvarchar(100) Nombre UK
         char(2) CodigoIso2 UK
+        int EdadMinima "18 por defecto"
+        int EdadMaxima "100 por defecto"
+        nvarchar(20) Regla29Febrero "VeintiochoDeFebrero por defecto"
     }
     Departamento {
         int Id PK

@@ -40,4 +40,5 @@ proveedores (detalle en `docs/AGENTES.md`):
 (Completar al final: qué funcionó, qué hubo que corregir y ejemplos de hallazgos del revisor.)
 
 ## Mejoras futuras
-Autenticación y roles, auditoría de cambios, carga masiva, despliegue en contenedores.
+Autenticación y roles, auditoría de cambios, carga masiva, despliegue en contenedores,
+borrado lógico (estado activo/inactivo, con historial de la relación laboral).

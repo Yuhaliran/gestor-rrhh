@@ -110,6 +110,17 @@ Compilación, paquetes, pruebas, EF Core, git.
                  diff de cada `packages.lock.json`.
 - Origen:        tarea 3 · 2026-09-29 · implementador
 
+### E-009 · «The process cannot access the file ... because it is being used by another process»
+- Síntoma:       `dotnet build` o `dotnet test` falla con MSB4024 u otro error de archivo bloqueado en
+                 `obj/`, justo después de cambiar un `.csproj`.
+- Causa:         Visual Studio tiene la solución abierta y restaura o compila al detectar el cambio,
+                 al mismo tiempo que el comando del agente.
+- Solución:      esperar unos segundos y volver a correr el comando.
+- Cómo evitarlo: no compilar en Visual Studio mientras un agente compila, aceptar la recarga de
+                 archivos cuando Visual Studio la pida y no editar ahí los archivos que un agente
+                 está modificando. Si el error se repite, cerrar Visual Studio durante la tarea.
+- Origen:        tarea 3 · 2026-09-29 · implementador
+
 ## Funcionalidad
 Comportamiento que no cumplía la especificación, detectado por pruebas o revisión.
 
