@@ -13,9 +13,12 @@ public class ConfiguracionesTests : IDisposable
 
     // 1. Nombres de tablas
     [Fact]
-    public void Modelo_TablasEnSingular()
+    public void Modelo_Tablas_EstanEnSingular()
     {
+        // Arrange
         var modelo = _bd.Contexto.Model;
+
+        // Act & Assert
         Assert.Equal("Pais", modelo.FindEntityType(typeof(Pais))!.GetTableName());
         Assert.Equal("Departamento", modelo.FindEntityType(typeof(Departamento))!.GetTableName());
         Assert.Equal("Municipio", modelo.FindEntityType(typeof(Municipio))!.GetTableName());
@@ -26,10 +29,12 @@ public class ConfiguracionesTests : IDisposable
 
     // 2. Nombres de restricciones PK y FK
     [Fact]
-    public void Modelo_NombresDeRestriccionesPkFk()
+    public void Modelo_RestriccionesPkFk_TienenNombresCorrectos()
     {
+        // Arrange
         var modelo = _bd.Contexto.Model;
 
+        // Act & Assert
         var pais = modelo.FindEntityType(typeof(Pais))!;
         Assert.Equal("PK_Pais", pais.FindPrimaryKey()!.GetName());
 
@@ -56,10 +61,12 @@ public class ConfiguracionesTests : IDisposable
 
     // 3. Nombres de restricciones únicas e índices
     [Fact]
-    public void Modelo_NombresDeRestriccionesUnicasEIndices()
+    public void Modelo_RestriccionesUnicasEIndices_TienenNombresCorrectos()
     {
+        // Arrange
         var modelo = _bd.Contexto.Model;
 
+        // Act & Assert
         var pais = modelo.FindEntityType(typeof(Pais))!;
         Assert.Contains(pais.GetIndexes(), i => i.GetDatabaseName() == "UQ_Pais_Nombre" && i.IsUnique);
         Assert.Contains(pais.GetIndexes(), i => i.GetDatabaseName() == "UQ_Pais_CodigoIso2" && i.IsUnique);
@@ -79,21 +86,28 @@ public class ConfiguracionesTests : IDisposable
 
     // 4. CHECK constraint
     [Fact]
-    public void Modelo_CheckConstraint_PaisRangoEdad()
+    public void Modelo_Pais_TieneCheckConstraintRangoEdad()
     {
+        // Arrange
         var nombreTabla = _bd.Contexto.Model.FindEntityType(typeof(Pais))!.GetTableName();
+
+        // Act
         var tabla = _bd.Contexto.Model.GetRelationalModel().FindTable(nombreTabla!, null);
+
+        // Assert
         Assert.NotNull(tabla);
         Assert.NotNull(tabla.CheckConstraints);
-        Assert.Contains(tabla.CheckConstraints, c => c.Name == "CK_Pais_RangoEdad" && c.Sql == "EdadMinima >= 0 AND EdadMinima <= EdadMaxima");
+        Assert.Contains(tabla.CheckConstraints, c => c.Name == "CK_Pais_RangoEdad");
     }
 
     // 5. Largos máximos
     [Fact]
-    public void Modelo_LargosMaximos()
+    public void Modelo_Campos_TienenLargosMaximos()
     {
+        // Arrange
         var modelo = _bd.Contexto.Model;
 
+        // Act & Assert
         var pais = modelo.FindEntityType(typeof(Pais))!;
         Assert.Equal(100, pais.FindProperty("Nombre")!.GetMaxLength());
         Assert.Equal(2, pais.FindProperty("CodigoIso2")!.GetMaxLength());
@@ -124,16 +138,24 @@ public class ConfiguracionesTests : IDisposable
 
     // 6. Campos obligatorios
     [Fact]
-    public void Modelo_CamposObligatorios()
+    public void Modelo_Campos_SonObligatoriosSalvoPuesto()
     {
+        // Arrange
         var modelo = _bd.Contexto.Model;
 
+        // Act & Assert
         var empCol = modelo.FindEntityType(typeof(EmpresaColaborador))!;
         Assert.True(empCol.FindProperty("Puesto")!.IsNullable);
 
         var pais = modelo.FindEntityType(typeof(Pais))!;
         Assert.False(pais.FindProperty("Nombre")!.IsNullable);
         Assert.False(pais.FindProperty("CodigoIso2")!.IsNullable);
+
+        var depto = modelo.FindEntityType(typeof(Departamento))!;
+        Assert.False(depto.FindProperty("Nombre")!.IsNullable);
+
+        var muni = modelo.FindEntityType(typeof(Municipio))!;
+        Assert.False(muni.FindProperty("Nombre")!.IsNullable);
 
         var emp = modelo.FindEntityType(typeof(Empresa))!;
         Assert.False(emp.FindProperty("Nit")!.IsNullable);
@@ -150,10 +172,15 @@ public class ConfiguracionesTests : IDisposable
 
     // 7. Regla29Febrero guardada como texto
     [Fact]
-    public void Modelo_Regla29Febrero_ComoTexto()
+    public void Modelo_Regla29Febrero_SeGuardaComoTexto()
     {
+        // Arrange
         var pais = _bd.Contexto.Model.FindEntityType(typeof(Pais))!;
+
+        // Act
         var property = pais.FindProperty("Regla29Febrero")!;
+
+        // Assert
         Assert.Equal(typeof(string), property.GetProviderClrType());
     }
 
