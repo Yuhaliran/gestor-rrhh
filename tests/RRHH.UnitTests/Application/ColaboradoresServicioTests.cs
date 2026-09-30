@@ -1215,7 +1215,7 @@ public class ColaboradoresServicioTests : IDisposable
     }
 
     [Fact]
-    public async Task AsociarEmpresaAsync_EmpresaYaAsociadaConFechaIngresoFutura_LanzaRN9AntesQueV4()
+    public async Task AsociarEmpresaAsync_EmpresaYaAsociadaConFechaIngresoFutura_LanzaRN9AntesQueConflicto()
     {
         // Arrange
         var p = await CrearPaisPruebaAsync("Pais AE E", "E1");
