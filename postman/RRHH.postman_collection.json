@@ -1581,9 +1581,9 @@
 									"    pm.expect(jsonData.departamentoId).to.eql(pm.environment.get(\"empDeptoId\"));",
 									"    pm.expect(jsonData.paisId).to.eql(pm.environment.get(\"empPaisId\"));",
 									"    pm.expect(jsonData.nit).to.eql(\"NIT-EMP\");",
-									"    pm.expect(jsonData.municipioNombre).to.exist;",
-									"    pm.expect(jsonData.departamentoNombre).to.exist;",
-									"    pm.expect(jsonData.paisNombre).to.exist;",
+									"    pm.expect(jsonData.municipioNombre).to.eql(\"Muni Empresa\");",
+									"    pm.expect(jsonData.departamentoNombre).to.eql(\"Depto Empresa\");",
+									"    pm.expect(jsonData.paisNombre).to.eql(\"Pais Empresa\");",
 									"    pm.environment.set(\"empresaId\", jsonData.id);",
 									"});"
 								],
@@ -2333,7 +2333,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"nombreCompleto\":\"Prueba RN4\",\"fechaNacimiento\":\"2027-01-01\",\"telefono\":\"1111-1111\",\"correo\":\"rn4@test.com\",\"empresas\":[{\"empresaId\":{{colEmpId}},\"fechaIngreso\":\"2027-01-02\"}]}"
+							"raw": "{\"nombreCompleto\":\"Prueba RN4\",\"fechaNacimiento\":\"2020-01-01\",\"telefono\":\"1111-1111\",\"correo\":\"rn4@test.com\",\"empresas\":[{\"empresaId\":{{colEmpId}},\"fechaIngreso\":\"2025-01-01\"}]}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/colaboradores",
@@ -2469,7 +2469,10 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+									"var data = pm.response.json();",
+									"pm.test(\"Verificar nombre\", function () { pm.expect(data.nombreCompleto).to.eql(\"Juan Perez\"); });",
+									"pm.test(\"Verificar empresa y pais\", function () { pm.expect(data.empresas[0].empresaId).to.eql(pm.collectionVariables.get(\"colEmpId\")); pm.expect(data.empresas[0].paisNombre).to.eql(\"Guatemala\"); });"
 								],
 								"type": "text/javascript"
 							}
@@ -2498,7 +2501,8 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+									"pm.test(\"Verificar nombre modificado\", function () { pm.expect(pm.response.json().nombreCompleto).to.eql(\"Juan Modificado\"); });"
 								],
 								"type": "text/javascript"
 							}
@@ -2537,7 +2541,9 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
-									"pm.test(\"Elements exist\", function () { pm.expect(pm.response.json().elementos.length).to.be.greaterThan(0); });"
+									"var data = pm.response.json();",
+									"pm.test(\"Elements exist\", function () { pm.expect(data.elementos.length).to.be.greaterThan(0); });",
+									"pm.test(\"Verificar Juan Modificado\", function () { pm.expect(data.elementos[0].nombreCompleto).to.eql(\"Juan Modificado\"); });"
 								],
 								"type": "text/javascript"
 							}
