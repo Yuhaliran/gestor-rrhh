@@ -34,6 +34,7 @@ Además: `.editorconfig` con namespaces de archivo (`file_scoped`), y `dotnet fo
 | Entidad | Singular, PascalCase | `Pais`, `EmpresaColaborador` |
 | DTO de lectura | `<Entidad>Dto` | `PaisDto`, `EmpresaDetalleDto` |
 | DTO de escritura | `Guardar<Entidad>Dto` | `GuardarPaisDto` |
+| DTO de alta con más datos que la edición | `Crear<Entidad>Dto`, hereda de `Guardar<Entidad>Dto` | `CrearColaboradorDto` (con sus empresas) |
 | Interfaz de servicio | `I<Entidades>Servicio` | `IPaisesServicio` |
 | Controlador | `<Entidades>Controller` | `PaisesController` |
 | Configuración de EF | `<Entidad>Configuracion` | `PaisConfiguracion` |

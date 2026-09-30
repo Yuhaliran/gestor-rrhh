@@ -1,0 +1,33 @@
+using RRHH.Contratos.Colaboradores;
+using RRHH.Contratos.Comun;
+
+namespace RRHH.Application.Interfaces;
+
+// Mantenimiento de colaboradores. La fecha actual (edad, RN4, RN9) la da el TimeProvider del
+// servicio. La edad que se muestra usa la regla del 29 de febrero del país de la empresa con la
+// fecha de ingreso más antigua; si hay varias, la de menor id (RN7).
+public interface IColaboradoresServicio
+{
+    // Ordenado por nombre completo y después por id. Buscar filtra por nombre o correo, sin
+    // distinguir mayúsculas.
+    Task<Pagina<ColaboradorDto>> ListarAsync(Consulta consulta, CancellationToken ct);
+
+    // NoEncontradoException (404) si no existe.
+    Task<ColaboradorDto> ObtenerAsync(int id, CancellationToken ct);
+
+    // Primero los 400 (ValidacionException), en este orden:
+    //   "Empresas[i].EmpresaId" si la empresa no existe (V4);
+    //   "Empresas[i].FechaIngreso" si es posterior a hoy o anterior a la fecha de nacimiento (RN9);
+    //   "FechaNacimiento" si la edad de hoy está fuera del rango del país de alguna empresa (RN4).
+    // Después los 409 (ConflictoException): una empresa repetida en la lista, o el correo de otro
+    // colaborador (RN5). Guarda los textos sin espacios en los extremos.
+    Task<ColaboradorDto> CrearAsync(CrearColaboradorDto dto, CancellationToken ct);
+
+    // NoEncontradoException (404) si no existe. Si cambia la fecha de nacimiento, revalida contra sus
+    // empresas: RN9 y RN4, los dos con ValidacionException (400) en "FechaNacimiento". Después,
+    // ConflictoException (409) si el correo es de otro colaborador (RN5). Sus empresas no cambian.
+    Task<ColaboradorDto> ActualizarAsync(int id, GuardarColaboradorDto dto, CancellationToken ct);
+
+    // NoEncontradoException (404) si no existe. Borra también sus relaciones con empresas.
+    Task EliminarAsync(int id, CancellationToken ct);
+}
