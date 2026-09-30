@@ -32,16 +32,16 @@ Cada paso es un commit propio; el merge se hace al cerrar la fase, con el PR.
         (`ci: build, pruebas y formato en cada PR`)
 
 ## Fase 1 · rama `feature/dominio-datos`
-- [ ] 4. Entidades del dominio y cálculo de edad con la regla del 29 de febrero por país (RN7),
+- [x] 4. Entidades del dominio y cálculo de edad con la regla del 29 de febrero por país (RN7),
        con pruebas de valores límite
        (`feat(dominio): entidades y cálculo de edad`). Con la primera prueba unitaria, quitar el
        `--ignore-exit-code 8` de RRHH.UnitTests.csproj (E-002)
-- [ ] 5. RrhhDbContext y configuraciones con Fluent API (tipos, largos, únicos, FK con Restrict)
+- [x] 5. RrhhDbContext y configuraciones con Fluent API (tipos, largos, únicos, FK con Restrict)
        (`feat(datos): contexto y configuraciones de EF Core`). Sus pruebas usan la base SQLite de la
        tarea 7, que el tester arma en el mismo paso
 - [ ] 6. Migración inicial y datos iniciales de Guatemala; verificar MIG1
        (`feat(datos): migración inicial y datos de Guatemala`)
-- [ ] 7. Infraestructura de pruebas: fábrica de contexto SQLite en memoria para las unitarias
+- [x] 7. Infraestructura de pruebas: fábrica de contexto SQLite en memoria para las unitarias
        (`test: base de pruebas con SQLite en memoria`). Se hace dentro de la tarea 5
 
 ## Fase 2 · rama `feature/api-geografia`

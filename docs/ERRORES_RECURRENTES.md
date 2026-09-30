@@ -132,6 +132,20 @@ Compilación, paquetes, pruebas, EF Core, git.
                  lock files (E-008); la integración continua los verifica con `--locked-mode`.
 - Origen:        tarea 4 · 2026-09-29 · implementador
 
+### E-011 · «The requested configuration is not stored in the read-optimized model»
+- Síntoma:       una prueba que lee las restricciones CHECK desde `Contexto.Model` lanza
+                 `InvalidOperationException`, con o sin la configuración hecha (parece un rojo esperado).
+- Causa:         en ejecución, EF Core usa un modelo optimizado que no guarda los CHECK ni otros datos
+                 que sólo sirven para crear la base.
+- Solución:      leerlos del modelo de diseño:
+                 `Contexto.GetService<IDesignTimeModel>().Model.FindEntityType(...)!.GetCheckConstraints()`.
+                 `IDesignTimeModel` está en `Microsoft.EntityFrameworkCore.Metadata` (EF Core, sin el
+                 paquete Design) y `GetService<T>()` en `Microsoft.EntityFrameworkCore.Infrastructure`.
+- Cómo evitarlo: una prueba en rojo tiene que fallar en su `Assert`, no con una excepción; revisar el
+                 motivo antes de darla por buena. Para comprobar un CHECK, preferir la prueba de
+                 comportamiento: SQLite sí aplica los CHECK.
+- Origen:        tarea 5 · 2026-09-29 · implementador
+
 ## Funcionalidad
 Comportamiento que no cumplía la especificación, detectado por pruebas o revisión.
 
