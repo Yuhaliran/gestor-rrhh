@@ -29,9 +29,15 @@ public class GuardarPaisDtoTests
     [InlineData(101, false)]
     public void Nombre_Limites_ValidaCorrectamente(object? valor, bool esperado)
     {
+        // Arrange
         var nombre = valor is int longitud ? new string('a', longitud) : (string?)valor;
         var dto = DtoValido() with { Nombre = nombre };
-        Assert.Equal(esperado, EsValido(dto, out _));
+
+        // Act
+        var esValido = EsValido(dto, out _);
+
+        // Assert
+        Assert.Equal(esperado, esValido);
     }
 
     [Theory]
@@ -43,8 +49,14 @@ public class GuardarPaisDtoTests
     [InlineData(null, false)]
     public void CodigoIso2_Limites_ValidaCorrectamente(string? codigo, bool esperado)
     {
+        // Arrange
         var dto = DtoValido() with { CodigoIso2 = codigo };
-        Assert.Equal(esperado, EsValido(dto, out _));
+
+        // Act
+        var esValido = EsValido(dto, out _);
+
+        // Assert
+        Assert.Equal(esperado, esValido);
     }
 
     [Theory]
@@ -54,8 +66,14 @@ public class GuardarPaisDtoTests
     [InlineData(18, true)]
     public void EdadMinima_Limites_ValidaCorrectamente(int? edad, bool esperado)
     {
+        // Arrange
         var dto = DtoValido() with { EdadMinima = edad };
-        Assert.Equal(esperado, EsValido(dto, out _));
+
+        // Act
+        var esValido = EsValido(dto, out _);
+
+        // Assert
+        Assert.Equal(esperado, esValido);
     }
 
     [Theory]
@@ -65,41 +83,71 @@ public class GuardarPaisDtoTests
     [InlineData(100, true)]
     public void EdadMaxima_Limites_ValidaCorrectamente(int? edad, bool esperado)
     {
+        // Arrange
         var dto = DtoValido() with { EdadMaxima = edad };
         // Si es 0 y minima es 18, fallaría por lógica de mínima > máxima. Así que si la edad maxima no es nula, ajustamos mínima para que no falle por eso
         if (edad.HasValue && edad >= 0)
         {
             dto = dto with { EdadMinima = 0 };
         }
-        Assert.Equal(esperado, EsValido(dto, out _));
+
+        // Act
+        var esValido = EsValido(dto, out _);
+
+        // Assert
+        Assert.Equal(esperado, esValido);
     }
 
     [Fact]
     public void EdadMinima_IgualAMaxima_ValidaCorrectamente()
     {
+        // Arrange
         var dto = DtoValido() with { EdadMinima = 18, EdadMaxima = 18 };
-        Assert.True(EsValido(dto, out _));
+
+        // Act
+        var esValido = EsValido(dto, out _);
+
+        // Assert
+        Assert.True(esValido);
     }
 
     [Fact]
     public void EdadMinima_MayorAMaxima_InvalidoConErrorEnEdadMaxima()
     {
+        // Arrange
         var dto = DtoValido() with { EdadMinima = 19, EdadMaxima = 18 };
-        Assert.False(EsValido(dto, out var resultados));
+
+        // Act
+        var esValido = EsValido(dto, out var resultados);
+
+        // Assert
+        Assert.False(esValido);
         Assert.Contains(resultados, r => r.MemberNames.Contains(nameof(GuardarPaisDto.EdadMaxima)));
     }
 
     [Fact]
     public void Regla29Febrero_Ausente_Invalido()
     {
+        // Arrange
         var dto = DtoValido() with { Regla29Febrero = null };
-        Assert.False(EsValido(dto, out _));
+
+        // Act
+        var esValido = EsValido(dto, out _);
+
+        // Assert
+        Assert.False(esValido);
     }
 
     [Fact]
     public void Regla29Febrero_Inexistente_Invalido()
     {
+        // Arrange
         var dto = DtoValido() with { Regla29Febrero = (Regla29Febrero)99 };
-        Assert.False(EsValido(dto, out _));
+
+        // Act
+        var esValido = EsValido(dto, out _);
+
+        // Assert
+        Assert.False(esValido);
     }
 }

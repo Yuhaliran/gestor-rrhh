@@ -30,16 +30,30 @@ public class PaisesServicioTests : IDisposable
     [Fact]
     public async Task ListarAsync_SinBusqueda_OrdenadoPorNombreYPaginado()
     {
+        // Arrange
+        await _servicio.CrearAsync(DtoBase() with { Nombre = "Zambia", CodigoIso2 = "ZM" }, TestContext.Current.CancellationToken);
+        await _servicio.CrearAsync(DtoBase() with { Nombre = "Andorra", CodigoIso2 = "AD" }, TestContext.Current.CancellationToken);
+        await _servicio.CrearAsync(DtoBase() with { Nombre = "Malta", CodigoIso2 = "MT" }, TestContext.Current.CancellationToken);
+
+        var c1 = new Consulta { Pagina = 1, Tamanio = 2 };
+        var c2 = new Consulta { Pagina = 2, Tamanio = 2 };
+
         // Act
-        var c = new Consulta { Pagina = 1, Tamanio = 10 };
-        var pagina = await _servicio.ListarAsync(c, TestContext.Current.CancellationToken);
+        var pagina1 = await _servicio.ListarAsync(c1, TestContext.Current.CancellationToken);
+        var pagina2 = await _servicio.ListarAsync(c2, TestContext.Current.CancellationToken);
 
         // Assert
-        Assert.True(pagina.Total >= 1);
-        Assert.NotEmpty(pagina.Elementos);
-        var nombres = pagina.Elementos.Select(p => p.Nombre).ToList();
-        var ordenados = nombres.OrderBy(n => n).ToList();
-        Assert.Equal(ordenados, nombres);
+        Assert.Equal(4, pagina1.Total);
+        Assert.Equal(2, pagina1.TotalPaginas);
+        Assert.Equal(2, pagina1.Elementos.Count);
+        Assert.Equal("Andorra", pagina1.Elementos[0].Nombre);
+        Assert.Equal("Guatemala", pagina1.Elementos[1].Nombre);
+
+        Assert.Equal(4, pagina2.Total);
+        Assert.Equal(2, pagina2.TotalPaginas);
+        Assert.Equal(2, pagina2.Elementos.Count);
+        Assert.Equal("Malta", pagina2.Elementos[0].Nombre);
+        Assert.Equal("Zambia", pagina2.Elementos[1].Nombre);
     }
 
     [Theory]
