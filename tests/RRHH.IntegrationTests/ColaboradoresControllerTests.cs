@@ -312,14 +312,17 @@ public class ColaboradoresControllerTests : PruebaIntegracionBase
     public async Task QuitarEmpresa_UltimaEmpresa_Conflicto()
     {
         // Arrange
+        await CrearEmpresaAsync("Extra1", "extra1@test.com");
         var empId = await CrearEmpresaAsync("C8", "c8@test.com");
         var dto = new CrearColaboradorDto { NombreCompleto = "G1", FechaNacimiento = new DateOnly(1995, 5, 5), Telefono = "12345678", Correo = "g1@test.com", Empresas = new List<AsociarEmpresaDto> { new() { EmpresaId = empId, FechaIngreso = new DateOnly(2021, 1, 1) } } };
         var postRespuesta = await Cliente.PostAsJsonAsync("/api/colaboradores", dto, OpcionesJson, TestContext.Current.CancellationToken);
         postRespuesta.EnsureSuccessStatusCode();
         var creado = await postRespuesta.Content.ReadFromJsonAsync<ColaboradorDto>(OpcionesJson, TestContext.Current.CancellationToken);
 
+        Assert.NotEqual(creado!.Id, empId);
+
         // Act
-        var respuesta = await Cliente.DeleteAsync($"/api/colaboradores/{creado!.Id}/empresas/{empId}", TestContext.Current.CancellationToken);
+        var respuesta = await Cliente.DeleteAsync($"/api/colaboradores/{creado.Id}/empresas/{empId}", TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.Conflict, respuesta.StatusCode);
@@ -329,6 +332,7 @@ public class ColaboradoresControllerTests : PruebaIntegracionBase
     public async Task EliminarEmpresa_ConDos_QuedaUnaYDevuelve204()
     {
         // Arrange
+        await CrearEmpresaAsync("Extra2", "extra2@test.com");
         var empId1 = await CrearEmpresaAsync("C8A", "c8a@test.com");
         var empId2 = await CrearEmpresaAsync("C8B", "c8b@test.com");
         var dto = new CrearColaboradorDto
@@ -345,6 +349,8 @@ public class ColaboradoresControllerTests : PruebaIntegracionBase
         var postRespuesta = await Cliente.PostAsJsonAsync("/api/colaboradores", dto, OpcionesJson, TestContext.Current.CancellationToken);
         postRespuesta.EnsureSuccessStatusCode();
         var creado = await postRespuesta.Content.ReadFromJsonAsync<ColaboradorDto>(OpcionesJson, TestContext.Current.CancellationToken);
+
+        Assert.NotEqual(creado!.Id, empId1);
 
         // Act
         var respuesta = await Cliente.DeleteAsync($"/api/colaboradores/{creado!.Id}/empresas/{empId1}", TestContext.Current.CancellationToken);
@@ -431,11 +437,14 @@ public class ColaboradoresControllerTests : PruebaIntegracionBase
     public async Task EditarEmpresa_Valido_Devuelve200()
     {
         // Arrange
+        await CrearEmpresaAsync("Extra3", "extra3@test.com");
         var empId = await CrearEmpresaAsync("C10", "c10@test.com");
         var dto = new CrearColaboradorDto { NombreCompleto = "I1", FechaNacimiento = new DateOnly(1995, 5, 5), Telefono = "12345678", Correo = "i1@test.com", Empresas = new List<AsociarEmpresaDto> { new() { EmpresaId = empId, FechaIngreso = new DateOnly(2021, 1, 1), Puesto = "Dev" } } };
         var postRespuesta = await Cliente.PostAsJsonAsync("/api/colaboradores", dto, OpcionesJson, TestContext.Current.CancellationToken);
         postRespuesta.EnsureSuccessStatusCode();
         var creado = await postRespuesta.Content.ReadFromJsonAsync<ColaboradorDto>(OpcionesJson, TestContext.Current.CancellationToken);
+
+        Assert.NotEqual(creado!.Id, empId);
 
         var putDto = new GuardarEmpresaColaboradorDto { FechaIngreso = new DateOnly(2021, 6, 1), Puesto = "Sr Dev" };
 
