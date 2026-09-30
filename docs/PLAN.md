@@ -111,6 +111,30 @@ erDiagram
     }
 ```
 
+### Datos iniciales
+Fuente: codificación nacional de departamentos y municipios del INE (lista publicada por SEGEPLAN),
+contrastada con Wikipedia, «Anexo:Municipios de Guatemala».
+
+- **País:** Guatemala, `GT`, id 1, con los valores por defecto (edad 18 a 100; cumpleaños del
+  29 de febrero, el 28 de febrero).
+- **Departamentos:** los 22, con su código del INE como id.
+- **Municipios (muestra):** la cabecera de cada departamento (código del INE `DD01`), con el mismo
+  id que su departamento. Los que se creen después siguen desde el id 23.
+
+| Id | Departamento | Cabecera | | Id | Departamento | Cabecera |
+|---|---|---|---|---|---|---|
+| 1 | Guatemala | Guatemala | | 12 | San Marcos | San Marcos |
+| 2 | El Progreso | Guastatoya | | 13 | Huehuetenango | Huehuetenango |
+| 3 | Sacatepéquez | Antigua Guatemala | | 14 | Quiché | Santa Cruz del Quiché |
+| 4 | Chimaltenango | Chimaltenango | | 15 | Baja Verapaz | Salamá |
+| 5 | Escuintla | Escuintla | | 16 | Alta Verapaz | Cobán |
+| 6 | Santa Rosa | Cuilapa | | 17 | Petén | Flores |
+| 7 | Sololá | Sololá | | 18 | Izabal | Puerto Barrios |
+| 8 | Totonicapán | Totonicapán | | 19 | Zacapa | Zacapa |
+| 9 | Quetzaltenango | Quetzaltenango | | 20 | Chiquimula | Chiquimula |
+| 10 | Suchitepéquez | Mazatenango | | 21 | Jalapa | Jalapa |
+| 11 | Retalhuleu | Retalhuleu | | 22 | Jutiapa | Jutiapa |
+
 ## API
 | Método | Ruta | Descripción |
 |---|---|---|
@@ -137,7 +161,7 @@ Listados paginados: `?pagina=1&tamanio=20&buscar=texto`.
 - Cadena de conexión en user-secrets de RRHH.Api (nunca en el repositorio):
   `dotnet user-secrets set "ConnectionStrings:Rrhh" "Server=(localdb)\\MSSQLLocalDB;Database=Rrhh;Trusted_Connection=True;TrustServerCertificate=True" --project src/RRHH.Api`
 - Las pruebas automatizadas usan SQLite en memoria: corren sin instalar ningún motor.
-- Datos iniciales: Guatemala, sus 22 departamentos y una muestra de municipios.
+- Datos iniciales: Guatemala, sus 22 departamentos y la cabecera de cada uno (ver «Datos iniciales»).
 
 ## Repositorio y ramas
 - **Un solo repositorio** para API, web, pruebas, Postman y documentación. La separación es
