@@ -1072,6 +1072,8 @@
 									"    pm.expect(jsonData.nombre).to.eql('Muni Postman');",
 									"    pm.expect(jsonData.departamentoId).to.eql(1);",
 									"    pm.expect(jsonData.departamentoNombre).to.eql('Guatemala');",
+									"    pm.expect(jsonData.paisId).to.eql(1);",
+									"    pm.expect(jsonData.paisNombre).to.eql('Guatemala');",
 									"    pm.environment.set('municipioId', jsonData.id);",
 									"});"
 								],
@@ -1290,6 +1292,49 @@
 						"body": {
 							"mode": "raw",
 							"raw": "{\"departamentoId\":1,\"nombre\":\"Muni Postman Mod\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/municipios/{{municipioId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"municipios",
+								"{{municipioId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Actualizar con otro departamento",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });",
+									"pm.test(\"Error en campo DepartamentoId\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.errors).to.exist;",
+									"    pm.expect(jsonData.errors).to.have.property('DepartamentoId');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"departamentoId\":2,\"nombre\":\"Muni Postman Mod\"}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/municipios/{{municipioId}}",
