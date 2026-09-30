@@ -2658,6 +2658,342 @@
 					}
 				}
 			]
+		},
+		{
+			"name": "Empresas Colaborador",
+			"item": [
+				{
+					"name": "Setup: Crear pais y municipio",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+									"pm.collectionVariables.set(\"t14Pais\", pm.response.json().id);",
+									"pm.collectionVariables.set(\"t14Depto\", pm.response.json().departamentos[0].id);",
+									"pm.collectionVariables.set(\"t14Muni\", pm.response.json().departamentos[0].municipios[0].id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type","value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombre\":\"Pais T14\",\"codigoIso2\":\"T4\",\"edadMinima\":18,\"edadMaxima\":100,\"departamentos\":[{\"nombre\":\"Depto T14\",\"municipios\":[{\"nombre\":\"Muni T14\"}]}]}"
+						},
+						"url": {"raw": "{{baseUrl}}/api/paises","host": ["{{baseUrl}}"],"path": ["api","paises"]}
+					}
+				},
+				{
+					"name": "Setup: Crear empresa 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+									"pm.collectionVariables.set(\"t14Emp1\", pm.response.json().id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type","value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"municipioId\":{{t14Muni}},\"nit\":\"T14-1\",\"razonSocial\":\"T14 1\",\"nombreComercial\":\"T14 1\",\"telefono\":\"1111\",\"correo\":\"t1@t.com\"}"
+						},
+						"url": {"raw": "{{baseUrl}}/api/empresas","host": ["{{baseUrl}}"],"path": ["api","empresas"]}
+					}
+				},
+				{
+					"name": "Setup: Crear empresa 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+									"pm.collectionVariables.set(\"t14Emp2\", pm.response.json().id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type","value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"municipioId\":{{t14Muni}},\"nit\":\"T14-2\",\"razonSocial\":\"T14 2\",\"nombreComercial\":\"T14 2\",\"telefono\":\"2222\",\"correo\":\"t2@t.com\"}"
+						},
+						"url": {"raw": "{{baseUrl}}/api/empresas","host": ["{{baseUrl}}"],"path": ["api","empresas"]}
+					}
+				},
+				{
+					"name": "Setup: Crear colaborador",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+									"pm.collectionVariables.set(\"t14Col\", pm.response.json().id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type","value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombreCompleto\":\"Col T14\",\"fechaNacimiento\":\"2000-01-01\",\"telefono\":\"3333\",\"correo\":\"c@t14.com\",\"empresas\":[{\"empresaId\":{{t14Emp1}},\"fechaIngreso\":\"2025-01-01\"}]}"
+						},
+						"url": {"raw": "{{baseUrl}}/api/colaboradores","host": ["{{baseUrl}}"],"path": ["api","colaboradores"]}
+					}
+				},
+				{
+					"name": "Asociar empresa",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type","value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"empresaId\":{{t14Emp2}},\"fechaIngreso\":\"2025-02-01\"}"
+						},
+						"url": {"raw": "{{baseUrl}}/api/colaboradores/{{t14Col}}/empresas","host": ["{{baseUrl}}"],"path": ["api","colaboradores","{{t14Col}}","empresas"]}
+					}
+				},
+				{
+					"name": "Listar por empresa",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": {"raw": "{{baseUrl}}/api/empresas/{{t14Emp2}}/colaboradores","host": ["{{baseUrl}}"],"path": ["api","empresas","{{t14Emp2}}","colaboradores"]}
+					}
+				},
+				{
+					"name": "Asociar V4",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type","value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"empresaId\":9999,\"fechaIngreso\":\"2025-02-01\"}"
+						},
+						"url": {"raw": "{{baseUrl}}/api/colaboradores/{{t14Col}}/empresas","host": ["{{baseUrl}}"],"path": ["api","colaboradores","{{t14Col}}","empresas"]}
+					}
+				},
+				{
+					"name": "Asociar RN9",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type","value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"empresaId\":{{t14Emp1}},\"fechaIngreso\":\"2028-02-01\"}"
+						},
+						"url": {"raw": "{{baseUrl}}/api/colaboradores/{{t14Col}}/empresas","host": ["{{baseUrl}}"],"path": ["api","colaboradores","{{t14Col}}","empresas"]}
+					}
+				},
+				{
+					"name": "Asociar RN4",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type","value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"empresaId\":{{t14Emp1}},\"fechaIngreso\":\"2025-02-01\"}"
+						},
+						"url": {"raw": "{{baseUrl}}/api/colaboradores/9999/empresas","host": ["{{baseUrl}}"],"path": ["api","colaboradores","9999","empresas"]}
+					}
+				},
+				{
+					"name": "Asociar 409",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 409\", function () { pm.response.to.have.status(409); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type","value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"empresaId\":{{t14Emp2}},\"fechaIngreso\":\"2025-02-01\"}"
+						},
+						"url": {"raw": "{{baseUrl}}/api/colaboradores/{{t14Col}}/empresas","host": ["{{baseUrl}}"],"path": ["api","colaboradores","{{t14Col}}","empresas"]}
+					}
+				},
+				{
+					"name": "Actualizar empresa",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [{"key": "Content-Type","value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"empresaId\":{{t14Emp2}},\"fechaIngreso\":\"2025-03-01\"}"
+						},
+						"url": {"raw": "{{baseUrl}}/api/colaboradores/{{t14Col}}/empresas/{{t14Emp2}}","host": ["{{baseUrl}}"],"path": ["api","colaboradores","{{t14Col}}","empresas","{{t14Emp2}}"]}
+					}
+				},
+				{
+					"name": "Actualizar RN9",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [{"key": "Content-Type","value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"empresaId\":{{t14Emp2}},\"fechaIngreso\":\"2030-03-01\"}"
+						},
+						"url": {"raw": "{{baseUrl}}/api/colaboradores/{{t14Col}}/empresas/{{t14Emp2}}","host": ["{{baseUrl}}"],"path": ["api","colaboradores","{{t14Col}}","empresas","{{t14Emp2}}"]}
+					}
+				},
+				{
+					"name": "Quitar empresa",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"url": {"raw": "{{baseUrl}}/api/colaboradores/{{t14Col}}/empresas/{{t14Emp2}}","host": ["{{baseUrl}}"],"path": ["api","colaboradores","{{t14Col}}","empresas","{{t14Emp2}}"]}
+					}
+				},
+				{
+					"name": "Quitar ultima 409",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 409\", function () { pm.response.to.have.status(409); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"url": {"raw": "{{baseUrl}}/api/colaboradores/{{t14Col}}/empresas/{{t14Emp1}}","host": ["{{baseUrl}}"],"path": ["api","colaboradores","{{t14Col}}","empresas","{{t14Emp1}}"]}
+					}
+				},
+				{
+					"name": "Teardown",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"url": {"raw": "{{baseUrl}}/api/paises/{{t14Pais}}","host": ["{{baseUrl}}"],"path": ["api","paises","{{t14Pais}}"]}
+					}
+				}
+			]
 		}
 	]
 }
