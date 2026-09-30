@@ -60,10 +60,10 @@ Cada paso es un commit propio; el merge se hace al cerrar la fase, con el PR.
 - [x] 14. Asociar y quitar empresas de un colaborador (`feat(api): empresas de un colaborador`)
 
 ## Fase 4 · rama `test/integracion`
-- [ ] 15. WebApplicationFactory con SQLite y pruebas de integración de los endpoints
+- [x] 15. WebApplicationFactory con SQLite y pruebas de integración de los endpoints
         (`test(api): pruebas de integración`). Quitar el `--ignore-exit-code 8` de
         RRHH.IntegrationTests.csproj, si no se quitó antes (E-002)
-- [ ] 16. Revisar la tabla de trazabilidad de PLAN_PRUEBAS.md: cada regla con su prueba
+- [x] 16. Revisar la tabla de trazabilidad de PLAN_PRUEBAS.md: cada regla con su prueba
         (`test: completar trazabilidad de reglas`)
 
 ## Fase 5 · rama `feature/web`
