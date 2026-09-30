@@ -121,6 +121,17 @@ Compilación, paquetes, pruebas, EF Core, git.
                  está modificando. Si el error se repite, cerrar Visual Studio durante la tarea.
 - Origen:        tarea 3 · 2026-09-29 · implementador
 
+### E-010 · Visual Studio 2022 deja los `packages.lock.json` sin paquetes
+- Síntoma:       después de cambiar de rama con la solución abierta, los lock files de RRHH.Api y de
+                 los proyectos de pruebas pierden todos sus paquetes (quedan sólo los proyectos).
+- Causa:         Visual Studio 2022 (17.14) no es compatible con .NET 10 (el soporte llega con
+                 Visual Studio 2026); al restaurar, evalúa mal los proyectos y reescribe los lock.
+- Solución:      `git checkout -- <lock files>`; la versión commiteada es la correcta.
+- Cómo evitarlo: no abrir la solución con Visual Studio 2022: usar VS Code con C# Dev Kit
+                 (docs/ENTORNO.md) o Visual Studio 2026. Antes de commitear, revisar el diff de los
+                 lock files (E-008); la integración continua los verifica con `--locked-mode`.
+- Origen:        tarea 4 · 2026-09-29 · implementador
+
 ## Funcionalidad
 Comportamiento que no cumplía la especificación, detectado por pruebas o revisión.
 

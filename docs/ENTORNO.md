@@ -16,6 +16,9 @@ dotnet tool install --global dotnet-ef
 npm install -g newman
 code --install-extension ms-dotnettools.csdevkit
 ```
+Editor: VS Code con C# Dev Kit. Visual Studio 2022 no es compatible con .NET 10 y reescribe mal
+los lock files (E-010); si se prefiere Visual Studio, usar la versión 2026.
+
 SQL Server: instalar **SQL Server Express o LocalDB** desde el instalador oficial de Microsoft.
 No hace falta SSMS: las migraciones crean la base.
 
