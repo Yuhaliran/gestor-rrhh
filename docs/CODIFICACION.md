@@ -71,7 +71,10 @@ public class Pais
 }
 ```
 
-Regla de dominio con la fecha actual como parámetro (así se prueba sin depender del día).
+Regla de dominio con la fecha actual como parámetro (así se prueba sin depender del día). Los
+servicios la obtienen de `TimeProvider` (incluido en .NET), inyectado por constructor:
+`DateOnly.FromDateTime(reloj.GetLocalNow().DateTime)`. En las pruebas, una subclase de
+`TimeProvider` con una fecha fija.
 Sólo la firma: la implementación es de la tarea 4 y el tester no debe verla (pruebas de caja negra).
 ```csharp
 namespace RRHH.Domain.Reglas;
