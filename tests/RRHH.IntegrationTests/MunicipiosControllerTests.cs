@@ -33,7 +33,14 @@ public class MunicipiosControllerTests : PruebaIntegracionBase
     public async Task Listar_Busqueda_DevuelveCoincidencia()
     {
         // Arrange
-        var requestUri = "/api/municipios?buscar=guate";
+        var m1 = new GuardarMunicipioDto { DepartamentoId = 1, Nombre = "Mun Buscar 1" };
+        var m2 = new GuardarMunicipioDto { DepartamentoId = 1, Nombre = "Mun Filtro 2" };
+        var res1 = await Cliente.PostAsJsonAsync("/api/municipios", m1, OpcionesJson, TestContext.Current.CancellationToken);
+        res1.EnsureSuccessStatusCode();
+        var res2 = await Cliente.PostAsJsonAsync("/api/municipios", m2, OpcionesJson, TestContext.Current.CancellationToken);
+        res2.EnsureSuccessStatusCode();
+
+        var requestUri = "/api/municipios?buscar=Buscar";
 
         // Act
         var respuesta = await Cliente.GetAsync(requestUri, TestContext.Current.CancellationToken);
@@ -42,7 +49,8 @@ public class MunicipiosControllerTests : PruebaIntegracionBase
         respuesta.EnsureSuccessStatusCode();
         var pagina = await respuesta.Content.ReadFromJsonAsync<Pagina<MunicipioDto>>(OpcionesJson, TestContext.Current.CancellationToken);
         Assert.NotNull(pagina);
-        Assert.Contains(pagina.Elementos, m => m.Nombre == "Guatemala");
+        Assert.Contains(pagina.Elementos, m => m.Nombre == "Mun Buscar 1");
+        Assert.DoesNotContain(pagina.Elementos, m => m.Nombre == "Mun Filtro 2");
     }
 
     [Fact]
@@ -73,6 +81,7 @@ public class MunicipiosControllerTests : PruebaIntegracionBase
         Assert.NotNull(creado);
         Assert.Equal(dto.Nombre, creado.Nombre);
         Assert.NotNull(respuesta.Headers.Location);
+        Assert.EndsWith($"/api/municipios/{creado.Id}", respuesta.Headers.Location.ToString());
     }
 
     [Fact]

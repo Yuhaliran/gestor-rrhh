@@ -20,6 +20,10 @@ public class EmpresasControllerTests : PruebaIntegracionBase
     public async Task Listar_SinBusqueda_DevuelvePagina()
     {
         // Arrange
+        var dto = new GuardarEmpresaDto { MunicipioId = 1, Nit = "111199", RazonSocial = "RS Listar", NombreComercial = "NC", Telefono = "11111111", Correo = "emp@test.com" };
+        var postRes = await Cliente.PostAsJsonAsync("/api/empresas", dto, OpcionesJson, TestContext.Current.CancellationToken);
+        postRes.EnsureSuccessStatusCode();
+
         var requestUri = "/api/empresas";
 
         // Act
@@ -29,13 +33,21 @@ public class EmpresasControllerTests : PruebaIntegracionBase
         respuesta.EnsureSuccessStatusCode();
         var pagina = await respuesta.Content.ReadFromJsonAsync<Pagina<EmpresaDto>>(OpcionesJson, TestContext.Current.CancellationToken);
         Assert.NotNull(pagina);
+        Assert.Contains(pagina.Elementos, e => e.RazonSocial == "RS Listar");
     }
 
     [Fact]
     public async Task Listar_Busqueda_DevuelveCoincidencia()
     {
         // Arrange
-        var requestUri = "/api/empresas?buscar=RS";
+        var e1 = new GuardarEmpresaDto { MunicipioId = 1, Nit = "222299", RazonSocial = "RS Buscar 1", NombreComercial = "NC", Telefono = "11111111", Correo = "emp1@test.com" };
+        var e2 = new GuardarEmpresaDto { MunicipioId = 1, Nit = "333399", RazonSocial = "RS Filtro 2", NombreComercial = "NC", Telefono = "11111111", Correo = "emp2@test.com" };
+        var res1 = await Cliente.PostAsJsonAsync("/api/empresas", e1, OpcionesJson, TestContext.Current.CancellationToken);
+        res1.EnsureSuccessStatusCode();
+        var res2 = await Cliente.PostAsJsonAsync("/api/empresas", e2, OpcionesJson, TestContext.Current.CancellationToken);
+        res2.EnsureSuccessStatusCode();
+
+        var requestUri = "/api/empresas?buscar=Buscar";
 
         // Act
         var respuesta = await Cliente.GetAsync(requestUri, TestContext.Current.CancellationToken);
@@ -44,6 +56,8 @@ public class EmpresasControllerTests : PruebaIntegracionBase
         respuesta.EnsureSuccessStatusCode();
         var pagina = await respuesta.Content.ReadFromJsonAsync<Pagina<EmpresaDto>>(OpcionesJson, TestContext.Current.CancellationToken);
         Assert.NotNull(pagina);
+        Assert.Contains(pagina.Elementos, e => e.RazonSocial == "RS Buscar 1");
+        Assert.DoesNotContain(pagina.Elementos, e => e.RazonSocial == "RS Filtro 2");
     }
 
     [Fact]
@@ -74,6 +88,7 @@ public class EmpresasControllerTests : PruebaIntegracionBase
         Assert.NotNull(creado);
         Assert.Equal(dto.Nit, creado.Nit);
         Assert.NotNull(respuesta.Headers.Location);
+        Assert.EndsWith($"/api/empresas/{creado.Id}", respuesta.Headers.Location.ToString());
     }
 
     [Fact]
@@ -306,6 +321,22 @@ public class EmpresasControllerTests : PruebaIntegracionBase
         var resCol = await Cliente.PostAsJsonAsync("/api/colaboradores", dtoColab, OpcionesJson, TestContext.Current.CancellationToken);
         resCol.EnsureSuccessStatusCode();
 
+        var dtoEmp2 = new GuardarEmpresaDto { MunicipioId = 1, Nit = "888889", RazonSocial = "RS2", NombreComercial = "NC2", Telefono = "88888889", Correo = "empresa10@test.com" };
+        var resEmp2 = await Cliente.PostAsJsonAsync("/api/empresas", dtoEmp2, OpcionesJson, TestContext.Current.CancellationToken);
+        resEmp2.EnsureSuccessStatusCode();
+        var emp2 = await resEmp2.Content.ReadFromJsonAsync<EmpresaDto>(OpcionesJson, TestContext.Current.CancellationToken);
+
+        var dtoColab2 = new CrearColaboradorDto
+        {
+            NombreCompleto = "Otra Empresa",
+            FechaNacimiento = new DateOnly(1990, 1, 1),
+            Telefono = "12345678",
+            Correo = "otra@test.com",
+            Empresas = new List<AsociarEmpresaDto> { new() { EmpresaId = emp2!.Id, FechaIngreso = new DateOnly(2020, 1, 1), Puesto = "Developer" } }
+        };
+        var resCol2 = await Cliente.PostAsJsonAsync("/api/colaboradores", dtoColab2, OpcionesJson, TestContext.Current.CancellationToken);
+        resCol2.EnsureSuccessStatusCode();
+
         // Act
         var respuesta = await Cliente.GetAsync($"/api/empresas/{emp.Id}/colaboradores", TestContext.Current.CancellationToken);
 
@@ -314,6 +345,7 @@ public class EmpresasControllerTests : PruebaIntegracionBase
         var pagina = await respuesta.Content.ReadFromJsonAsync<Pagina<ColaboradorDto>>(OpcionesJson, TestContext.Current.CancellationToken);
         Assert.NotNull(pagina);
         Assert.Contains(pagina.Elementos, c => c.NombreCompleto == "Pedro Perez");
+        Assert.DoesNotContain(pagina.Elementos, c => c.NombreCompleto == "Otra Empresa");
     }
 
     [Fact]

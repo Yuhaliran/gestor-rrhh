@@ -34,7 +34,14 @@ public class DepartamentosControllerTests : PruebaIntegracionBase
     public async Task Listar_Busqueda_DevuelveCoincidencia()
     {
         // Arrange
-        var requestUri = "/api/departamentos?buscar=guate";
+        var d1 = new GuardarDepartamentoDto { PaisId = 1, Nombre = "Dep Buscar 1" };
+        var d2 = new GuardarDepartamentoDto { PaisId = 1, Nombre = "Dep Filtro 2" };
+        var res1 = await Cliente.PostAsJsonAsync("/api/departamentos", d1, OpcionesJson, TestContext.Current.CancellationToken);
+        res1.EnsureSuccessStatusCode();
+        var res2 = await Cliente.PostAsJsonAsync("/api/departamentos", d2, OpcionesJson, TestContext.Current.CancellationToken);
+        res2.EnsureSuccessStatusCode();
+
+        var requestUri = "/api/departamentos?buscar=Buscar";
 
         // Act
         var respuesta = await Cliente.GetAsync(requestUri, TestContext.Current.CancellationToken);
@@ -43,7 +50,8 @@ public class DepartamentosControllerTests : PruebaIntegracionBase
         respuesta.EnsureSuccessStatusCode();
         var pagina = await respuesta.Content.ReadFromJsonAsync<Pagina<DepartamentoDto>>(OpcionesJson, TestContext.Current.CancellationToken);
         Assert.NotNull(pagina);
-        Assert.Contains(pagina.Elementos, d => d.Nombre == "Guatemala");
+        Assert.Contains(pagina.Elementos, d => d.Nombre == "Dep Buscar 1");
+        Assert.DoesNotContain(pagina.Elementos, d => d.Nombre == "Dep Filtro 2");
     }
 
     [Fact]
@@ -74,6 +82,7 @@ public class DepartamentosControllerTests : PruebaIntegracionBase
         Assert.NotNull(creado);
         Assert.Equal(dto.Nombre, creado.Nombre);
         Assert.NotNull(respuesta.Headers.Location);
+        Assert.EndsWith($"/api/departamentos/{creado.Id}", respuesta.Headers.Location.ToString());
     }
 
     [Fact]

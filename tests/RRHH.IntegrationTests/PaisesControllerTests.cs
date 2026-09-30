@@ -33,7 +33,14 @@ public class PaisesControllerTests : PruebaIntegracionBase
     public async Task Listar_Busqueda_DevuelveCoincidencia()
     {
         // Arrange
-        var requestUri = "/api/paises?buscar=guate";
+        var p1 = new GuardarPaisDto { Nombre = "Buscar P1", CodigoIso2 = "BX", EdadMinima = 18, EdadMaxima = 100, Regla29Febrero = Regla29Febrero.VeintiochoDeFebrero };
+        var p2 = new GuardarPaisDto { Nombre = "Filtro P2", CodigoIso2 = "FX", EdadMinima = 18, EdadMaxima = 100, Regla29Febrero = Regla29Febrero.VeintiochoDeFebrero };
+        var res1 = await Cliente.PostAsJsonAsync("/api/paises", p1, OpcionesJson, TestContext.Current.CancellationToken);
+        res1.EnsureSuccessStatusCode();
+        var res2 = await Cliente.PostAsJsonAsync("/api/paises", p2, OpcionesJson, TestContext.Current.CancellationToken);
+        res2.EnsureSuccessStatusCode();
+
+        var requestUri = "/api/paises?buscar=Buscar";
 
         // Act
         var respuesta = await Cliente.GetAsync(requestUri, TestContext.Current.CancellationToken);
@@ -42,7 +49,8 @@ public class PaisesControllerTests : PruebaIntegracionBase
         respuesta.EnsureSuccessStatusCode();
         var pagina = await respuesta.Content.ReadFromJsonAsync<Pagina<PaisDto>>(OpcionesJson, TestContext.Current.CancellationToken);
         Assert.NotNull(pagina);
-        Assert.Contains(pagina.Elementos, p => p.Nombre == "Guatemala");
+        Assert.Contains(pagina.Elementos, p => p.Nombre == "Buscar P1");
+        Assert.DoesNotContain(pagina.Elementos, p => p.Nombre == "Filtro P2");
     }
 
     [Fact]
@@ -76,6 +84,7 @@ public class PaisesControllerTests : PruebaIntegracionBase
         Assert.NotNull(creado);
         Assert.Equal(dto.Nombre, creado.Nombre);
         Assert.NotNull(respuesta.Headers.Location);
+        Assert.EndsWith($"/api/paises/{creado.Id}", respuesta.Headers.Location.ToString());
     }
 
     [Fact]

@@ -26,6 +26,11 @@ public class ColaboradoresControllerTests : PruebaIntegracionBase
     public async Task Listar_SinBusqueda_DevuelvePagina()
     {
         // Arrange
+        var empId = await CrearEmpresaAsync("C1L", "c1l@test.com");
+        var dto = new CrearColaboradorDto { NombreCompleto = "C Lista", FechaNacimiento = new DateOnly(1995, 5, 5), Telefono = "12345678", Correo = "lista@test.com", Empresas = new List<AsociarEmpresaDto> { new() { EmpresaId = empId, FechaIngreso = new DateOnly(2021, 1, 1), Puesto = "QA" } } };
+        var postRes = await Cliente.PostAsJsonAsync("/api/colaboradores", dto, OpcionesJson, TestContext.Current.CancellationToken);
+        postRes.EnsureSuccessStatusCode();
+
         var requestUri = "/api/colaboradores";
 
         // Act
@@ -35,13 +40,22 @@ public class ColaboradoresControllerTests : PruebaIntegracionBase
         respuesta.EnsureSuccessStatusCode();
         var pagina = await respuesta.Content.ReadFromJsonAsync<Pagina<ColaboradorDto>>(OpcionesJson, TestContext.Current.CancellationToken);
         Assert.NotNull(pagina);
+        Assert.Contains(pagina.Elementos, c => c.NombreCompleto == "C Lista");
     }
 
     [Fact]
     public async Task Listar_Busqueda_DevuelveCoincidencia()
     {
         // Arrange
-        var requestUri = "/api/colaboradores?buscar=Ana";
+        var empId = await CrearEmpresaAsync("C2L", "c2l@test.com");
+        var c1 = new CrearColaboradorDto { NombreCompleto = "Buscar Lopez", FechaNacimiento = new DateOnly(1995, 5, 5), Telefono = "12345678", Correo = "b@test.com", Empresas = new List<AsociarEmpresaDto> { new() { EmpresaId = empId, FechaIngreso = new DateOnly(2021, 1, 1), Puesto = "QA" } } };
+        var c2 = new CrearColaboradorDto { NombreCompleto = "Filtro Perez", FechaNacimiento = new DateOnly(1995, 5, 5), Telefono = "12345678", Correo = "f@test.com", Empresas = new List<AsociarEmpresaDto> { new() { EmpresaId = empId, FechaIngreso = new DateOnly(2021, 1, 1), Puesto = "QA" } } };
+        var res1 = await Cliente.PostAsJsonAsync("/api/colaboradores", c1, OpcionesJson, TestContext.Current.CancellationToken);
+        res1.EnsureSuccessStatusCode();
+        var res2 = await Cliente.PostAsJsonAsync("/api/colaboradores", c2, OpcionesJson, TestContext.Current.CancellationToken);
+        res2.EnsureSuccessStatusCode();
+
+        var requestUri = "/api/colaboradores?buscar=Buscar";
 
         // Act
         var respuesta = await Cliente.GetAsync(requestUri, TestContext.Current.CancellationToken);
@@ -50,6 +64,8 @@ public class ColaboradoresControllerTests : PruebaIntegracionBase
         respuesta.EnsureSuccessStatusCode();
         var pagina = await respuesta.Content.ReadFromJsonAsync<Pagina<ColaboradorDto>>(OpcionesJson, TestContext.Current.CancellationToken);
         Assert.NotNull(pagina);
+        Assert.Contains(pagina.Elementos, c => c.NombreCompleto == "Buscar Lopez");
+        Assert.DoesNotContain(pagina.Elementos, c => c.NombreCompleto == "Filtro Perez");
     }
 
     [Fact]
@@ -88,6 +104,7 @@ public class ColaboradoresControllerTests : PruebaIntegracionBase
         Assert.NotNull(creado);
         Assert.Equal(dto.NombreCompleto, creado.NombreCompleto);
         Assert.NotNull(respuesta.Headers.Location);
+        Assert.EndsWith($"/api/colaboradores/{creado.Id}", respuesta.Headers.Location.ToString());
     }
 
     [Fact]
@@ -344,7 +361,13 @@ public class ColaboradoresControllerTests : PruebaIntegracionBase
     public async Task EliminarEmpresa_Inexistente_Devuelve404()
     {
         // Arrange
-        var requestUri = "/api/colaboradores/9999/empresas/9999";
+        var empId = await CrearEmpresaAsync("C9A", "c9a@test.com");
+        var dto = new CrearColaboradorDto { NombreCompleto = "G3", FechaNacimiento = new DateOnly(1995, 5, 5), Telefono = "12345678", Correo = "g3@test.com", Empresas = new List<AsociarEmpresaDto> { new() { EmpresaId = empId, FechaIngreso = new DateOnly(2021, 1, 1) } } };
+        var postRespuesta = await Cliente.PostAsJsonAsync("/api/colaboradores", dto, OpcionesJson, TestContext.Current.CancellationToken);
+        postRespuesta.EnsureSuccessStatusCode();
+        var creado = await postRespuesta.Content.ReadFromJsonAsync<ColaboradorDto>(OpcionesJson, TestContext.Current.CancellationToken);
+
+        var requestUri = $"/api/colaboradores/{creado!.Id}/empresas/9999";
 
         // Act
         var respuesta = await Cliente.DeleteAsync(requestUri, TestContext.Current.CancellationToken);
@@ -357,10 +380,16 @@ public class ColaboradoresControllerTests : PruebaIntegracionBase
     public async Task EditarEmpresa_Inexistente_Devuelve404()
     {
         // Arrange
+        var empId = await CrearEmpresaAsync("C9B", "c9b@test.com");
+        var dto = new CrearColaboradorDto { NombreCompleto = "G4", FechaNacimiento = new DateOnly(1995, 5, 5), Telefono = "12345678", Correo = "g4@test.com", Empresas = new List<AsociarEmpresaDto> { new() { EmpresaId = empId, FechaIngreso = new DateOnly(2021, 1, 1) } } };
+        var postRespuesta = await Cliente.PostAsJsonAsync("/api/colaboradores", dto, OpcionesJson, TestContext.Current.CancellationToken);
+        postRespuesta.EnsureSuccessStatusCode();
+        var creado = await postRespuesta.Content.ReadFromJsonAsync<ColaboradorDto>(OpcionesJson, TestContext.Current.CancellationToken);
+
         var putDto = new GuardarEmpresaColaboradorDto { FechaIngreso = new DateOnly(2021, 6, 1), Puesto = "Sr Dev" };
 
         // Act
-        var respuesta = await Cliente.PutAsJsonAsync("/api/colaboradores/9999/empresas/9999", putDto, OpcionesJson, TestContext.Current.CancellationToken);
+        var respuesta = await Cliente.PutAsJsonAsync($"/api/colaboradores/{creado!.Id}/empresas/9999", putDto, OpcionesJson, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(HttpStatusCode.NotFound, respuesta.StatusCode);
