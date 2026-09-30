@@ -63,6 +63,10 @@ public class DepartamentosServicio(IRrhhDbContext db) : IDepartamentosServicio
     {
         var departamento = await db.Departamentos.FindAsync([id], ct)
             ?? throw new NoEncontradoException("un departamento", id);
+        if (dto.PaisId != departamento.PaisId)
+        {
+            throw new ValidacionException(nameof(dto.PaisId), "El país de un departamento no se puede cambiar.");   // RN8
+        }
         await CopiarAsync(dto, departamento, ct);
         await db.SaveChangesAsync(ct);
         return ADtoEnMemoria(departamento);
@@ -81,8 +85,8 @@ public class DepartamentosServicio(IRrhhDbContext db) : IDepartamentosServicio
     }
 
     // Valida el país (V4) y el nombre dentro del país (RN5), y copia los datos del DTO (ya validado
-    // por la API). El país puede cambiar al editar: el nombre se valida en el país nuevo. Los
-    // duplicados no distinguen mayúsculas (intercalación de la columna) ni espacios en los extremos.
+    // por la API). Los duplicados no distinguen mayúsculas (intercalación de la columna) ni espacios
+    // en los extremos.
     private async Task CopiarAsync(GuardarDepartamentoDto dto, Departamento departamento, CancellationToken ct)
     {
         var paisId = dto.PaisId!.Value;
