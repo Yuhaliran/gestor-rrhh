@@ -40,9 +40,23 @@ public class ColaboradoresServicio(IRrhhDbContext db, TimeProvider reloj) : ICol
         e.Id, e.Municipio.Departamento.Pais.Nombre, e.Municipio.Departamento.Pais.EdadMinima,
         e.Municipio.Departamento.Pais.EdadMaxima, e.Municipio.Departamento.Pais.Regla29Febrero);
 
-    public async Task<Pagina<ColaboradorDto>> ListarAsync(Consulta consulta, CancellationToken ct)
+    public Task<Pagina<ColaboradorDto>> ListarAsync(Consulta consulta, CancellationToken ct) =>
+        ListarDeAsync(db.Colaboradores.AsNoTracking(), consulta, ct);
+
+    public async Task<Pagina<ColaboradorDto>> ListarPorEmpresaAsync(int empresaId, Consulta consulta, CancellationToken ct)
     {
-        var colaboradores = db.Colaboradores.AsNoTracking();
+        if (!await db.Empresas.AnyAsync(e => e.Id == empresaId, ct))
+        {
+            throw new NoEncontradoException("una empresa", empresaId);
+        }
+        var colaboradores = db.Colaboradores.AsNoTracking().Where(c => c.Empresas.Any(ec => ec.EmpresaId == empresaId));
+        return await ListarDeAsync(colaboradores, consulta, ct);
+    }
+
+    // Búsqueda, orden y paginación de un listado de colaboradores
+    private async Task<Pagina<ColaboradorDto>> ListarDeAsync(IQueryable<Colaborador> colaboradores, Consulta consulta,
+        CancellationToken ct)
+    {
         if (!string.IsNullOrWhiteSpace(consulta.Buscar))
         {
             var patron = Busqueda.PatronContiene(consulta.Buscar);
@@ -83,7 +97,7 @@ public class ColaboradoresServicio(IRrhhDbContext db, TimeProvider reloj) : ICol
                 throw new ValidacionException($"Empresas[{i}].EmpresaId", $"No existe una empresa con id {ids[i]}.");
             }
         }
-        ValidarEdad(fechaNacimiento, hoy, rangos.Values);
+        ValidarEdad(fechaNacimiento, hoy, rangos.Values, nameof(dto.FechaNacimiento));
         for (var i = 0; i < empresas.Count; i++)
         {
             ValidarFechaIngreso(empresas[i].FechaIngreso!.Value, fechaNacimiento, hoy, $"Empresas[{i}].FechaIngreso");
@@ -105,7 +119,7 @@ public class ColaboradoresServicio(IRrhhDbContext db, TimeProvider reloj) : ICol
             {
                 EmpresaId = empresa.EmpresaId!.Value,
                 FechaIngreso = empresa.FechaIngreso!.Value,
-                Puesto = string.IsNullOrWhiteSpace(empresa.Puesto) ? null : empresa.Puesto.Trim()
+                Puesto = Puesto(empresa.Puesto)
             });
         }
         db.Colaboradores.Add(colaborador);
@@ -127,7 +141,7 @@ public class ColaboradoresServicio(IRrhhDbContext db, TimeProvider reloj) : ICol
                 .Select(ec => ec.Empresa)
                 .Select(ARango)
                 .ToListAsync(ct);
-            ValidarEdad(fechaNacimiento, Hoy(), rangos);
+            ValidarEdad(fechaNacimiento, Hoy(), rangos, nameof(dto.FechaNacimiento));
             if (await db.EmpresasColaboradores.AnyAsync(ec => ec.ColaboradorId == id && ec.FechaIngreso < fechaNacimiento, ct))
             {
                 throw new ValidacionException(nameof(dto.FechaNacimiento),
@@ -151,19 +165,69 @@ public class ColaboradoresServicio(IRrhhDbContext db, TimeProvider reloj) : ICol
         await db.SaveChangesAsync(ct);
     }
 
-    // Contrato de la tarea 14: se implementa después de las pruebas del tester.
-    public Task<Pagina<ColaboradorDto>> ListarPorEmpresaAsync(int empresaId, Consulta consulta, CancellationToken ct) =>
-        throw Pendiente();
+    public async Task<ColaboradorDto> AsociarEmpresaAsync(int id, AsociarEmpresaDto dto, CancellationToken ct)
+    {
+        var colaborador = await db.Colaboradores.FindAsync([id], ct)
+            ?? throw new NoEncontradoException("un colaborador", id);
+        var empresaId = dto.EmpresaId!.Value;
+        var rango = await db.Empresas.Where(e => e.Id == empresaId).Select(ARango).FirstOrDefaultAsync(ct)
+            ?? throw new ValidacionException(nameof(dto.EmpresaId), $"No existe una empresa con id {empresaId}.");
 
-    public Task<ColaboradorDto> AsociarEmpresaAsync(int id, AsociarEmpresaDto dto, CancellationToken ct) => throw Pendiente();
+        // RN4 sólo contra la empresa nueva: las que ya tenía no se revalidan
+        var hoy = Hoy();
+        ValidarEdad(colaborador.FechaNacimiento, hoy, [rango], nameof(dto.EmpresaId));
+        ValidarFechaIngreso(dto.FechaIngreso!.Value, colaborador.FechaNacimiento, hoy, nameof(dto.FechaIngreso));
+        if (await db.EmpresasColaboradores.AnyAsync(ec => ec.ColaboradorId == id && ec.EmpresaId == empresaId, ct))
+        {
+            throw new ConflictoException("El colaborador ya está asociado a esa empresa.");   // RN5
+        }
 
-    public Task<ColaboradorDto> ActualizarEmpresaAsync(int id, int empresaId, GuardarEmpresaColaboradorDto dto, CancellationToken ct) =>
-        throw Pendiente();
+        db.EmpresasColaboradores.Add(new EmpresaColaborador
+        {
+            ColaboradorId = id,
+            EmpresaId = empresaId,
+            FechaIngreso = dto.FechaIngreso.Value,
+            Puesto = Puesto(dto.Puesto)
+        });
+        await db.SaveChangesAsync(ct);
+        return await ObtenerAsync(id, ct);
+    }
 
-    public Task QuitarEmpresaAsync(int id, int empresaId, CancellationToken ct) => throw Pendiente();
+    public async Task<ColaboradorDto> ActualizarEmpresaAsync(int id, int empresaId, GuardarEmpresaColaboradorDto dto,
+        CancellationToken ct)
+    {
+        var colaborador = await db.Colaboradores.FindAsync([id], ct)
+            ?? throw new NoEncontradoException("un colaborador", id);
+        var relacion = await BuscarRelacionAsync(id, empresaId, ct);
+        ValidarFechaIngreso(dto.FechaIngreso!.Value, colaborador.FechaNacimiento, Hoy(), nameof(dto.FechaIngreso));
 
-    private static NotImplementedException Pendiente() =>
-        new("Contrato de la tarea 14: se implementa después de las pruebas.");
+        relacion.FechaIngreso = dto.FechaIngreso.Value;
+        relacion.Puesto = Puesto(dto.Puesto);
+        await db.SaveChangesAsync(ct);
+        return await ObtenerAsync(id, ct);
+    }
+
+    public async Task QuitarEmpresaAsync(int id, int empresaId, CancellationToken ct)
+    {
+        if (!await db.Colaboradores.AnyAsync(c => c.Id == id, ct))
+        {
+            throw new NoEncontradoException("un colaborador", id);
+        }
+        var relacion = await BuscarRelacionAsync(id, empresaId, ct);
+        if (await db.EmpresasColaboradores.CountAsync(ec => ec.ColaboradorId == id, ct) == 1)
+        {
+            throw new ConflictoException("Es la única empresa del colaborador: no se puede quitar (RN3).");
+        }
+        db.EmpresasColaboradores.Remove(relacion);
+        await db.SaveChangesAsync(ct);
+    }
+
+    // La relación del colaborador con la empresa (la clave es EmpresaId, ColaboradorId), o 404
+    private async Task<EmpresaColaborador> BuscarRelacionAsync(int id, int empresaId, CancellationToken ct) =>
+        await db.EmpresasColaboradores.FindAsync([empresaId, id], ct)
+        ?? throw new NoEncontradoException("una empresa asociada al colaborador", empresaId);
+
+    private static string? Puesto(string? puesto) => string.IsNullOrWhiteSpace(puesto) ? null : puesto.Trim();
 
     private DateOnly Hoy() => DateOnly.FromDateTime(reloj.GetLocalNow().DateTime);
 
@@ -192,15 +256,16 @@ public class ColaboradoresServicio(IRrhhDbContext db, TimeProvider reloj) : ICol
         }
     }
 
-    // RN4: la edad de hoy, con la regla de cada país, dentro del rango de cada país
-    private static void ValidarEdad(DateOnly fechaNacimiento, DateOnly hoy, IEnumerable<RangoPais> rangos)
+    // RN4: la edad de hoy, con la regla de cada país, dentro del rango de cada país. El error va en
+    // el campo que se corrige: la fecha de nacimiento, o la empresa al asociarla.
+    private static void ValidarEdad(DateOnly fechaNacimiento, DateOnly hoy, IEnumerable<RangoPais> rangos, string campo)
     {
         foreach (var rango in rangos)
         {
             var edad = Edad.Calcular(fechaNacimiento, hoy, rango.Regla);
             if (edad < rango.EdadMinima || edad > rango.EdadMaxima)
             {
-                throw new ValidacionException("FechaNacimiento",
+                throw new ValidacionException(campo,
                     $"La edad ({edad}) está fuera del rango de {rango.Nombre} ({rango.EdadMinima} a {rango.EdadMaxima}).");
             }
         }

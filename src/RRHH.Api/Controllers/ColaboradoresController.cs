@@ -37,4 +37,26 @@ public class ColaboradoresController(IColaboradoresServicio servicio) : Controll
         await servicio.EliminarAsync(id, ct);
         return NoContent();                                                           // 204
     }
+
+    // Colaboradores de una empresa. Ruta absoluta: cuelga de la empresa, pero es de este servicio.
+    [HttpGet("/api/empresas/{empresaId:int}/colaboradores")]
+    public Task<Pagina<ColaboradorDto>> ListarPorEmpresa(int empresaId, [FromQuery] Consulta consulta, CancellationToken ct) =>
+        servicio.ListarPorEmpresaAsync(empresaId, consulta, ct);
+
+    // Empresas del colaborador: devuelven el colaborador actualizado (con su edad), no hay un GET de
+    // la relación al que apunte un Location
+    [HttpPost("{id:int}/empresas")]
+    public Task<ColaboradorDto> AsociarEmpresa(int id, AsociarEmpresaDto dto, CancellationToken ct) =>
+        servicio.AsociarEmpresaAsync(id, dto, ct);
+
+    [HttpPut("{id:int}/empresas/{empresaId:int}")]
+    public Task<ColaboradorDto> ActualizarEmpresa(int id, int empresaId, GuardarEmpresaColaboradorDto dto, CancellationToken ct) =>
+        servicio.ActualizarEmpresaAsync(id, empresaId, dto, ct);
+
+    [HttpDelete("{id:int}/empresas/{empresaId:int}")]
+    public async Task<IActionResult> QuitarEmpresa(int id, int empresaId, CancellationToken ct)
+    {
+        await servicio.QuitarEmpresaAsync(id, empresaId, ct);
+        return NoContent();                                                           // 204
+    }
 }
