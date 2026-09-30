@@ -54,7 +54,7 @@ U = unitaria · I = integración · A = aceptación (Postman) · E = E2E · R = 
 | CA1 | Detalle de empresa con país, departamento y municipio | I, A | `GetEmpresa_Existente_DevuelveGeografiaCompleta`; Postman «Empresas / Obtener» |
 | CA2 | Colaborador con empresas, edad, teléfono y correo | U, I, A | `Calcular_CumpleaniosHoyManianaYAyer_DevuelveEdadSegunSiYaCumplio`, `Calcular_Nacido29FebreroEnAnioNoBisiesto_Regla28Febrero_CumpleEl28Febrero`, `Calcular_Nacido29FebreroEnAnioNoBisiesto_Regla1Marzo_CumpleEl1Marzo`, `Calcular_Nacido29FebreroEnAnioBisiesto_CumpleEl29FebreroIndependientementeDeRegla`, `Calcular_FechaNacimientoIgualAHoy_DevuelveCero`, `Calcular_FechaNacimientoPosteriorAHoy_DevuelveEdadNegativa`; `GetColaborador_Existente_DevuelveEdadYEmpresas` |
 | CA3 | Un colaborador en varias empresas | I, A, E | `AsociarEmpresa_SegundaEmpresa_QuedaConDos`; Postman «Colaboradores / Asociar empresa» |
-| CA4 | Migraciones completas y aplicables | M | MIG1, MIG2 |
+| CA4 | Migraciones completas y aplicables | M | MIG1, MIG2, `Semilla_Pais_CargaGuatemalaConValoresPorDefecto`, `Semilla_Departamentos_Carga22DepartamentosYCabeceras`, `Semilla_Departamentos_CargaExactamente22`, `Semilla_NoCargaEmpresasNiColaboradores` |
 | CA5 | Pruebas unitarias correctas | U | Todo RRHH.UnitTests; cobertura con coverlet |
 | CA6 | La arquitectura se respeta | R | `VerificarDependencias_DomainYContratos_NoDependenDeOtrosProyectos`, `VerificarDependencias_Application_NoDependeDeInfraestructuraApiNiWeb`, `VerificarDependencias_Web_SoloDependeDeContratos`, `VerificarDependencias_ControladoresApi_NoUsanTiposDeDominio` |
 | CA7 | Todos los servicios en Postman | A | Cada endpoint del PLAN.md tiene su request con pruebas |
