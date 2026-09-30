@@ -12,6 +12,7 @@ public static class ServiciosAplicacion
         servicios.AddScoped<IPaisesServicio, PaisesServicio>();
         servicios.AddScoped<IDepartamentosServicio, DepartamentosServicio>();
         servicios.AddScoped<IMunicipiosServicio, MunicipiosServicio>();
+        servicios.AddScoped<IEmpresasServicio, EmpresasServicio>();
         return servicios;
     }
 }
