@@ -73,7 +73,7 @@ public class MunicipiosServicioTests : IDisposable
         await _servicio.CrearAsync(DtoBase(d1.Id) with { Nombre = "Muni 2" }, TestContext.Current.CancellationToken);
 
         var p2 = await CrearPaisPruebaAsync("Pais B", "PB");
-        var d3 = await CrearDepartamentoPruebaAsync(p2, "Depto Z");
+        var d3 = await CrearDepartamentoPruebaAsync(p2, "Depto 0");
         await _servicio.CrearAsync(DtoBase(d3.Id) with { Nombre = "Muni 3" }, TestContext.Current.CancellationToken);
 
         var consulta = new Consulta { Pagina = 1, Tamanio = 100 };
@@ -94,7 +94,7 @@ public class MunicipiosServicioTests : IDisposable
         Assert.Equal("Muni 1", creados[1].Nombre);
 
         Assert.Equal("Pais B", creados[2].PaisNombre);
-        Assert.Equal("Depto Z", creados[2].DepartamentoNombre);
+        Assert.Equal("Depto 0", creados[2].DepartamentoNombre);
         Assert.Equal("Muni 3", creados[2].Nombre);
     }
 
