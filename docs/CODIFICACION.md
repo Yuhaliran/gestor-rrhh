@@ -109,7 +109,10 @@ b.HasOne(d => d.Pais).WithMany(p => p.Departamentos)
 
 ### DTOs (Contratos)
 Las validaciones de formato van en el DTO; las reglas de negocio, en el servicio.
-En records, los atributos se ponen en los parámetros (no con `property:`).
+Los DTOs que se validan (los de escritura y `Consulta`) son records con propiedades `init`, con los
+atributos en las propiedades: así los valida la API y también `Validator.TryValidateObject` en las
+pruebas unitarias. En un record posicional los atributos quedan en los parámetros y ese validador
+no los ve (E-012). Los DTOs de lectura pueden ser posicionales.
 Un número obligatorio va como `int?` con `[Required]`: con `int`, un dato no enviado llega como 0
 (que puede ser un valor válido) y no se puede responder 400.
 ```csharp
@@ -117,12 +120,22 @@ namespace RRHH.Contratos.Paises;
 
 public record PaisDto(int Id, string Nombre, string CodigoIso2);
 
-public record GuardarPaisDto(
-    [Required, StringLength(100)] string Nombre,
-    [Required, RegularExpression("^[A-Za-z]{2}$", ErrorMessage = "Debe tener 2 letras.")] string CodigoIso2);
+public record GuardarPaisDto
+{
+    [Required, StringLength(100)]
+    public string? Nombre { get; init; }
 
-// Comunes
-public record Consulta(int Pagina = 1, int Tamanio = 20, string? Buscar = null);
+    [Required, RegularExpression("^[A-Za-z]{2}$", ErrorMessage = "Debe tener 2 letras.")]
+    public string? CodigoIso2 { get; init; }
+}
+
+// Comunes (RRHH.Contratos.Comun)
+public record Consulta
+{
+    [Range(1, int.MaxValue)] public int Pagina { get; init; } = 1;
+    [Range(1, 100)] public int Tamanio { get; init; } = 20;
+    [StringLength(100)] public string? Buscar { get; init; }
+}
 public record Pagina<T>(IReadOnlyList<T> Elementos, int Total, int Numero, int Tamanio);
 ```
 

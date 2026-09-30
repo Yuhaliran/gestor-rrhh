@@ -150,6 +150,19 @@ Compilación, paquetes, pruebas, EF Core, git.
                  comportamiento: SQLite sí aplica los CHECK.
 - Origen:        tarea 5 · 2026-09-29 · implementador
 
+### E-012 · Una prueba de validación da por válido un DTO con datos inválidos
+- Síntoma:       `Validator.TryValidateObject` devuelve `true` para un DTO que la API rechazaría (por
+                 ejemplo, un tamaño de página 0).
+- Causa:         en un record posicional, los atributos (`[Range]`, `[Required]`…) quedan en los
+                 parámetros del constructor. La API los usa, pero `Validator.TryValidateObject` sólo
+                 mira las propiedades. Tampoco sirve `[property: …]`: la API rechaza atributos en las
+                 propiedades de un record posicional.
+- Solución:      los DTOs que se validan son records con propiedades `init` y los atributos en ellas
+                 (docs/CODIFICACION.md, «DTOs»).
+- Cómo evitarlo: no declarar DTOs de escritura como records posicionales. Una prueba de validación
+                 tiene que incluir al menos un caso inválido que falle.
+- Origen:        tarea 8 · 2026-09-30 · implementador
+
 ## Funcionalidad
 Comportamiento que no cumplía la especificación, detectado por pruebas o revisión.
 
