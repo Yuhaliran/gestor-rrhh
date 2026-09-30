@@ -54,10 +54,10 @@ Cada paso es un commit propio; el merge se hace al cerrar la fase, con el PR.
 - [x] 11. Municipios, con listado por departamento (`feat(api): mantenimiento de municipios`)
 
 ## Fase 3 · rama `feature/api-empresas-colaboradores`
-- [ ] 12. Empresas, con geografía completa en el detalle (`feat(api): mantenimiento de empresas`)
-- [ ] 13. Colaboradores, con edad calculada y al menos una empresa
+- [x] 12. Empresas, con geografía completa en el detalle (`feat(api): mantenimiento de empresas`)
+- [x] 13. Colaboradores, con edad calculada y al menos una empresa
         (`feat(api): mantenimiento de colaboradores`)
-- [ ] 14. Asociar y quitar empresas de un colaborador (`feat(api): empresas de un colaborador`)
+- [x] 14. Asociar y quitar empresas de un colaborador (`feat(api): empresas de un colaborador`)
 
 ## Fase 4 · rama `test/integracion`
 - [ ] 15. WebApplicationFactory con SQLite y pruebas de integración de los endpoints
