@@ -69,8 +69,13 @@
 						"method": "GET",
 						"url": {
 							"raw": "{{baseUrl}}/api/paises",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "paises"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"paises"
+							]
 						}
 					}
 				},
@@ -101,8 +106,13 @@
 						"method": "GET",
 						"url": {
 							"raw": "{{baseUrl}}/api/paises?buscar=guate",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "paises"],
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"paises"
+							],
 							"query": [
 								{
 									"key": "buscar",
@@ -135,8 +145,14 @@
 						"method": "GET",
 						"url": {
 							"raw": "{{baseUrl}}/api/paises/1",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "paises", "1"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"paises",
+								"1"
+							]
 						}
 					}
 				},
@@ -174,8 +190,13 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/paises",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "paises"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"paises"
+							]
 						}
 					}
 				},
@@ -211,8 +232,13 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/paises",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "paises"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"paises"
+							]
 						}
 					}
 				},
@@ -248,8 +274,13 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/paises",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "paises"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"paises"
+							]
 						}
 					}
 				},
@@ -275,8 +306,14 @@
 						"method": "GET",
 						"url": {
 							"raw": "{{baseUrl}}/api/paises/9999",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "paises", "9999"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"paises",
+								"9999"
+							]
 						}
 					}
 				},
@@ -311,8 +348,14 @@
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/paises/{{paisId}}",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "paises", "{{paisId}}"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"paises",
+								"{{paisId}}"
+							]
 						}
 					}
 				},
@@ -338,8 +381,14 @@
 						"method": "DELETE",
 						"url": {
 							"raw": "{{baseUrl}}/api/paises/1",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "paises", "1"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"paises",
+								"1"
+							]
 						}
 					}
 				},
@@ -360,8 +409,383 @@
 						"method": "DELETE",
 						"url": {
 							"raw": "{{baseUrl}}/api/paises/{{paisId}}",
-							"host": ["{{baseUrl}}"],
-							"path": ["api", "paises", "{{paisId}}"]
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"paises",
+								"{{paisId}}"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Departamentos",
+			"item": [
+				{
+					"name": "Listar",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+									"pm.test(\"Estructura correcta\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('elementos');",
+									"    pm.expect(jsonData).to.have.property('total');",
+									"    pm.expect(jsonData).to.have.property('numero');",
+									"    pm.expect(jsonData).to.have.property('tamanio');",
+									"    pm.expect(jsonData).to.have.property('totalPaginas');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/departamentos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"departamentos"
+							]
+						}
+					}
+				},
+				{
+					"name": "Listar por país",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+									"pm.test(\"Es arreglo\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/paises/1/departamentos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"paises",
+								"1",
+								"departamentos"
+							]
+						}
+					}
+				},
+				{
+					"name": "Obtener",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+									"pm.test(\"Datos de Guatemala\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.id).to.eql(1);",
+									"    pm.expect(jsonData.nombre).to.eql('Guatemala');",
+									"    pm.expect(jsonData.paisId).to.eql(1);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/departamentos/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"departamentos",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "Crear",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+									"pm.test(\"Cabecera Location\", function () { pm.response.to.have.header('Location'); });",
+									"pm.test(\"Guarda ID\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set('departamentoId', jsonData.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"paisId\":1,\"nombre\":\"Depto Postman\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/departamentos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"departamentos"
+							]
+						}
+					}
+				},
+				{
+					"name": "Crear duplicado",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 409\", function () { pm.response.to.have.status(409); });",
+									"pm.test(\"ProblemDetails title y detail\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.exist;",
+									"    pm.expect(jsonData.detail).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"paisId\":1,\"nombre\":\"Depto Postman\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/departamentos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"departamentos"
+							]
+						}
+					}
+				},
+				{
+					"name": "Crear inválido",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });",
+									"pm.test(\"Error en campo PaisId\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.errors).to.exist;",
+									"    pm.expect(jsonData.errors).to.have.property('PaisId');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombre\":\"Depto Invalido\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/departamentos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"departamentos"
+							]
+						}
+					}
+				},
+				{
+					"name": "Obtener inexistente",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+									"pm.test(\"ProblemDetails title y detail\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.exist;",
+									"    pm.expect(jsonData.detail).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/departamentos/9999",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"departamentos",
+								"9999"
+							]
+						}
+					}
+				},
+				{
+					"name": "Actualizar",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+									"pm.test(\"Devuelve nuevos datos\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.nombre).to.eql('Depto Postman Mod');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"paisId\":1,\"nombre\":\"Depto Postman Mod\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/departamentos/{{departamentoId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"departamentos",
+								"{{departamentoId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Eliminar Guatemala (Error)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 409\", function () { pm.response.to.have.status(409); });",
+									"pm.test(\"ProblemDetails title y detail\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.exist;",
+									"    pm.expect(jsonData.detail).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"url": {
+							"raw": "{{baseUrl}}/api/departamentos/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"departamentos",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "Eliminar el creado",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"url": {
+							"raw": "{{baseUrl}}/api/departamentos/{{departamentoId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"departamentos",
+								"{{departamentoId}}"
+							]
 						}
 					}
 				}
