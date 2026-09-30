@@ -51,7 +51,7 @@ public class ManejadorExcepcionesTests
     }
 
     [Fact]
-    public async Task TryHandleAsync_NoEncontradoException_Responde404()
+    public async Task TryHandleAsync_ExcepcionNoEncontrado_Devuelve404()
     {
         // Arrange
         var ex = new NoEncontradoException("Pais", 1);
@@ -68,7 +68,7 @@ public class ManejadorExcepcionesTests
     }
 
     [Fact]
-    public async Task TryHandleAsync_ConflictoException_Responde409()
+    public async Task TryHandleAsync_ExcepcionConflicto_Devuelve409()
     {
         // Arrange
         var ex = new ConflictoException("Conflicto");
@@ -85,7 +85,7 @@ public class ManejadorExcepcionesTests
     }
 
     [Fact]
-    public async Task TryHandleAsync_DbUpdateException_Responde409SinDetalleInterno()
+    public async Task TryHandleAsync_ExcepcionDbUpdate_Devuelve409SinDetallesInternos()
     {
         // Arrange
         var ex = new DbUpdateException("Mensaje interno secreto de la base de datos.");
@@ -103,10 +103,10 @@ public class ManejadorExcepcionesTests
     }
 
     [Fact]
-    public async Task TryHandleAsync_ValidacionException_Responde400ConPropiedad()
+    public async Task TryHandleAsync_ExcepcionValidacion_Devuelve400ConPropiedadesInvalidas()
     {
         // Arrange
-        var ex = new ValidacionException("Nombre", "El nombre es invÃ¡lido");
+        var ex = new ValidacionException("Nombre", "El nombre es inválido");
 
         // Act
         var result = await _manejador.TryHandleAsync(_ctx, ex, TestContext.Current.CancellationToken);
@@ -117,14 +117,14 @@ public class ManejadorExcepcionesTests
         var details = await LeerValidacion();
         Assert.NotNull(details);
         Assert.Equal(400, details.Status);
-        Assert.Contains(details.Errors, e => e.Key == "Nombre" && e.Value.Contains("El nombre es invÃ¡lido"));
+        Assert.Contains(details.Errors, e => e.Key == "Nombre" && e.Value.Contains("El nombre es inválido"));
     }
 
     [Fact]
-    public async Task TryHandleAsync_OtraExcepcion_DevuelveFalse()
+    public async Task TryHandleAsync_ExcepcionDesconocida_DevuelveFalso()
     {
         // Arrange
-        var ex = new Exception("Error genÃ©rico");
+        var ex = new Exception("Error genérico");
 
         // Act
         var result = await _manejador.TryHandleAsync(_ctx, ex, TestContext.Current.CancellationToken);
