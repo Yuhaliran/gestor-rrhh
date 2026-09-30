@@ -89,15 +89,14 @@ public class ConfiguracionesTests : IDisposable
     public void Modelo_Pais_TieneCheckConstraintRangoEdad()
     {
         // Arrange
-        var nombreTabla = _bd.Contexto.Model.FindEntityType(typeof(Pais))!.GetTableName();
+        var modelo = _bd.Contexto.GetService<IDesignTimeModel>().Model;
 
         // Act
-        var tabla = _bd.Contexto.Model.GetRelationalModel().FindTable(nombreTabla!, null);
+        var pais = modelo.FindEntityType(typeof(Pais))!;
+        var checks = pais.GetCheckConstraints();
 
         // Assert
-        Assert.NotNull(tabla);
-        Assert.NotNull(tabla.CheckConstraints);
-        Assert.Contains(tabla.CheckConstraints, c => c.Name == "CK_Pais_RangoEdad");
+        Assert.Contains(checks, c => c.Name == "CK_Pais_RangoEdad");
     }
 
     // 5. Largos máximos
