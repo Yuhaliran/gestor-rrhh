@@ -87,7 +87,7 @@ U = unitaria · I = integración · A = aceptación (Postman) · E = E2E · R = 
 
 ## Migraciones
 - **MIG1.** `dotnet ef migrations has-pending-model-changes -p src/RRHH.Infrastructure -s src/RRHH.Api`
-  no informa cambios pendientes (no necesita base de datos).
+  no informa cambios pendientes (no necesita base de datos). Corre en la integración continua.
 - **MIG2** (opcional, categoría SqlServer). Aplicar todas las migraciones sobre una base
   vacía de LocalDB y verificar que se crean las tablas y los datos iniciales.
 

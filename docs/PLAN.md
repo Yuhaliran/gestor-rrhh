@@ -159,7 +159,7 @@ Listados paginados: `?pagina=1&tamanio=20&buscar=texto`.
   Opcional: `docker-compose.yml` con SQL Server para quien prefiera Docker.
 - No hace falta SSMS: `dotnet ef database update` crea la base y carga los datos iniciales.
 - Cadena de conexión en user-secrets de RRHH.Api (nunca en el repositorio):
-  `dotnet user-secrets set "ConnectionStrings:Rrhh" "Server=(localdb)\\MSSQLLocalDB;Database=Rrhh;Trusted_Connection=True;TrustServerCertificate=True" --project src/RRHH.Api`
+  `dotnet user-secrets set "ConnectionStrings:Rrhh" "Server=(localdb)\MSSQLLocalDB;Database=Rrhh;Trusted_Connection=True;TrustServerCertificate=True" --project src/RRHH.Api`
 - Las pruebas automatizadas usan SQLite en memoria: corren sin instalar ningún motor.
 - Datos iniciales: Guatemala, sus 22 departamentos y la cabecera de cada uno (ver «Datos iniciales»).
 

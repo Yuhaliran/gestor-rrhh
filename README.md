@@ -4,7 +4,7 @@ Gestión de colaboradores de varias empresas en distintos países.
 .NET 10 · ASP.NET Core · Entity Framework Core · SQL Server · Razor Pages · xUnit
 
 ## Cómo ejecutar
-1. Requisitos: .NET 10 SDK, SQL Server (Express o LocalDB), `dotnet tool install --global dotnet-ef`;
+1. Requisitos: .NET 10 SDK, SQL Server (Express o LocalDB), y en la carpeta del repositorio `dotnet tool restore` (instala `dotnet-ef` con la versión fijada);
    para las pruebas de aceptación, Node.js y `npm install -g newman`
 2. Configurar la cadena de conexión (ver docs/PLAN.md, sección Entorno)
 3. `dotnet ef database update -p src/RRHH.Infrastructure -s src/RRHH.Api`

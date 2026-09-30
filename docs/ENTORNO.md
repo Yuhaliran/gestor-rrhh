@@ -12,7 +12,6 @@ winget install Postman.Postman
 ```
 Abrir una terminal nueva y:
 ```powershell
-dotnet tool install --global dotnet-ef
 npm install -g newman
 code --install-extension ms-dotnettools.csdevkit
 ```
@@ -25,6 +24,15 @@ mayor, aunque un instalador (por ejemplo, el de Visual Studio) agregue un SDK m�
 
 SQL Server: instalar **SQL Server Express o LocalDB** desde el instalador oficial de Microsoft.
 No hace falta SSMS: las migraciones crean la base.
+
+## En la carpeta del repositorio
+```powershell
+dotnet tool restore     # dotnet-ef con la versión fijada en dotnet-tools.json
+dotnet user-secrets set "ConnectionStrings:Rrhh" "Server=(localdb)\MSSQLLocalDB;Database=Rrhh;Trusted_Connection=True;TrustServerCertificate=True" --project src/RRHH.Api
+dotnet ef database update -p src/RRHH.Infrastructure -s src/RRHH.Api
+```
+La cadena de conexión queda en user-secrets, fuera del repositorio. `database update` crea la base
+`Rrhh` en LocalDB con las tablas y los datos iniciales de Guatemala.
 
 ## Agentes
 ```powershell
@@ -39,7 +47,7 @@ del revisor (`.agents/hooks.json`, ver `docs/AGENTES.md`).
 ```powershell
 git --version
 dotnet --version        # 10.x
-dotnet ef --version
+dotnet ef --version     # en el repositorio: 10.0.12
 node --version
 newman --version
 claude --version
