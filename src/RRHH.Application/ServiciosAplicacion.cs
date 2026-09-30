@@ -10,6 +10,7 @@ public static class ServiciosAplicacion
     public static IServiceCollection AgregarAplicacion(this IServiceCollection servicios)
     {
         servicios.AddScoped<IPaisesServicio, PaisesServicio>();
+        servicios.AddScoped<IDepartamentosServicio, DepartamentosServicio>();
         return servicios;
     }
 }
