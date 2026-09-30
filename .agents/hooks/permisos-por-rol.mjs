@@ -13,6 +13,7 @@
 // Entrada (stdin):  { "toolCall": { "name": "...", "args": { ... } }, "artifactDirectoryPath": "...", ... }
 // Salida (stdout):  { "decision": "allow" | "ask" | "deny", "reason": "..." }
 
+import { appendFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -349,13 +350,31 @@ function decidir(entrada) {
   return pregunta;
 }
 
+// Registro de cada decisión en la carpeta temporal, para revisar qué se permitió, qué se
+// preguntó y qué se bloqueó (y confirmar que agy ejecuta el hook).
+function registrar(entrada, respuesta) {
+  try {
+    const llamada = entrada?.toolCall ?? {};
+    const args = typeof llamada.args === 'string' ? JSON.parse(llamada.args) : (llamada.args ?? {});
+    const detalle = args.CommandLine ?? args.TargetFile ?? args.AbsolutePath ?? args.DirectoryPath ?? '';
+    const linea = `${new Date().toISOString()} ${rol} ${llamada.name ?? '?'} ${respuesta.decision} ${detalle}`
+      .replace(/\s+/g, ' ');
+    appendFileSync(path.join(os.tmpdir(), 'rrhh-permisos.log'), `${linea}\n`);
+  } catch {
+    // el registro nunca cambia la decisión
+  }
+}
+
 let respuesta;
+let entrada;
 try {
   process.stdin.setEncoding('utf8');
   let texto = '';
   for await (const parte of process.stdin) texto += parte;
-  respuesta = decidir(JSON.parse(texto));
+  entrada = JSON.parse(texto);
+  respuesta = decidir(entrada);
 } catch (error) {
   respuesta = niega(`El hook de permisos falló (${error.message}); se bloquea por seguridad.`);
 }
+registrar(entrada, respuesta);
 process.stdout.write(JSON.stringify(respuesta));
