@@ -50,7 +50,7 @@ public class DepartamentosServicioTests : IDisposable
 
         await _servicio.CrearAsync(DtoBase(p1.Id) with { Nombre = "Depto B" }, TestContext.Current.CancellationToken);
         await _servicio.CrearAsync(DtoBase(p1.Id) with { Nombre = "Depto A" }, TestContext.Current.CancellationToken);
-        
+
         await _servicio.CrearAsync(DtoBase(p2.Id) with { Nombre = "Depto Z" }, TestContext.Current.CancellationToken);
         await _servicio.CrearAsync(DtoBase(p2.Id) with { Nombre = "Depto Y" }, TestContext.Current.CancellationToken);
 
@@ -61,17 +61,17 @@ public class DepartamentosServicioTests : IDisposable
 
         // Assert
         var creados = pagina.Elementos.Where(d => d.PaisId == p1.Id || d.PaisId == p2.Id).ToList();
-        
+
         Assert.Equal(4, creados.Count);
         Assert.Equal("Pais A", creados[0].PaisNombre);
         Assert.Equal("Depto Y", creados[0].Nombre);
-        
+
         Assert.Equal("Pais A", creados[1].PaisNombre);
         Assert.Equal("Depto Z", creados[1].Nombre);
-        
+
         Assert.Equal("Pais Z", creados[2].PaisNombre);
         Assert.Equal("Depto A", creados[2].Nombre);
-        
+
         Assert.Equal("Pais Z", creados[3].PaisNombre);
         Assert.Equal("Depto B", creados[3].Nombre);
     }
@@ -278,7 +278,7 @@ public class DepartamentosServicioTests : IDisposable
         // Arrange
         var p = await CrearPaisPruebaAsync("Pais Act 400", "A0");
         var creado = await _servicio.CrearAsync(DtoBase(p.Id), TestContext.Current.CancellationToken);
-        
+
         var dtoInvalido = DtoBase(999);
 
         // Act
@@ -295,7 +295,7 @@ public class DepartamentosServicioTests : IDisposable
         var p = await CrearPaisPruebaAsync("Pais Act 409 A", "A9");
         await _servicio.CrearAsync(DtoBase(p.Id) with { Nombre = "Depto Existente" }, TestContext.Current.CancellationToken);
         var creado = await _servicio.CrearAsync(DtoBase(p.Id) with { Nombre = "Depto Nuevo" }, TestContext.Current.CancellationToken);
-        
+
         var dtoDuplicado = DtoBase(p.Id) with { Nombre = "Depto Existente" };
 
         // Act & Assert
@@ -310,7 +310,7 @@ public class DepartamentosServicioTests : IDisposable
         var p2 = await CrearPaisPruebaAsync("Pais Act 409 B2", "B2");
         await _servicio.CrearAsync(DtoBase(p2.Id) with { Nombre = "Depto Existente" }, TestContext.Current.CancellationToken);
         var creado = await _servicio.CrearAsync(DtoBase(p1.Id) with { Nombre = "Depto Nuevo" }, TestContext.Current.CancellationToken);
-        
+
         var dtoMoverDuplicado = DtoBase(p2.Id) with { Nombre = "Depto Existente" };
 
         // Act & Assert
@@ -324,7 +324,7 @@ public class DepartamentosServicioTests : IDisposable
         var p1 = await CrearPaisPruebaAsync("Pais Origen", "O1");
         var p2 = await CrearPaisPruebaAsync("Pais Destino", "D2");
         var creado = await _servicio.CrearAsync(DtoBase(p1.Id) with { Nombre = "Moviendo" }, TestContext.Current.CancellationToken);
-        
+
         var dtoActualizar = DtoBase(p2.Id) with { Nombre = "Moviendo" };
 
         // Act
@@ -347,7 +347,7 @@ public class DepartamentosServicioTests : IDisposable
         // Arrange
         var p = await CrearPaisPruebaAsync("Pais Mismo", "SM");
         var creado = await _servicio.CrearAsync(DtoBase(p.Id) with { Nombre = "Mismo Nombre" }, TestContext.Current.CancellationToken);
-        
+
         var dto = DtoBase(p.Id) with { Nombre = "Mismo Nombre" };
 
         // Act
@@ -368,7 +368,7 @@ public class DepartamentosServicioTests : IDisposable
     public async Task EliminarAsync_GuatemalaConMunicipios_LanzaConflictoException()
     {
         // Arrange: El departamento 1 (Guatemala) tiene municipios por defecto.
-        
+
         // Act & Assert
         await Assert.ThrowsAsync<ConflictoException>(() => _servicio.EliminarAsync(1, TestContext.Current.CancellationToken));
     }
