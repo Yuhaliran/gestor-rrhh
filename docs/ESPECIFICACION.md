@@ -15,16 +15,17 @@ crear, editar y eliminar.
 - Nombre (obligatorio, único)
 - Código ISO de 2 letras (obligatorio, único; p. ej. GT)
 - Edad mínima y edad máxima de los colaboradores (obligatorias, enteros no negativos, la mínima
-  no mayor que la máxima; por defecto 18 y 100)
-- Fecha de cumpleaños de los nacidos el 29 de febrero en años no bisiestos: 28 de febrero
-  (por defecto) o 1 de marzo
+  no mayor que la máxima; el formulario propone 18 y 100)
+- Fecha de cumpleaños de los nacidos el 29 de febrero en años no bisiestos: 28 de febrero o
+  1 de marzo (obligatoria; el formulario propone 28 de febrero)
+- La API exige estos tres datos: si falta alguno, responde 400; no completa los valores propuestos.
 
 ### Departamento
-- País (obligatorio)
+- País (obligatorio; no cambia al editar el departamento, RN8)
 - Nombre (obligatorio, único dentro del país)
 
 ### Municipio
-- Departamento (obligatorio)
+- Departamento (obligatorio; no cambia al editar el municipio, RN8)
 - Nombre (obligatorio, único dentro del departamento)
 
 ### Empresa
@@ -57,13 +58,17 @@ crear, editar y eliminar.
   empresa (400). Cambiar el rango de un país no afecta a los colaboradores ya registrados.
 - **RN5.** No se permiten duplicados: NIT dentro del mismo país, código ISO y nombre de país,
   correo de colaborador, nombres dentro de su padre, y la misma empresa dos veces en un
-  colaborador (409).
+  colaborador (409). La comparación no distingue mayúsculas ni espacios en los extremos
+  («Guatemala» = «guatemala »; un NIT terminado en «k» = el mismo con «K») y sí distingue tildes
+  («Petén» ≠ «Peten»).
 - **RN6.** La geografía de la empresa se elige en cascada: país → departamento → municipio.
 - **RN7.** La edad se calcula a partir de la fecha de nacimiento y la fecha actual. Los nacidos
   el 29 de febrero cumplen años, en los años no bisiestos, el 28 de febrero o el 1 de marzo,
   según el país. Para RN4 se usa la regla de cada país; la edad que se muestra usa la del país de
   la empresa con la fecha de ingreso más antigua (si hay varias, la de menor id). Una fecha de
   nacimiento posterior a la fecha actual da una edad negativa, fuera de cualquier rango (RN4).
+- **RN8.** Al editar un departamento o un municipio no cambia su padre (el país o el
+  departamento): se elige al crearlo. Si se envía uno distinto del actual, 400 en ese campo.
 
 ## Validaciones de entrada
 - **V1.** Campos obligatorios presentes (400).
@@ -91,9 +96,12 @@ crear, editar y eliminar.
 - **NIT único por país:** cada país emite sus identificadores tributarios, así que dos empresas
   de países distintos pueden tener el mismo número. El servicio valida la unicidad con el país del
   municipio de la empresa; el país no se guarda en la empresa para no duplicar el dato (podría
-  contradecir al municipio). Límites conocidos: la base no lo garantiza ante dos altas simultáneas
-  del mismo NIT ni al cambiar el país de un departamento. Una vista indexada de SQL Server lo
-  garantizaría (mejora futura).
+  contradecir al municipio). Límite conocido: la base no lo garantiza ante dos altas simultáneas
+  del mismo NIT. Una vista indexada de SQL Server lo garantizaría (mejora futura).
+- **Padre fijo al editar (RN8):** editar un departamento o un municipio no cambia a qué país o
+  departamento pertenece; cada nivel se edita en su propio mantenimiento. Así las empresas nunca
+  cambian de país de forma indirecta, y la unicidad del NIT se valida siempre en el servicio de
+  empresas.
 - **Eliminación física:** eliminar borra el registro, protegido por RN1 y RN2 (409). Un estado
   activo/inactivo (borrado lógico) abriría casos de uso que la evaluación no pide (reactivar,
   unicidad entre inactivos, historial de la relación laboral); queda como mejora futura.

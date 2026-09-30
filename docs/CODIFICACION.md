@@ -109,18 +109,33 @@ b.HasOne(d => d.Pais).WithMany(p => p.Departamentos)
 
 ### DTOs (Contratos)
 Las validaciones de formato van en el DTO; las reglas de negocio, en el servicio.
-En records, los atributos se ponen en los parámetros (no con `property:`).
+Los DTOs que se validan (los de escritura y `Consulta`) son records con propiedades `init`, con los
+atributos en las propiedades: así los valida la API y también `Validator.TryValidateObject` en las
+pruebas unitarias. En un record posicional los atributos quedan en los parámetros y ese validador
+no los ve (E-012). Los DTOs de lectura pueden ser posicionales.
+Un número obligatorio va como `int?` con `[Required]`: con `int`, un dato no enviado llega como 0
+(que puede ser un valor válido) y no se puede responder 400.
 ```csharp
 namespace RRHH.Contratos.Paises;
 
 public record PaisDto(int Id, string Nombre, string CodigoIso2);
 
-public record GuardarPaisDto(
-    [Required, StringLength(100)] string Nombre,
-    [Required, RegularExpression("^[A-Za-z]{2}$", ErrorMessage = "Debe tener 2 letras.")] string CodigoIso2);
+public record GuardarPaisDto
+{
+    [Required, StringLength(100)]
+    public string? Nombre { get; init; }
 
-// Comunes
-public record Consulta(int Pagina = 1, int Tamanio = 20, string? Buscar = null);
+    [Required, RegularExpression("^[A-Za-z]{2}$", ErrorMessage = "Debe tener 2 letras.")]
+    public string? CodigoIso2 { get; init; }
+}
+
+// Comunes (RRHH.Contratos.Comun)
+public record Consulta
+{
+    [Range(1, int.MaxValue)] public int Pagina { get; init; } = 1;
+    [Range(1, 100)] public int Tamanio { get; init; } = 20;
+    [StringLength(100)] public string? Buscar { get; init; }
+}
 public record Pagina<T>(IReadOnlyList<T> Elementos, int Total, int Numero, int Tamanio);
 ```
 
@@ -142,7 +157,10 @@ Errores de negocio como excepciones propias, traducidas a ProblemDetails en un s
 public class NoEncontradoException(string recurso, int id)
     : Exception($"No existe {recurso} con id {id}.");
 public class ConflictoException(string mensaje) : Exception(mensaje);
-public class ValidacionException(string mensaje) : Exception(mensaje);
+public class ValidacionException(string campo, string mensaje) : Exception(mensaje)   // 400 en ese campo
+{
+    public string Campo { get; } = campo;
+}
 ```
 
 Acceso a datos desde Application, a través de una interfaz (para no depender de Infrastructure):
@@ -162,17 +180,22 @@ public class PaisesServicio(IRrhhDbContext db) : IPaisesServicio
 {
     public Task<Pagina<PaisDto>> ListarAsync(Consulta c, CancellationToken ct) =>
         db.Paises.AsNoTracking()
-          .Where(p => c.Buscar == null || p.Nombre.Contains(c.Buscar))
+          .Where(p => c.Buscar == null
+                      || EF.Functions.Like(p.Nombre, Busqueda.PatronContiene(c.Buscar), Busqueda.Escape))
           .OrderBy(p => p.Nombre)
           .Select(p => new PaisDto(p.Id, p.Nombre, p.CodigoIso2))
           .PaginarAsync(c, ct);                     // extensión común para Skip/Take y total
 
     public async Task<PaisDto> CrearAsync(GuardarPaisDto dto, CancellationToken ct)
     {
-        var nombre = dto.Nombre.Trim();
-        var codigo = dto.CodigoIso2.ToUpperInvariant();
-        if (await db.Paises.AnyAsync(p => p.Nombre == nombre || p.CodigoIso2 == codigo, ct))
-            throw new ConflictoException("Ya existe un país con ese nombre o código.");
+        var nombre = dto.Nombre!.Trim();
+        var codigo = dto.CodigoIso2!.Trim().ToUpperInvariant();
+        // Sin UPPER(): la intercalación de la columna ya no distingue mayúsculas, y así se usa el
+        // índice. Una consulta por dato, para que el mensaje diga cuál se repite.
+        if (await db.Paises.AnyAsync(p => p.Nombre == nombre, ct))
+            throw new ConflictoException($"Ya existe un país con el nombre «{nombre}».");
+        if (await db.Paises.AnyAsync(p => p.CodigoIso2 == codigo, ct))
+            throw new ConflictoException($"Ya existe un país con el código ISO «{codigo}».");
 
         var pais = new Pais { Nombre = nombre, CodigoIso2 = codigo };
         db.Paises.Add(pais);
@@ -192,6 +215,10 @@ public class PaisesServicio(IRrhhDbContext db) : IPaisesServicio
 }
 ```
 Lecturas: `AsNoTracking()` y proyección directa al DTO. Nunca devolver entidades.
+Comparaciones de texto: nunca `ToUpper()`/`ToLower()` sobre columnas (impiden usar los índices).
+Las columnas de texto tienen intercalación sin mayúsculas (`Modern_Spanish_CI_AS` en SQL Server,
+`NOCASE` en SQLite), definida en `RrhhDbContext`; las búsquedas usan `EF.Functions.Like` con
+`Busqueda.PatronContiene`, que escapa los comodines del texto buscado.
 
 ### Controlador (Api)
 Delgado: sin lógica de negocio.
@@ -229,21 +256,23 @@ public class ManejadorExcepciones(IProblemDetailsService problemas) : IException
 {
     public async ValueTask<bool> TryHandleAsync(HttpContext ctx, Exception ex, CancellationToken ct)
     {
-        var (estado, titulo) = ex switch
+        ProblemDetails? problema = ex switch
         {
-            NoEncontradoException => (StatusCodes.Status404NotFound, "Recurso no encontrado"),
-            ConflictoException    => (StatusCodes.Status409Conflict, "Conflicto"),
-            ValidacionException   => (StatusCodes.Status400BadRequest, "Datos inválidos"),
-            _ => (0, "")
+            NoEncontradoException => new() { Status = 404, Title = "Recurso no encontrado", Detail = ex.Message },
+            ConflictoException    => new() { Status = 409, Title = "Conflicto", Detail = ex.Message },
+            // Violación de un único o de una clave foránea que se coló a la validación del servicio
+            DbUpdateException     => new() { Status = 409, Title = "Conflicto",
+                                             Detail = "La operación entra en conflicto con datos existentes." },
+            // Regla del servicio sobre un campo (V4, RN4): mismo formato que los errores del DTO
+            ValidacionException v => new ValidationProblemDetails(
+                                         new Dictionary<string, string[]> { [v.Campo] = [v.Message] })
+                                     { Status = 400, Title = "Datos inválidos" },
+            _ => null
         };
-        if (estado == 0) return false;          // lo no previsto: 500 genérico, sin detalles internos
+        if (problema is null) return false;     // lo no previsto: 500 genérico, sin detalles internos
 
-        ctx.Response.StatusCode = estado;
-        return await problemas.TryWriteAsync(new ProblemDetailsContext
-        {
-            HttpContext = ctx,
-            ProblemDetails = { Status = estado, Title = titulo, Detail = ex.Message }
-        });
+        ctx.Response.StatusCode = problema.Status!.Value;
+        return await problemas.TryWriteAsync(new ProblemDetailsContext { HttpContext = ctx, ProblemDetails = problema });
     }
 }
 

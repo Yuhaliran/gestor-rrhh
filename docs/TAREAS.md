@@ -16,6 +16,8 @@ Convenciones y patrón de referencia: `docs/CODIFICACION.md`. Prompts de cada pa
 
 En las tareas de la API (9 a 14) se sigue el ciclo de `docs/AGENTES.md`:
 contrato → pruebas (tester) → implementación (implementador) → revisión.
+Desde la tarea 8, el tester agrega a `postman/` los requests de los endpoints nuevos; la tarea 22
+completa la colección y la corre con Newman.
 Cada paso es un commit propio; el merge se hace al cerrar la fase, con el PR.
 
 ## Fase 0 · rama `chore/estructura`
@@ -45,11 +47,11 @@ Cada paso es un commit propio; el merge se hace al cerrar la fase, con el PR.
        (`test: base de pruebas con SQLite en memoria`). Se hace dentro de la tarea 5
 
 ## Fase 2 · rama `feature/api-geografia`
-- [ ] 8. Manejo global de errores con ProblemDetails, paginación común y /health
+- [x] 8. Manejo global de errores con ProblemDetails, paginación común y /health
        (`feat(api): errores, paginación y health check`)
-- [ ] 9. Países: servicio, endpoints y pruebas (`feat(api): mantenimiento de países`)
-- [ ] 10. Departamentos, con listado por país (`feat(api): mantenimiento de departamentos`)
-- [ ] 11. Municipios, con listado por departamento (`feat(api): mantenimiento de municipios`)
+- [x] 9. Países: servicio, endpoints y pruebas (`feat(api): mantenimiento de países`)
+- [x] 10. Departamentos, con listado por país (`feat(api): mantenimiento de departamentos`)
+- [x] 11. Municipios, con listado por departamento (`feat(api): mantenimiento de municipios`)
 
 ## Fase 3 · rama `feature/api-empresas-colaboradores`
 - [ ] 12. Empresas, con geografía completa en el detalle (`feat(api): mantenimiento de empresas`)

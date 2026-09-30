@@ -150,6 +150,41 @@ Compilación, paquetes, pruebas, EF Core, git.
                  comportamiento: SQLite sí aplica los CHECK.
 - Origen:        tarea 5 · 2026-09-29 · implementador
 
+### E-012 · Una prueba de validación da por válido un DTO con datos inválidos
+- Síntoma:       `Validator.TryValidateObject` devuelve `true` para un DTO que la API rechazaría (por
+                 ejemplo, un tamaño de página 0).
+- Causa:         en un record posicional, los atributos (`[Range]`, `[Required]`…) quedan en los
+                 parámetros del constructor. La API los usa, pero `Validator.TryValidateObject` sólo
+                 mira las propiedades. Tampoco sirve `[property: …]`: la API rechaza atributos en las
+                 propiedades de un record posicional.
+- Solución:      los DTOs que se validan son records con propiedades `init` y los atributos en ellas
+                 (docs/CODIFICACION.md, «DTOs»).
+- Cómo evitarlo: no declarar DTOs de escritura como records posicionales. Una prueba de validación
+                 tiene que incluir al menos un caso inválido que falle.
+- Origen:        tarea 8 · 2026-09-30 · implementador
+
+### E-013 · Colección de Postman inválida tras edición con PowerShell
+- Síntoma:       el JSON tiene saltos de línea reales dentro de un texto («Bad control character in string literal») y textos corruptos («PaÃƒÂses», «mayÃƒÂºsculas»).
+- Causa:         PowerShell 5.1 rompe la codificación UTF-8 al leer y escribir archivos, y los reemplazos pueden meter saltos de línea dentro de un JSON.
+- Solución:      corregir el JSON editándolo con la herramienta de edición de archivos. En los scripts de prueba, cada línea de código va como un texto separado del arreglo "exec". Validar el resultado con `node -e "JSON.parse(require('fs').readFileSync('...','utf8'))"`.
+- Cómo evitarlo: usar la herramienta de edición de archivos (write_to_file o replace_file_content) en lugar de Get-Content/Set-Content o reemplazos de PowerShell; y validar siempre el JSON después de editarlo.
+- Origen:        tarea 9 · 2026-09-29 · tester
+
+### E-014 · El informe del tester da por hechas verificaciones que no se hicieron
+- Síntoma:       el informe dice que la trazabilidad se actualizó, que todo el rojo es por
+                 `NotImplementedException` o que `dotnet format` pasa, y no es así: la fila no está
+                 en el commit, hay pruebas que fallan en el Arrange (datos repetidos que violan un
+                 único) o el formato falla por un cambio posterior a la verificación.
+- Causa:         se verificó antes del último cambio, o se miró que el archivo estuviera en el commit
+                 y no su contenido.
+- Solución:      corregir y volver a verificar después del último cambio.
+- Cómo evitarlo: como último paso antes del commit, correr `dotnet format --verify-no-changes` y
+                 `dotnet test`, y revisar el motivo de cada prueba en rojo: tiene que ser
+                 `NotImplementedException` (o el `Assert`), nunca una excepción del Arrange. Revisar
+                 con `git diff --cached` que la trazabilidad tenga cada prueba nueva en su fila. En
+                 los datos de prueba, generar nombres y códigos únicos para cada entidad creada.
+- Origen:        tareas 10 y 11 · 2026-09-30 · implementador
+
 ## Funcionalidad
 Comportamiento que no cumplía la especificación, detectado por pruebas o revisión.
 

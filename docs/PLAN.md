@@ -46,6 +46,9 @@ Pais 1──N Departamento 1──N Municipio 1──N Empresa
 | EmpresaColaborador | EmpresaId, ColaboradorId, FechaIngreso, Puesto | PK compuesta; FK Empresa (Restrict), FK Colaborador (Cascade) |
 
 Tipos: textos con largo máximo (`nvarchar(n)`), fechas `date`, todo `NOT NULL` salvo Puesto.
+Intercalación de los textos: `Modern_Spanish_CI_AS` (no distingue mayúsculas, sí tildes, ordena la
+Ñ en español); así los índices únicos cumplen RN5 también en la base. En las pruebas, SQLite usa
+`NOCASE` (sólo ASCII).
 `Regla29Febrero` es un enum del dominio guardado como texto (`VeintiochoDeFebrero` o
 `PrimeroDeMarzo`), legible en la base. Valores por defecto de país: 18, 100 y `VeintiochoDeFebrero`,
 definidos en el dominio y no en la base: son una decisión de negocio, y con un `DEFAULT` EF Core
@@ -152,7 +155,16 @@ contrastada con Wikipedia, «Anexo:Municipios de Guatemala».
 | GET | /health | Estado de la API (prueba de humo) |
 
 Respuestas: 200, 201 con `Location`, 204, 400 `ValidationProblem`, 404, 409 `ProblemDetails`.
-Listados paginados: `?pagina=1&tamanio=20&buscar=texto`.
+- **Listados paginados:** `?pagina=1&tamanio=20&buscar=texto`. `pagina` desde 1 y `tamanio` de 1 a
+  100 (por defecto 1 y 20); fuera de rango, 400. `buscar` filtra por nombre sin distinguir
+  mayúsculas (en países, también por código ISO).
+- **Errores:** 400 para toda validación (formato del DTO o regla del servicio sobre un campo, como
+  V4 o RN4), con el error en el campo; 404 si no existe; 409 por reglas de negocio. Un error de la
+  base por un único o una clave foránea (dos pedidos simultáneos que pasan la validación del
+  servicio) también es 409. Un error no previsto es 500, sin detalles internos.
+- **JSON:** los enums van como texto (`"VeintiochoDeFebrero"`), igual que en la base; las fechas,
+  `"aaaa-mm-dd"`.
+- **`/health`:** verifica que la API responde y llega a la base (200 `Healthy` o 503 `Unhealthy`).
 
 ## Base de datos y entorno
 - La aplicación usa **SQL Server**. En desarrollo: LocalDB (viene con Visual Studio) o SQL Server Express.
