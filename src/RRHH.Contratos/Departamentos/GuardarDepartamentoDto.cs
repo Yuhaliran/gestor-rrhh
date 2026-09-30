@@ -2,7 +2,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace RRHH.Contratos.Departamentos;
 
-// Datos para crear o editar un departamento. Que el país exista lo valida el servicio (V4).
+// Datos para crear o editar un departamento. Que el país exista (V4) y que no cambie al editar
+// (RN8) lo valida el servicio.
 public record GuardarDepartamentoDto
 {
     [Required(ErrorMessage = "El país es obligatorio.")]

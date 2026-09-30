@@ -22,9 +22,10 @@ public interface IDepartamentosServicio
     // (409) si el nombre ya existe en el país (RN5). Guarda el nombre sin espacios en los extremos.
     Task<DepartamentoDto> CrearAsync(GuardarDepartamentoDto dto, CancellationToken ct);
 
-    // Mismos errores que CrearAsync, después de NoEncontradoException (404) si el departamento no
-    // existe: se revisan en ese orden (404, 400, 409). Puede cambiar el país; el nombre se valida en
-    // el país nuevo, y el propio departamento no cuenta como duplicado.
+    // Se revisa en este orden: NoEncontradoException (404) si el departamento no existe;
+    // ValidacionException (400) en el campo PaisId si es distinto del actual (RN8: el país no cambia
+    // al editar); ConflictoException (409) si el nombre ya existe en el país (RN5), sin contar al
+    // propio departamento. Guarda el nombre sin espacios en los extremos.
     Task<DepartamentoDto> ActualizarAsync(int id, GuardarDepartamentoDto dto, CancellationToken ct);
 
     // NoEncontradoException (404); ConflictoException (409) si tiene municipios (RN1).

@@ -21,11 +21,11 @@ crear, editar y eliminar.
 - La API exige estos tres datos: si falta alguno, responde 400; no completa los valores propuestos.
 
 ### Departamento
-- País (obligatorio)
+- País (obligatorio; no cambia al editar el departamento, RN8)
 - Nombre (obligatorio, único dentro del país)
 
 ### Municipio
-- Departamento (obligatorio)
+- Departamento (obligatorio; no cambia al editar el municipio, RN8)
 - Nombre (obligatorio, único dentro del departamento)
 
 ### Empresa
@@ -67,6 +67,8 @@ crear, editar y eliminar.
   según el país. Para RN4 se usa la regla de cada país; la edad que se muestra usa la del país de
   la empresa con la fecha de ingreso más antigua (si hay varias, la de menor id). Una fecha de
   nacimiento posterior a la fecha actual da una edad negativa, fuera de cualquier rango (RN4).
+- **RN8.** Al editar un departamento o un municipio no cambia su padre (el país o el
+  departamento): se elige al crearlo. Si se envía uno distinto del actual, 400 en ese campo.
 
 ## Validaciones de entrada
 - **V1.** Campos obligatorios presentes (400).
@@ -94,9 +96,12 @@ crear, editar y eliminar.
 - **NIT único por país:** cada país emite sus identificadores tributarios, así que dos empresas
   de países distintos pueden tener el mismo número. El servicio valida la unicidad con el país del
   municipio de la empresa; el país no se guarda en la empresa para no duplicar el dato (podría
-  contradecir al municipio). Límites conocidos: la base no lo garantiza ante dos altas simultáneas
-  del mismo NIT ni al cambiar el país de un departamento. Una vista indexada de SQL Server lo
-  garantizaría (mejora futura).
+  contradecir al municipio). Límite conocido: la base no lo garantiza ante dos altas simultáneas
+  del mismo NIT. Una vista indexada de SQL Server lo garantizaría (mejora futura).
+- **Padre fijo al editar (RN8):** editar un departamento o un municipio no cambia a qué país o
+  departamento pertenece; cada nivel se edita en su propio mantenimiento. Así las empresas nunca
+  cambian de país de forma indirecta, y la unicidad del NIT se valida siempre en el servicio de
+  empresas.
 - **Eliminación física:** eliminar borra el registro, protegido por RN1 y RN2 (409). Un estado
   activo/inactivo (borrado lógico) abriría casos de uso que la evaluación no pide (reactivar,
   unicidad entre inactivos, historial de la relación laboral); queda como mejora futura.
