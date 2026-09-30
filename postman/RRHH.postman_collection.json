@@ -1421,6 +1421,661 @@
 					}
 				}
 			]
+		},
+		{
+			"name": "Empresas",
+			"item": [
+				{
+					"name": "Setup: Crear pais",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"empPaisId\", pm.response.json().id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombre\":\"Pais Empresa\",\"codigoIso2\":\"PE\",\"edadMinima\":18,\"edadMaxima\":100,\"regla29Febrero\":\"VeintiochoDeFebrero\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/paises",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"paises"
+							]
+						}
+					}
+				},
+				{
+					"name": "Setup: Crear departamento",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"empDeptoId\", pm.response.json().id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"paisId\":{{empPaisId}},\"nombre\":\"Depto Empresa\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/departamentos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"departamentos"
+							]
+						}
+					}
+				},
+				{
+					"name": "Setup: Crear municipio",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"empMuniId\", pm.response.json().id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"departamentoId\":{{empDeptoId}},\"nombre\":\"Muni Empresa\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/municipios",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"municipios"
+							]
+						}
+					}
+				},
+				{
+					"name": "Listar empresas vacio",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/empresas",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"empresas"
+							]
+						}
+					}
+				},
+				{
+					"name": "Crear empresa",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+									"pm.test(\"Cabecera Location\", function () { pm.response.to.have.header(\"Location\"); });",
+									"pm.test(\"Geografia completa\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.municipioId).to.eql(pm.environment.get(\"empMuniId\"));",
+									"    pm.expect(jsonData.departamentoId).to.eql(pm.environment.get(\"empDeptoId\"));",
+									"    pm.expect(jsonData.paisId).to.eql(pm.environment.get(\"empPaisId\"));",
+									"    pm.environment.set(\"empresaId\", jsonData.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"municipioId\":{{empMuniId}},\"nit\":\"NIT-EMP\",\"razonSocial\":\"RS Emp\",\"nombreComercial\":\"NC Emp\",\"telefono\":\"5555-1234\",\"correo\":\"empresa@correo.com\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/empresas",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"empresas"
+							]
+						}
+					}
+				},
+				{
+					"name": "Obtener empresa",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+									"pm.test(\"Verificar datos\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.nit).to.eql(\"NIT-EMP\");",
+									"    pm.expect(jsonData.municipioId).to.eql(pm.environment.get(\"empMuniId\"));",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/empresas/{{empresaId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"empresas",
+								"{{empresaId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Obtener empresa 404",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/empresas/999999",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"empresas",
+								"999999"
+							]
+						}
+					}
+				},
+				{
+					"name": "Crear empresa falta campo (V1)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });",
+									"pm.test(\"Error en NIT\", function () { pm.expect(pm.response.json().errors).to.have.property(\"Nit\"); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"municipioId\":{{empMuniId}},\"razonSocial\":\"RS Emp\",\"nombreComercial\":\"NC Emp\",\"telefono\":\"5555-1234\",\"correo\":\"empresa@correo.com\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/empresas",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"empresas"
+							]
+						}
+					}
+				},
+				{
+					"name": "Crear empresa correo invalido (V2)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });",
+									"pm.test(\"Error en Correo\", function () { pm.expect(pm.response.json().errors).to.have.property(\"Correo\"); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"municipioId\":{{empMuniId}},\"nit\":\"NIT2\",\"razonSocial\":\"RS\",\"nombreComercial\":\"NC\",\"telefono\":\"5555-1234\",\"correo\":\"sin-arroba\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/empresas",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"empresas"
+							]
+						}
+					}
+				},
+				{
+					"name": "Crear empresa telefono invalido (V5)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });",
+									"pm.test(\"Error en Telefono\", function () { pm.expect(pm.response.json().errors).to.have.property(\"Telefono\"); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"municipioId\":{{empMuniId}},\"nit\":\"NIT2\",\"razonSocial\":\"RS\",\"nombreComercial\":\"NC\",\"telefono\":\"hola\",\"correo\":\"a@a.com\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/empresas",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"empresas"
+							]
+						}
+					}
+				},
+				{
+					"name": "Crear empresa municipio inexistente (V4)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });",
+									"pm.test(\"Error en MunicipioId\", function () { pm.expect(pm.response.json().errors).to.have.property(\"MunicipioId\"); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"municipioId\":999999,\"nit\":\"NIT2\",\"razonSocial\":\"RS\",\"nombreComercial\":\"NC\",\"telefono\":\"5555-1234\",\"correo\":\"a@a.com\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/empresas",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"empresas"
+							]
+						}
+					}
+				},
+				{
+					"name": "Crear empresa NIT duplicado RN5",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 409\", function () { pm.response.to.have.status(409); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"municipioId\":{{empMuniId}},\"nit\":\"  nit-emp \",\"razonSocial\":\"RS2\",\"nombreComercial\":\"NC2\",\"telefono\":\"5555-1234\",\"correo\":\"a@a.com\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/empresas",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"empresas"
+							]
+						}
+					}
+				},
+				{
+					"name": "Actualizar empresa RN8",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });",
+									"pm.test(\"Error en MunicipioId\", function () { pm.expect(pm.response.json().errors).to.have.property(\"MunicipioId\"); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"municipioId\":1,\"nit\":\"NIT-EMP\",\"razonSocial\":\"RS2\",\"nombreComercial\":\"NC2\",\"telefono\":\"5555-1234\",\"correo\":\"a@a.com\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/empresas/{{empresaId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"empresas",
+								"{{empresaId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Actualizar empresa ok",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"municipioId\":{{empMuniId}},\"nit\":\"NIT-EMP\",\"razonSocial\":\"RS Mod\",\"nombreComercial\":\"NC Mod\",\"telefono\":\"5555-1234\",\"correo\":\"b@b.com\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/empresas/{{empresaId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"empresas",
+								"{{empresaId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Eliminar municipio RN1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 409\", function () { pm.response.to.have.status(409); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"url": {
+							"raw": "{{baseUrl}}/api/municipios/{{empMuniId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"municipios",
+								"{{empMuniId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Teardown: Eliminar empresa",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"url": {
+							"raw": "{{baseUrl}}/api/empresas/{{empresaId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"empresas",
+								"{{empresaId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Teardown: Eliminar municipio",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"url": {
+							"raw": "{{baseUrl}}/api/municipios/{{empMuniId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"municipios",
+								"{{empMuniId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Teardown: Eliminar departamento",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"url": {
+							"raw": "{{baseUrl}}/api/departamentos/{{empDeptoId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"departamentos",
+								"{{empDeptoId}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Teardown: Eliminar pais",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"url": {
+							"raw": "{{baseUrl}}/api/paises/{{empPaisId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"paises",
+								"{{empPaisId}}"
+							]
+						}
+					}
+				}
+			]
 		}
 	]
 }
