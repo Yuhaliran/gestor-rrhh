@@ -50,8 +50,8 @@ Cada paso es un commit propio; el merge se hace al cerrar la fase, con el PR.
 - [x] 8. Manejo global de errores con ProblemDetails, paginación común y /health
        (`feat(api): errores, paginación y health check`)
 - [x] 9. Países: servicio, endpoints y pruebas (`feat(api): mantenimiento de países`)
-- [ ] 10. Departamentos, con listado por país (`feat(api): mantenimiento de departamentos`)
-- [ ] 11. Municipios, con listado por departamento (`feat(api): mantenimiento de municipios`)
+- [x] 10. Departamentos, con listado por país (`feat(api): mantenimiento de departamentos`)
+- [x] 11. Municipios, con listado por departamento (`feat(api): mantenimiento de municipios`)
 
 ## Fase 3 · rama `feature/api-empresas-colaboradores`
 - [ ] 12. Empresas, con geografía completa en el detalle (`feat(api): mantenimiento de empresas`)
