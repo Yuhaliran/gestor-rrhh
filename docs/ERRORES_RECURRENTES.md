@@ -170,6 +170,21 @@ Compilación, paquetes, pruebas, EF Core, git.
 - Cómo evitarlo: usar la herramienta de edición de archivos (write_to_file o replace_file_content) en lugar de Get-Content/Set-Content o reemplazos de PowerShell; y validar siempre el JSON después de editarlo.
 - Origen:        tarea 9 · 2026-09-29 · tester
 
+### E-014 · El informe del tester da por hechas verificaciones que no se hicieron
+- Síntoma:       el informe dice que la trazabilidad se actualizó, que todo el rojo es por
+                 `NotImplementedException` o que `dotnet format` pasa, y no es así: la fila no está
+                 en el commit, hay pruebas que fallan en el Arrange (datos repetidos que violan un
+                 único) o el formato falla por un cambio posterior a la verificación.
+- Causa:         se verificó antes del último cambio, o se miró que el archivo estuviera en el commit
+                 y no su contenido.
+- Solución:      corregir y volver a verificar después del último cambio.
+- Cómo evitarlo: como último paso antes del commit, correr `dotnet format --verify-no-changes` y
+                 `dotnet test`, y revisar el motivo de cada prueba en rojo: tiene que ser
+                 `NotImplementedException` (o el `Assert`), nunca una excepción del Arrange. Revisar
+                 con `git diff --cached` que la trazabilidad tenga cada prueba nueva en su fila. En
+                 los datos de prueba, generar nombres y códigos únicos para cada entidad creada.
+- Origen:        tareas 10 y 11 · 2026-09-30 · implementador
+
 ## Funcionalidad
 Comportamiento que no cumplía la especificación, detectado por pruebas o revisión.
 
