@@ -1,0 +1,116 @@
+# Errores recurrentes
+
+Errores ya resueltos y cómo evitarlos, para no tropezar dos veces con lo mismo.
+
+- **Antes de empezar una tarea**, leer este archivo.
+- **Al resolver un error que pueda repetirse**, agregar una entrada en el mismo commit de la tarea.
+  Pueden escribir aquí el implementador, el tester y el responsable (ver `docs/AGENTES.md`).
+- No es un registro de bugs: un bug se corrige y queda cubierto por una prueba. Aquí va lo que
+  hay que saber para no volver a causarlo.
+- Numeración correlativa (`E-001`, `E-002`, …), sin reutilizar números.
+
+Formato de cada entrada:
+```
+### E-000 · Título corto
+- Síntoma:       qué se ve (mensaje de error o comportamiento)
+- Causa:         por qué pasa
+- Solución:      qué se hizo
+- Cómo evitarlo: regla práctica para la próxima vez
+- Origen:        tarea N · fecha · rol que lo encontró
+```
+
+## Código y herramientas
+Compilación, paquetes, pruebas, EF Core, git.
+
+### E-001 · `dotnet test` falla con «Testing with VSTest target is no longer supported»
+- Síntoma:       `dotnet test` falla en cada proyecto de pruebas con ese mensaje, aunque todo compila.
+- Causa:         xunit.v3 4.x usa Microsoft.Testing.Platform (MTP) v2, que ya no admite el modo
+                 VSTest de `dotnet test` en el SDK de .NET 10.
+- Solución:      `global.json` en la raíz con `"test": { "runner": "Microsoft.Testing.Platform" }`.
+                 Los proyectos de prueba usan sólo `xunit.v3` y `coverlet.MTP`.
+- Cómo evitarlo: no agregar paquetes de VSTest (`Microsoft.NET.Test.Sdk`, `xunit.runner.visualstudio`,
+                 `coverlet.collector`) ni borrar `global.json`. El filtro
+                 `--filter "Categoria!=E2E&Categoria!=SqlServer"` sigue funcionando: xunit.v3 lo acepta en MTP.
+- Origen:        tarea 1 · 2026-09-29 · implementador
+
+### E-002 · `dotnet test` termina con código 8
+- Síntoma:       «No se ejecutaron pruebas», código de salida 8.
+- Causa:         MTP devuelve 8 cuando no se ejecutó ninguna prueba: un proyecto vacío o un filtro
+                 que excluye todo.
+- Solución:      los proyectos que todavía no tienen pruebas (RRHH.UnitTests y RRHH.IntegrationTests)
+                 ignoran el código 8 en su `.csproj`, con `TestingPlatformCommandLineArguments`
+                 (tarea 3b). RRHH.ArchitectureTests no lo ignora.
+- Cómo evitarlo: ignorar el 8 sólo por proyecto y mientras esté vacío. Ignorarlo en toda la solución
+                 (`dotnet test --ignore-exit-code 8` o `TESTINGPLATFORM_EXITCODE_IGNORE`) haría que
+                 un filtro mal escrito dé verde sin ejecutar ninguna prueba. Al agregar la primera
+                 prueba a un proyecto, quitar esa propiedad de su `.csproj` (recordatorio en las
+                 tareas 4 y 15). Si el 8 aparece en un proyecto con pruebas, revisar el filtro y los
+                 `[Trait]`.
+- Origen:        tarea 1 · 2026-09-29 · implementador; solución en la tarea 3b
+
+### E-003 · `dotnet format` marca CHARSET o WHITESPACE en archivos de plantillas
+- Síntoma:       `dotnet format --verify-no-changes` falla en archivos que genera `dotnet new`.
+- Causa:         algunas plantillas traen BOM o saltos de línea que no respetan `.editorconfig`
+                 (UTF-8 sin BOM).
+- Solución:      correr `dotnet format` y volver a verificar.
+- Cómo evitarlo: después de cada `dotnet new` (proyecto o elemento), correr `dotnet format`.
+- Origen:        tarea 1 · 2026-09-29 · implementador
+
+### E-004 · Avisos «LF will be replaced by CRLF» al hacer `git add`
+- Síntoma:       decenas de avisos de git al agregar archivos.
+- Causa:         git en Windows (`core.autocrlf=true`) guarda LF en el repositorio y usa CRLF en la
+                 copia de trabajo. Los archivos escritos con LF (por herramientas o agentes)
+                 generan el aviso porque en el próximo checkout van a pasar a CRLF.
+- Solución:      no hace falta hacer nada: el repositorio queda con LF. El `.gitattributes`
+                 (`* text=auto`) asegura lo mismo en máquinas sin esa configuración (Mac, Linux).
+- Cómo evitarlo: los avisos son informativos y no rompen nada; no borrar `.gitattributes`.
+- Origen:        tarea 1 · 2026-09-29 · implementador
+
+### E-005 · Una regla `Write(...)` en los permisos de Claude Code no bloquea nada
+- Síntoma:       una regla como `"deny": ["Write(tests/**)"]` se acepta, pero Claude Code puede
+                 seguir escribiendo en esa ruta (al iniciar avisa que la regla no se consulta).
+- Causa:         para archivos, Claude Code sólo aplica reglas `Edit(...)` y `Read(...)`; las de
+                 `Write`, `NotebookEdit` o `MultiEdit` con ruta se ignoran.
+- Solución:      `.claude/settings.json` con `Edit(/tests/**)`, que cubre todas las herramientas
+                 que modifican archivos.
+- Cómo evitarlo: para archivos, sólo reglas `Edit(...)` y `Read(...)`, con `/` al inicio para
+                 anclarlas a la raíz del repositorio. Los comandos se niegan en cada terminal:
+                 `Bash(...)` y `PowerShell(...)`.
+- Origen:        tarea 2b · 2026-09-29 · implementador
+
+### E-006 · El hook de `agy` falla con «Cannot find module ...\.agents\.agents\hooks\...»
+- Síntoma:       en `agy`, todas las herramientas fallan con `jsonhook__permisos-por-rol_PreToolUse`
+                 `failed: exit status 1` y `MODULE_NOT_FOUND` sobre una ruta con `.agents` repetido.
+- Causa:         `agy` ejecuta los comandos de `.agents/hooks.json` desde la carpeta `.agents/`, no
+                 desde la raíz del repositorio; una ruta `.agents/hooks/...` queda duplicada.
+- Solución:      comando `node hooks/permisos-por-rol.mjs`, relativo a `.agents/`.
+- Cómo evitarlo: en `.agents/hooks.json`, escribir las rutas relativas a `.agents/`. Para probar un
+                 hook a mano, ejecutarlo desde esa carpeta.
+- Origen:        tarea 2b · 2026-09-29 · responsable
+
+### E-007 · `agy` bloquea todo con «tool call denied by pre-tool hook:» y sin motivo
+- Síntoma:       el tester no puede leer `docs/`, ejecutar `git status` ni escribir en `tests/`; el
+                 mensaje de bloqueo termina en «:» sin explicación.
+- Causa:         `agy` trata como `deny` una respuesta del hook sin `decision` (por ejemplo `{}`).
+- Solución:      el hook responde siempre una decisión: `allow` donde `agy` ya permitía por defecto,
+                 `ask` en los comandos y fuera de sus carpetas, `deny` con `reason` en lo prohibido.
+- Cómo evitarlo: en un hook `PreToolUse`, nunca devolver `{}`. Un bloqueo sin motivo indica que el
+                 hook no decidió.
+- Origen:        tarea 2b · 2026-09-29 · responsable
+
+### E-008 · Un `packages.lock.json` menciona un proyecto que no existe
+- Síntoma:       el lock de un proyecto de pruebas tiene un proyecto o una dependencia entre
+                 proyectos que no están en la solución (por ejemplo `rrhh.temporal`).
+- Causa:         pruebas de mutación: con la arquitectura rota a propósito, `dotnet test` restaura
+                 y reescribe los `packages.lock.json` de los proyectos de pruebas. Al deshacer sólo
+                 `src/`, el lock de `tests/` quedó con la mutación y se commiteó.
+- Solución:      `dotnet restore <proyecto> --force-evaluate` regenera el lock desde el estado real.
+- Cómo evitarlo: hacer las mutaciones con el árbol de trabajo limpio y deshacerlas con
+                 `git checkout -- .`, que incluye los lock files. Antes de commitear, revisar el
+                 diff de cada `packages.lock.json`.
+- Origen:        tarea 3 · 2026-09-29 · implementador
+
+## Funcionalidad
+Comportamiento que no cumplía la especificación, detectado por pruebas o revisión.
+
+(Sin entradas todavía.)

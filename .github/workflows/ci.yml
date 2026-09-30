@@ -1,0 +1,46 @@
+# Integración continua (tarea 3b): compilación, formato y pruebas en cada PR a main.
+# El job «Build, pruebas y formato» es un check obligatorio en el ruleset de main.
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    name: Build, pruebas y formato
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 10.0.x
+          cache: true
+          cache-dependency-path: "**/packages.lock.json"
+
+      # --locked-mode falla si algún packages.lock.json no coincide con los proyectos (E-008).
+      - name: Restaurar paquetes
+        run: dotnet restore --locked-mode
+
+      - name: Compilar
+        run: dotnet build --no-restore
+
+      - name: Verificar formato
+        run: dotnet format --verify-no-changes --no-restore
+
+      - name: Pruebas
+        run: dotnet test --no-build --filter "Categoria!=E2E&Categoria!=SqlServer"

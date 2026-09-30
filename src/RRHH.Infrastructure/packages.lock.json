@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net10.0": {
+      "rrhh.application": {
+        "type": "Project",
+        "dependencies": {
+          "RRHH.Contratos": "[1.0.0, )",
+          "RRHH.Domain": "[1.0.0, )"
+        }
+      },
+      "rrhh.contratos": {
+        "type": "Project"
+      },
+      "rrhh.domain": {
+        "type": "Project"
+      }
+    }
+  }
+}
