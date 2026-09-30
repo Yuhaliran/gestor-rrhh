@@ -59,14 +59,14 @@ U = unitaria · I = integración · A = aceptación (Postman) · E = E2E · R = 
 | CA6 | La arquitectura se respeta | R | `VerificarDependencias_DomainYContratos_NoDependenDeOtrosProyectos`, `VerificarDependencias_Application_NoDependeDeInfraestructuraApiNiWeb`, `VerificarDependencias_Web_SoloDependeDeContratos`, `VerificarDependencias_ControladoresApi_NoUsanTiposDeDominio` |
 | CA7 | Todos los servicios en Postman | A | Cada endpoint del PLAN.md tiene su request con pruebas |
 | CA8 | Git | — | Historial por ramas, un PR por fase con la plantilla, Conventional Commits, tag v1.0.0 |
-| RN1 | No borrar geografía con dependencias | U, I | `Eliminar_PaisConDepartamentos_Conflicto` (y equivalentes por nivel) |
-| RN2 | No borrar empresa con colaboradores | U, I | `Eliminar_EmpresaConColaboradores_Conflicto` |
+| RN1 | No borrar geografía con dependencias | U, I | `Eliminar_PaisConDepartamentos_Conflicto` (y equivalentes por nivel), `Eliminar_PaisConDepartamentos_LanzaExcepcion`, `Eliminar_DepartamentoConMunicipios_LanzaExcepcion`, `Eliminar_MunicipioConEmpresas_LanzaExcepcion` |
+| RN2 | No borrar empresa con colaboradores | U, I | `Eliminar_EmpresaConColaboradores_Conflicto`, `Eliminar_EmpresaConColaboradores_LanzaExcepcion` |
 | RN3 | Al menos una empresa | U, I | `Crear_ColaboradorSinEmpresas_Error`; `QuitarEmpresa_UltimaEmpresa_Conflicto` |
 | RN4 | Edad dentro del rango del país de cada empresa (por defecto 18 a 100) | U | Valores límite contra el rango del país (mínima − 1, mínima, máxima, máxima + 1) y colaborador en dos países con rangos distintos |
-| RN5 | Sin duplicados (NIT por país) | U, I | `Crear_NitDuplicadoEnMismoPais_Conflicto`, `Crear_NitRepetidoEnOtroPais_Creada`, `Crear_CorreoDuplicado_Conflicto`, `AsociarEmpresa_YaAsociada_Conflicto`, ... |
+| RN5 | Sin duplicados (NIT por país) | U, I | `Crear_NitDuplicadoEnMismoPais_Conflicto`, `Crear_NitRepetidoEnOtroPais_Creada`, `Crear_CorreoDuplicado_Conflicto`, `AsociarEmpresa_YaAsociada_Conflicto`, `Insertar_PaisMismoNombre_LanzaExcepcion`, `Insertar_PaisMismoCodigo_LanzaExcepcion`, `Insertar_DepartamentoMismoNombreEnPais_LanzaExcepcion`, `Insertar_MunicipioMismoNombreEnDepartamento_LanzaExcepcion`, `Insertar_ColaboradorMismoCorreo_LanzaExcepcion` |
 | RN6 | Geografía en cascada | I, E | `GetMunicipiosDeDepartamento_*`; E2E «Crear empresa eligiendo geografía» |
 | RN7 | Cálculo de edad; 29 de febrero según el país | U | `Calcular_CumpleaniosHoyManianaYAyer_DevuelveEdadSegunSiYaCumplio`, `Calcular_Nacido29FebreroEnAnioNoBisiesto_Regla28Febrero_CumpleEl28Febrero`, `Calcular_Nacido29FebreroEnAnioNoBisiesto_Regla1Marzo_CumpleEl1Marzo`, `Calcular_Nacido29FebreroEnAnioBisiesto_CumpleEl29FebreroIndependientementeDeRegla`, `Calcular_FechaNacimientoIgualAHoy_DevuelveCero`, `Calcular_FechaNacimientoPosteriorAHoy_DevuelveEdadNegativa` |
-| V1–V4 | Validaciones de entrada | U, I | Pruebas de validadores con `[Theory]`; `Post*_DatosInvalidos_Devuelve400ConDetalle` |
+| V1–V4 | Validaciones de entrada | U, I | Pruebas de validadores con `[Theory]`; `Post*_DatosInvalidos_Devuelve400ConDetalle`, `Modelo_CamposObligatorios`, `Modelo_LargosMaximos` |
 
 ## Pruebas de dominio y validaciones (unitarias)
 - **Cálculo de edad (RN7)**, con casos límite: cumpleaños hoy, mañana, ayer; nacidos el 29 de
