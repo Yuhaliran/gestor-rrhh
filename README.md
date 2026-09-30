@@ -41,4 +41,5 @@ proveedores (detalle en `docs/AGENTES.md`):
 
 ## Mejoras futuras
 Autenticación y roles, auditoría de cambios, carga masiva, despliegue en contenedores,
-borrado lógico (estado activo/inactivo, con historial de la relación laboral).
+borrado lógico (estado activo/inactivo, con historial de la relación laboral), unicidad del NIT
+por país garantizada por la base (vista indexada de SQL Server).

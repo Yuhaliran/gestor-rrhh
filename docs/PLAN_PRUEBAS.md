@@ -63,7 +63,7 @@ U = unitaria · I = integración · A = aceptación (Postman) · E = E2E · R = 
 | RN2 | No borrar empresa con colaboradores | U, I | `Eliminar_EmpresaConColaboradores_Conflicto` |
 | RN3 | Al menos una empresa | U, I | `Crear_ColaboradorSinEmpresas_Error`; `QuitarEmpresa_UltimaEmpresa_Conflicto` |
 | RN4 | Edad dentro del rango del país de cada empresa (por defecto 18 a 100) | U | Valores límite contra el rango del país (mínima − 1, mínima, máxima, máxima + 1) y colaborador en dos países con rangos distintos |
-| RN5 | Sin duplicados | U, I | `Crear_NitDuplicado_Conflicto`, `Crear_CorreoDuplicado_Conflicto`, `AsociarEmpresa_YaAsociada_Conflicto`, ... |
+| RN5 | Sin duplicados (NIT por país) | U, I | `Crear_NitDuplicadoEnMismoPais_Conflicto`, `Crear_NitRepetidoEnOtroPais_Creada`, `Crear_CorreoDuplicado_Conflicto`, `AsociarEmpresa_YaAsociada_Conflicto`, ... |
 | RN6 | Geografía en cascada | I, E | `GetMunicipiosDeDepartamento_*`; E2E «Crear empresa eligiendo geografía» |
 | RN7 | Cálculo de edad; 29 de febrero según el país | U | `Calcular_CumpleaniosHoyManianaYAyer_DevuelveEdadSegunSiYaCumplio`, `Calcular_Nacido29FebreroEnAnioNoBisiesto_Regla28Febrero_CumpleEl28Febrero`, `Calcular_Nacido29FebreroEnAnioNoBisiesto_Regla1Marzo_CumpleEl1Marzo`, `Calcular_Nacido29FebreroEnAnioBisiesto_CumpleEl29FebreroIndependientementeDeRegla`, `Calcular_FechaNacimientoIgualAHoy_DevuelveCero`, `Calcular_FechaNacimientoPosteriorAHoy_DevuelveEdadNegativa` |
 | V1–V4 | Validaciones de entrada | U, I | Pruebas de validadores con `[Theory]`; `Post*_DatosInvalidos_Devuelve400ConDetalle` |
