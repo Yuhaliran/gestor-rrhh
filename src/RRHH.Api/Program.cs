@@ -1,7 +1,10 @@
+using RRHH.Infrastructure;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
+builder.Services.AgregarInfraestructura(builder.Configuration.GetConnectionString("Rrhh"));
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
