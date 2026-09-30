@@ -1,0 +1,52 @@
+@page
+@model RRHH.Web.Pages.Colaboradores.IndexModel
+@{
+    ViewData["Title"] = "Colaboradores";
+    ViewData["Placeholder"] = "Nombre o correo";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Colaboradores</h1>
+    <a class="btn btn-primary" asp-page="Crear">Nuevo colaborador</a>
+</div>
+
+<partial name="_Busqueda" model="Model.Buscar" view-data="ViewData" />
+
+<div class="table-responsive">
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th>Nombre completo</th>
+                <th>Edad</th>
+                <th>Contacto</th>
+                <th>Empresas</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var colaborador in Model.Colaboradores.Elementos)
+            {
+                <tr>
+                    <td><a asp-page="Detalle" asp-route-id="@colaborador.Id">@colaborador.NombreCompleto</a></td>
+                    <td>@colaborador.Edad años</td>
+                    <td>@colaborador.Telefono<br /><span class="text-muted">@colaborador.Correo</span></td>
+                    <td>@string.Join(", ", colaborador.Empresas.Select(e => e.NombreComercial))</td>
+                    <td class="text-end text-nowrap">
+                        <a class="btn btn-sm btn-outline-secondary" asp-page="Editar" asp-route-id="@colaborador.Id">Editar</a>
+                        <form method="post" asp-page-handler="Eliminar" asp-route-id="@colaborador.Id" asp-route-pagina="@Model.NumeroPagina"
+                              asp-route-buscar="@Model.Buscar" class="d-inline"
+                              data-confirmar="¿Eliminar a «@colaborador.NombreCompleto» y su relación con sus empresas?">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            @if (Model.Colaboradores.Elementos.Count == 0)
+            {
+                <tr><td colspan="5" class="text-muted">No hay colaboradores@(string.IsNullOrEmpty(Model.Buscar) ? "" : " con ese texto").</td></tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<partial name="_Paginacion" model="Paginacion.De(Model.Colaboradores, Model.Buscar)" />

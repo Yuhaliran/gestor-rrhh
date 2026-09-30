@@ -23,4 +23,10 @@ public static class ErroresApi
             modelState.AddModelError(string.Empty, problema.Detail ?? problema.Title ?? "La API rechazó la operación.");
         }
     }
+
+    // El problema como texto, para mostrarlo fuera de un formulario (por ejemplo, en TempData)
+    public static string Texto(this ValidationProblemDetails problema) =>
+        problema.Errors.Count > 0
+            ? string.Join(" ", problema.Errors.SelectMany(error => error.Value))
+            : problema.Detail ?? problema.Title ?? "La API rechazó la operación.";
 }

@@ -1,0 +1,25 @@
+@model RRHH.Contratos.Colaboradores.GuardarColaboradorDto
+@* Datos personales del colaborador: los usan el alta y la edición. Los nombres de los campos
+   llevan el prefijo «Datos» del modelo de la página (ViewData.TemplateInfo.HtmlFieldPrefix). *@
+<div class="mb-3">
+    <label asp-for="NombreCompleto" class="form-label">Nombre completo</label>
+    <input asp-for="NombreCompleto" class="form-control" maxlength="200" />
+    <span asp-validation-for="NombreCompleto" class="text-danger"></span>
+</div>
+<div class="row">
+    <div class="col-md-4 mb-3">
+        <label asp-for="FechaNacimiento" class="form-label">Fecha de nacimiento</label>
+        <input asp-for="FechaNacimiento" type="date" asp-format="{0:yyyy-MM-dd}" class="form-control" />
+        <span asp-validation-for="FechaNacimiento" class="text-danger"></span>
+    </div>
+    <div class="col-md-4 mb-3">
+        <label asp-for="Telefono" class="form-label">Teléfono</label>
+        <input asp-for="Telefono" type="tel" class="form-control" maxlength="20" />
+        <span asp-validation-for="Telefono" class="text-danger"></span>
+    </div>
+    <div class="col-md-4 mb-3">
+        <label asp-for="Correo" class="form-label">Correo electrónico</label>
+        <input asp-for="Correo" class="form-control" maxlength="254" />
+        <span asp-validation-for="Correo" class="text-danger"></span>
+    </div>
+</div>

@@ -1,0 +1,20 @@
+@page "{id:int}"
+@model RRHH.Web.Pages.Colaboradores.EditarModel
+@{
+    ViewData["Title"] = "Editar colaborador";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<form method="post" class="col-lg-10">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <partial name="_DatosPersonales" for="Datos" />
+
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <a class="btn btn-link" asp-page="Detalle" asp-route-id="@Model.Id">Cancelar</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

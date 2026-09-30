@@ -34,6 +34,7 @@
                     <td>@empresa.MunicipioNombre, @empresa.DepartamentoNombre, @empresa.PaisNombre</td>
                     <td>@empresa.Telefono<br /><span class="text-muted">@empresa.Correo</span></td>
                     <td class="text-end text-nowrap">
+                        <a class="btn btn-sm btn-outline-secondary" asp-page="Colaboradores" asp-route-id="@empresa.Id">Colaboradores</a>
                         <a class="btn btn-sm btn-outline-secondary" asp-page="Editar" asp-route-id="@empresa.Id">Editar</a>
                         <form method="post" asp-page-handler="Eliminar" asp-route-id="@empresa.Id" asp-route-pagina="@Model.NumeroPagina"
                               asp-route-buscar="@Model.Buscar" class="d-inline" data-confirmar="¿Eliminar la empresa «@empresa.NombreComercial»?">

@@ -1,0 +1,60 @@
+@page
+@model RRHH.Web.Pages.Colaboradores.CrearModel
+@using RRHH.Contratos.Empresas
+@{
+    ViewData["Title"] = "Nuevo colaborador";
+    var empresas = Model.Datos.Empresas ?? [];
+    var opciones = new SelectList(Model.Empresas, nameof(EmpresaDto.Id), nameof(EmpresaDto.NombreComercial));
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@* asp-page fija la acción: después de agregar o quitar una fila, la dirección queda con ?handler=… *@
+<form method="post" asp-page="Crear" class="col-lg-10">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <partial name="_DatosPersonales" for="Datos" />
+
+    <fieldset class="mb-3">
+        <legend class="h5">Empresas</legend>
+        <p class="text-muted">Al menos una. Más adelante se pueden agregar, editar o quitar desde su detalle.</p>
+        <span asp-validation-for="Datos.Empresas" class="text-danger d-block mb-2"></span>
+        @for (var i = 0; i < empresas.Count; i++)
+        {
+            <div class="row g-2 align-items-start mb-2">
+                <div class="col-md-5">
+                    <label asp-for="Datos.Empresas![i].EmpresaId" class="form-label">Empresa</label>
+                    <select asp-for="Datos.Empresas![i].EmpresaId" asp-items="opciones" class="form-select">
+                        <option value="">Elegí una empresa…</option>
+                    </select>
+                    <span asp-validation-for="Datos.Empresas![i].EmpresaId" class="text-danger"></span>
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="Datos.Empresas![i].FechaIngreso" class="form-label">Fecha de ingreso</label>
+                    <input asp-for="Datos.Empresas![i].FechaIngreso" type="date" asp-format="{0:yyyy-MM-dd}" class="form-control" />
+                    <span asp-validation-for="Datos.Empresas![i].FechaIngreso" class="text-danger"></span>
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="Datos.Empresas![i].Puesto" class="form-label">Puesto (opcional)</label>
+                    <input asp-for="Datos.Empresas![i].Puesto" class="form-control" maxlength="100" />
+                    <span asp-validation-for="Datos.Empresas![i].Puesto" class="text-danger"></span>
+                </div>
+                <div class="col-md-1 pt-md-4">
+                    @if (empresas.Count > 1)
+                    {
+                        <button type="submit" asp-page-handler="QuitarEmpresa" asp-route-indice="@i" formnovalidate
+                                class="btn btn-outline-danger mt-md-2" title="Quitar esta empresa">Quitar</button>
+                    }
+                </div>
+            </div>
+        }
+        <button type="submit" asp-page-handler="AgregarEmpresa" formnovalidate class="btn btn-outline-secondary">Agregar otra empresa</button>
+    </fieldset>
+
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <a class="btn btn-link" asp-page="Index">Cancelar</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

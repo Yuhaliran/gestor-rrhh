@@ -1,0 +1,109 @@
+@page "{id:int}"
+@model RRHH.Web.Pages.Colaboradores.DetalleModel
+@using RRHH.Contratos.Empresas
+@{
+    var colaborador = Model.Colaborador;
+    ViewData["Title"] = colaborador.NombreCompleto;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">@colaborador.NombreCompleto</h1>
+    <div>
+        <a class="btn btn-outline-secondary" asp-page="Editar" asp-route-id="@colaborador.Id">Editar datos</a>
+        <a class="btn btn-link" asp-page="Index">Volver</a>
+    </div>
+</div>
+
+<dl class="row">
+    <dt class="col-sm-3">Edad</dt>
+    <dd class="col-sm-9">@colaborador.Edad años (nacido el @colaborador.FechaNacimiento.ToString("dd/MM/yyyy"))</dd>
+    <dt class="col-sm-3">Teléfono</dt>
+    <dd class="col-sm-9">@colaborador.Telefono</dd>
+    <dt class="col-sm-3">Correo</dt>
+    <dd class="col-sm-9">@colaborador.Correo</dd>
+</dl>
+
+<h2 class="h4">Empresas</h2>
+<div class="table-responsive">
+    <table class="table align-middle">
+        <thead>
+            <tr>
+                <th>Empresa</th>
+                <th>País</th>
+                <th>Fecha de ingreso</th>
+                <th>Puesto</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var empresa in colaborador.Empresas)
+            {
+                var formulario = $"editar-{empresa.EmpresaId}";
+                <tr>
+                    <td>@empresa.NombreComercial</td>
+                    <td>@empresa.PaisNombre</td>
+                    <td>
+                        <input type="date" name="fechaIngreso" form="@formulario" value="@empresa.FechaIngreso.ToString("yyyy-MM-dd")"
+                               class="form-control form-control-sm" required aria-label="Fecha de ingreso en @empresa.NombreComercial" />
+                    </td>
+                    <td>
+                        <input name="puesto" form="@formulario" value="@empresa.Puesto" maxlength="100"
+                               class="form-control form-control-sm" aria-label="Puesto en @empresa.NombreComercial" />
+                    </td>
+                    <td class="text-end text-nowrap">
+                        <form id="@formulario" method="post" asp-page-handler="EditarEmpresa" asp-route-empresaId="@empresa.EmpresaId" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-outline-primary">Guardar</button>
+                        </form>
+                        @if (colaborador.Empresas.Count > 1)
+                        {
+                            <form method="post" asp-page-handler="QuitarEmpresa" asp-route-empresaId="@empresa.EmpresaId" class="d-inline"
+                                  data-confirmar="¿Quitar a @colaborador.NombreCompleto de «@empresa.NombreComercial»?">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Quitar</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+@if (colaborador.Empresas.Count == 1)
+{
+    <p class="text-muted">Es su única empresa: no se puede quitar (al menos una).</p>
+}
+
+<h2 class="h5 mt-4">Asociar a otra empresa</h2>
+@if (Model.EmpresasDisponibles.Count == 0)
+{
+    <p class="text-muted">Ya está asociado a todas las empresas.</p>
+}
+else
+{
+    <form method="post" asp-page-handler="Asociar" class="row g-2 align-items-start col-lg-10">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger col-12" role="alert"></div>
+        <div class="col-md-5">
+            <label asp-for="Nueva.EmpresaId" class="form-label">Empresa</label>
+            <select asp-for="Nueva.EmpresaId" asp-items="new SelectList(Model.EmpresasDisponibles, nameof(EmpresaDto.Id), nameof(EmpresaDto.NombreComercial))" class="form-select">
+                <option value="">Elegí una empresa…</option>
+            </select>
+            <span asp-validation-for="Nueva.EmpresaId" class="text-danger"></span>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="Nueva.FechaIngreso" class="form-label">Fecha de ingreso</label>
+            <input asp-for="Nueva.FechaIngreso" type="date" asp-format="{0:yyyy-MM-dd}" class="form-control" />
+            <span asp-validation-for="Nueva.FechaIngreso" class="text-danger"></span>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="Nueva.Puesto" class="form-label">Puesto (opcional)</label>
+            <input asp-for="Nueva.Puesto" class="form-control" maxlength="100" />
+            <span asp-validation-for="Nueva.Puesto" class="text-danger"></span>
+        </div>
+        <div class="col-md-1 pt-md-4">
+            <button type="submit" class="btn btn-primary mt-md-2">Asociar</button>
+        </div>
+    </form>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

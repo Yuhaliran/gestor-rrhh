@@ -1,0 +1,43 @@
+@page "{id:int}"
+@model RRHH.Web.Pages.Empresas.ColaboradoresModel
+@{
+    ViewData["Title"] = $"Colaboradores de {Model.Empresa.NombreComercial}";
+    ViewData["Placeholder"] = "Nombre o correo";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">@ViewData["Title"]</h1>
+    <a class="btn btn-link" asp-page="Index">Volver a empresas</a>
+</div>
+<p class="text-muted">@Model.Empresa.MunicipioNombre, @Model.Empresa.DepartamentoNombre, @Model.Empresa.PaisNombre · NIT @Model.Empresa.Nit</p>
+
+<partial name="_Busqueda" model="Model.Buscar" view-data="ViewData" />
+
+<table class="table table-striped align-middle">
+    <thead>
+        <tr>
+            <th>Nombre completo</th>
+            <th>Edad</th>
+            <th>Fecha de ingreso</th>
+            <th>Puesto</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var colaborador in Model.Colaboradores.Elementos)
+        {
+            var relacion = colaborador.Empresas.FirstOrDefault(e => e.EmpresaId == Model.Empresa.Id);
+            <tr>
+                <td><a asp-page="/Colaboradores/Detalle" asp-route-id="@colaborador.Id">@colaborador.NombreCompleto</a></td>
+                <td>@colaborador.Edad años</td>
+                <td>@relacion?.FechaIngreso.ToString("dd/MM/yyyy")</td>
+                <td>@relacion?.Puesto</td>
+            </tr>
+        }
+        @if (Model.Colaboradores.Elementos.Count == 0)
+        {
+            <tr><td colspan="4" class="text-muted">La empresa no tiene colaboradores@(string.IsNullOrEmpty(Model.Buscar) ? "" : " con ese texto").</td></tr>
+        }
+    </tbody>
+</table>
+
+<partial name="_Paginacion" model="Paginacion.De(Model.Colaboradores, Model.Buscar)" />
