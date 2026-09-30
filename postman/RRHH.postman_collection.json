@@ -42,7 +42,7 @@
 			]
 		},
 		{
-			"name": "PaÃƒÂ­ses",
+			"name": "Países",
 			"item": [
 				{
 					"name": "Listar",
@@ -85,10 +85,10 @@
 									"pm.test(\"Estructura y contiene Guatemala\", function () {",
 									"    var jsonData = pm.response.json();",
 									"    pm.expect(jsonData).to.have.property('elementos');",
-									"    pm.expect(jsonData).to.have.property('total');
-                                    pm.expect(jsonData).to.have.property('numero');
-                                    pm.expect(jsonData).to.have.property('tamanio');
-                                    pm.expect(jsonData).to.have.property('totalPaginas');",
+									"    pm.expect(jsonData).to.have.property('total');",
+									"    pm.expect(jsonData).to.have.property('numero');",
+									"    pm.expect(jsonData).to.have.property('tamanio');",
+									"    pm.expect(jsonData).to.have.property('totalPaginas');",
 									"    var guate = jsonData.elementos.find(p => p.nombre === 'Guatemala');",
 									"    pm.expect(guate).to.not.be.undefined;",
 									"});"
@@ -149,7 +149,7 @@
 								"exec": [
 									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
 									"pm.test(\"Cabecera Location\", function () { pm.response.to.have.header('Location'); });",
-									"pm.test(\"Datos y mayÃƒÂºsculas\", function () {",
+									"pm.test(\"Datos y mayúsculas\", function () {",
 									"    var jsonData = pm.response.json();",
 									"    pm.expect(jsonData.id).to.be.a('number');",
 									"    pm.expect(jsonData.codigoIso2).to.eql('PP');",
@@ -217,7 +217,7 @@
 					}
 				},
 				{
-					"name": "Crear invÃƒÂ¡lido",
+					"name": "Crear inválido",
 					"event": [
 						{
 							"listen": "test",

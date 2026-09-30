@@ -163,6 +163,13 @@ Compilación, paquetes, pruebas, EF Core, git.
                  tiene que incluir al menos un caso inválido que falle.
 - Origen:        tarea 8 · 2026-09-30 · implementador
 
+### E-013 · Colección de Postman inválida tras edición con PowerShell
+- Síntoma:       el JSON tiene saltos de línea reales dentro de un texto («Bad control character in string literal») y textos corruptos («PaÃƒÂses», «mayÃƒÂºsculas»).
+- Causa:         PowerShell 5.1 rompe la codificación UTF-8 al leer y escribir archivos, y los reemplazos pueden meter saltos de línea dentro de un JSON.
+- Solución:      corregir el JSON editándolo con la herramienta de edición de archivos. En los scripts de prueba, cada línea de código va como un texto separado del arreglo "exec". Validar el resultado con `node -e "JSON.parse(require('fs').readFileSync('...','utf8'))"`.
+- Cómo evitarlo: usar la herramienta de edición de archivos (write_to_file o replace_file_content) en lugar de Get-Content/Set-Content o reemplazos de PowerShell; y validar siempre el JSON después de editarlo.
+- Origen:        tarea 9 · 2026-09-29 · tester
+
 ## Funcionalidad
 Comportamiento que no cumplía la especificación, detectado por pruebas o revisión.
 
