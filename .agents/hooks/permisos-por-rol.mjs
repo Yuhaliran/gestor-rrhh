@@ -254,6 +254,17 @@ function diffDelTester(resto, cwd) {
   return todasEn(DIFF_PERMITIDO_TESTER, rutas, cwd);
 }
 
+// git grep: sin preguntar si todas las rutas son del tester o del contrato (sin rutas buscaría
+// también en la implementación). -O abre los resultados con otro programa.
+function grepDelTester(resto, cwd) {
+  if (resto.some((a) => a.startsWith('-O') || a.startsWith('--open-files-in-pager'))) return false;
+  const separador = resto.indexOf('--');
+  const rutas = separador === -1
+    ? resto.filter((a) => !a.startsWith('-') && /[/\\]/.test(a))
+    : resto.slice(separador + 1);
+  return todasEn(DIFF_PERMITIDO_TESTER, rutas, cwd);
+}
+
 function gitDelTester(args, cwd) {
   const inicio = args[0] === '--no-pager' ? 1 : 0;
   const [subcomando, ...resto] = args.slice(inicio);
@@ -263,6 +274,7 @@ function gitDelTester(args, cwd) {
   }
   if (subcomando === 'commit') return !resto.some((a) => COMMIT_PROHIBIDO.test(a));
   if (subcomando === 'diff' || subcomando === 'show') return diffDelTester(resto, cwd);
+  if (subcomando === 'grep') return grepDelTester(resto, cwd);
   if (subcomando === 'log' && resto.some((a) => ['-p', '-u', '--patch'].includes(a))) return diffDelTester(resto, cwd);
   if (subcomando === 'branch') return gitDeLectura(args.slice(inicio));
   return GIT_RESUMEN_TESTER.has(subcomando) && !resto.some((a) => a.startsWith('--output'));

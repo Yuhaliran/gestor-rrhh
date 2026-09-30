@@ -86,6 +86,7 @@ quedan sean las que importan:
 - `dotnet format --include` sobre sus archivos;
 - `git status` y `log`;
 - `git diff` y `show` resumidos (`--stat`, `--cached`…) o de sus archivos y del contrato;
+- `git grep` en sus archivos y en el contrato;
 - `git add` de sus rutas;
 - `git commit` sin `-a`, `--amend` ni `--no-verify`;
 - los de la terminal que sólo leen;
