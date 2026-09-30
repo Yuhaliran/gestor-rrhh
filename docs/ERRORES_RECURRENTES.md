@@ -227,6 +227,24 @@ Compilación, paquetes, pruebas, EF Core, git.
                  se levante la API fuera de agy.
 - Origen:        tarea 14 · 2026-09-30 · implementador
 
+### E-018 · Una prueba de la API pasa aunque la API ignore un dato del pedido
+- Síntoma:       con la API modificada a propósito (prueba de mutación), las pruebas siguen en verde:
+                 una ruta con los ids cruzados (`/api/colaboradores/{id}/empresas/{empresaId}`), un
+                 listado que ignora `?buscar=` o no filtra por su padre, un `Location` que apunta a
+                 otro recurso.
+- Causa:         los datos de la prueba no distinguen el resultado correcto del incorrecto. En una
+                 base nueva, el colaborador y su empresa tienen el mismo id (1), y cruzarlos no cambia
+                 nada. Con «guate», Guatemala aparece igual en la primera página sin filtrar. Una
+                 prueba que sólo mira el código de estado o que el `Location` no sea nulo no ve adónde
+                 apunta.
+- Solución:      el tester creó una empresa de más antes del colaborador y verifica en el Arrange que
+                 los ids no coinciden (`Assert.NotEqual`); en las búsquedas crea un dato que coincide y
+                 otro que no, y verifica los dos; verifica el `Location` completo.
+- Cómo evitarlo: en cada prueba, preguntarse qué respuesta daría una API que ignore ese dato, y armar
+                 los datos para que esa respuesta sea distinta de la correcta. Vale igual para Postman
+                 y las E2E. El implementador lo comprueba con mutaciones de los controladores.
+- Origen:        tarea 15 · 2026-09-30 · implementador
+
 ## Funcionalidad
 Comportamiento que no cumplía la especificación, detectado por pruebas o revisión.
 
