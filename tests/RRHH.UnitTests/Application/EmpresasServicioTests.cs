@@ -98,24 +98,17 @@ public class EmpresasServicioTests : IDisposable
         var d = await CrearDepartamentoPruebaAsync(p, "Depto L");
         var m = await CrearMunicipioPruebaAsync(d, "Muni L");
 
-        // Act
         await _servicio.CrearAsync(DtoBase(m.Id) with { NombreComercial = "Empresa Z", Nit = "111" }, TestContext.Current.CancellationToken);
-        // Act
         await _servicio.CrearAsync(DtoBase(m.Id) with { NombreComercial = "Empresa A", Nit = "222" }, TestContext.Current.CancellationToken);
-        // Act
         await _servicio.CrearAsync(DtoBase(m.Id) with { NombreComercial = "Empresa M", Nit = "333" }, TestContext.Current.CancellationToken);
 
-        // Act
         var pagina = await _servicio.ListarAsync(new Consulta { Pagina = 1, Tamanio = 100 }, TestContext.Current.CancellationToken);
+        // Act
         var res = pagina.Elementos.Where(e => e.MunicipioId == m.Id).ToList();
-
         // Assert
         Assert.Equal(3, res.Count);
-        // Assert
         Assert.Equal("Empresa A", res[0].NombreComercial);
-        // Assert
         Assert.Equal("Empresa M", res[1].NombreComercial);
-        // Assert
         Assert.Equal("Empresa Z", res[2].NombreComercial);
     }
 
@@ -127,18 +120,14 @@ public class EmpresasServicioTests : IDisposable
         var d = await CrearDepartamentoPruebaAsync(p, "Depto B NIT");
         var m = await CrearMunicipioPruebaAsync(d, "Muni B NIT");
 
-        // Act
         await _servicio.CrearAsync(DtoBase(m.Id) with { Nit = "NIT123A" }, TestContext.Current.CancellationToken);
-        // Act
         await _servicio.CrearAsync(DtoBase(m.Id) with { Nit = "OTRO" }, TestContext.Current.CancellationToken);
 
-        // Act
         var pagina = await _servicio.ListarAsync(new Consulta { Buscar = "nit123a" }, TestContext.Current.CancellationToken);
+        // Act
         var res = pagina.Elementos.Where(e => e.MunicipioId == m.Id).ToList();
-
         // Assert
         Assert.Single(res);
-        // Assert
         Assert.Equal("NIT123A", res[0].Nit);
     }
 
@@ -150,18 +139,14 @@ public class EmpresasServicioTests : IDisposable
         var d = await CrearDepartamentoPruebaAsync(p, "Depto B RS");
         var m = await CrearMunicipioPruebaAsync(d, "Muni B RS");
 
-        // Act
         await _servicio.CrearAsync(DtoBase(m.Id) with { Nit = "R1", RazonSocial = "Razon Especial" }, TestContext.Current.CancellationToken);
-        // Act
         await _servicio.CrearAsync(DtoBase(m.Id) with { Nit = "R2", RazonSocial = "Otra" }, TestContext.Current.CancellationToken);
 
-        // Act
         var pagina = await _servicio.ListarAsync(new Consulta { Buscar = "ESPECIAL" }, TestContext.Current.CancellationToken);
+        // Act
         var res = pagina.Elementos.Where(e => e.MunicipioId == m.Id).ToList();
-
         // Assert
         Assert.Single(res);
-        // Assert
         Assert.Equal("Razon Especial", res[0].RazonSocial);
     }
 
@@ -173,18 +158,14 @@ public class EmpresasServicioTests : IDisposable
         var d = await CrearDepartamentoPruebaAsync(p, "Depto B NC");
         var m = await CrearMunicipioPruebaAsync(d, "Muni B NC");
 
-        // Act
         await _servicio.CrearAsync(DtoBase(m.Id) with { Nit = "N1", NombreComercial = "Comercial Alfa" }, TestContext.Current.CancellationToken);
-        // Act
         await _servicio.CrearAsync(DtoBase(m.Id) with { Nit = "N2", NombreComercial = "Beta" }, TestContext.Current.CancellationToken);
 
-        // Act
         var pagina = await _servicio.ListarAsync(new Consulta { Buscar = "alfa" }, TestContext.Current.CancellationToken);
+        // Act
         var res = pagina.Elementos.Where(e => e.MunicipioId == m.Id).ToList();
-
         // Assert
         Assert.Single(res);
-        // Assert
         Assert.Equal("Comercial Alfa", res[0].NombreComercial);
     }
 
@@ -199,30 +180,18 @@ public class EmpresasServicioTests : IDisposable
         var creado = await _servicio.CrearAsync(DtoBase(m.Id) with { Nit = "OBT123", RazonSocial = "RS O", NombreComercial = "NC O", Telefono = "1111-1111", Correo = "o@o.com" }, TestContext.Current.CancellationToken);
         // Act
         var obtenido = await _servicio.ObtenerAsync(creado.Id, TestContext.Current.CancellationToken);
-
         // Assert
         Assert.Equal(creado.Id, obtenido.Id);
-        // Assert
         Assert.Equal("OBT123", obtenido.Nit);
-        // Assert
         Assert.Equal("RS O", obtenido.RazonSocial);
-        // Assert
         Assert.Equal("NC O", obtenido.NombreComercial);
-        // Assert
         Assert.Equal("1111-1111", obtenido.Telefono);
-        // Assert
         Assert.Equal("o@o.com", obtenido.Correo);
-        // Assert
         Assert.Equal(m.Id, obtenido.MunicipioId);
-        // Assert
         Assert.Equal("Muni Obt", obtenido.MunicipioNombre);
-        // Assert
         Assert.Equal(d.Id, obtenido.DepartamentoId);
-        // Assert
         Assert.Equal("Depto Obt", obtenido.DepartamentoNombre);
-        // Assert
         Assert.Equal(p.Id, obtenido.PaisId);
-        // Assert
         Assert.Equal("Pais Obt", obtenido.PaisNombre);
     }
 
@@ -230,6 +199,7 @@ public class EmpresasServicioTests : IDisposable
     public async Task ObtenerAsync_Inexistente_LanzaNoEncontradoException()
     {
         // Arrange
+        // Act & Assert
         await Assert.ThrowsAsync<NoEncontradoException>(() => _servicio.ObtenerAsync(9999, TestContext.Current.CancellationToken));
     }
 
@@ -237,6 +207,7 @@ public class EmpresasServicioTests : IDisposable
     public async Task CrearAsync_MunicipioInexistente_LanzaValidacionExceptionEnMunicipioId()
     {
         // Arrange
+        // Act
         var ex = await Assert.ThrowsAsync<ValidacionException>(() => _servicio.CrearAsync(DtoBase(9999), TestContext.Current.CancellationToken));
         // Assert
         Assert.Equal("MunicipioId", ex.Campo);
@@ -252,8 +223,8 @@ public class EmpresasServicioTests : IDisposable
         var m1 = await CrearMunicipioPruebaAsync(d1, "Muni 1");
         var m2 = await CrearMunicipioPruebaAsync(d2, "Muni 2");
 
-        // Act
         await _servicio.CrearAsync(DtoBase(m1.Id) with { Nit = "REPETIDO" }, TestContext.Current.CancellationToken);
+        // Act & Assert
         await Assert.ThrowsAsync<ConflictoException>(() => _servicio.CrearAsync(DtoBase(m2.Id) with { Nit = "REPETIDO" }, TestContext.Current.CancellationToken));
     }
 
@@ -265,8 +236,8 @@ public class EmpresasServicioTests : IDisposable
         var d = await CrearDepartamentoPruebaAsync(p, "Depto K");
         var m = await CrearMunicipioPruebaAsync(d, "Muni K");
 
-        // Act
         await _servicio.CrearAsync(DtoBase(m.Id) with { Nit = "NIT123k" }, TestContext.Current.CancellationToken);
+        // Act & Assert
         await Assert.ThrowsAsync<ConflictoException>(() => _servicio.CrearAsync(DtoBase(m.Id) with { Nit = "  NIT123K " }, TestContext.Current.CancellationToken));
     }
 
@@ -281,10 +252,9 @@ public class EmpresasServicioTests : IDisposable
         var m1 = await CrearMunicipioPruebaAsync(d1, "Muni P1");
         var m2 = await CrearMunicipioPruebaAsync(d2, "Muni P2");
 
-        // Act
         await _servicio.CrearAsync(DtoBase(m1.Id) with { Nit = "GLOBAL" }, TestContext.Current.CancellationToken);
+        // Act
         var creado = await _servicio.CrearAsync(DtoBase(m2.Id) with { Nit = "GLOBAL" }, TestContext.Current.CancellationToken);
-
         // Assert
         Assert.Equal("GLOBAL", creado.Nit);
     }
@@ -307,8 +277,9 @@ public class EmpresasServicioTests : IDisposable
         };
 
         var creado = await _servicio.CrearAsync(dto, TestContext.Current.CancellationToken);
+        // Act
         var obtenido = await _servicio.ObtenerAsync(creado.Id, TestContext.Current.CancellationToken);
-
+        // Assert
         Assert.Equal("NITMIN", obtenido.Nit);
         Assert.Equal("Razon", obtenido.RazonSocial);
         Assert.Equal("Comercial", obtenido.NombreComercial);
@@ -323,6 +294,7 @@ public class EmpresasServicioTests : IDisposable
         var p = await CrearPaisPruebaAsync("Pais 404 A", "AA");
         var d = await CrearDepartamentoPruebaAsync(p, "Depto 404");
         var m = await CrearMunicipioPruebaAsync(d, "Muni 404");
+        // Act & Assert
         await Assert.ThrowsAsync<NoEncontradoException>(() => _servicio.ActualizarAsync(9999, DtoBase(m.Id), TestContext.Current.CancellationToken));
     }
 
@@ -330,6 +302,7 @@ public class EmpresasServicioTests : IDisposable
     public async Task ActualizarAsync_EmpresaInexistenteYMunicipioInexistente_LanzaNoEncontradoExceptionAntesQue400()
     {
         // Arrange
+        // Act & Assert
         await Assert.ThrowsAsync<NoEncontradoException>(() => _servicio.ActualizarAsync(9999, DtoBase(9999), TestContext.Current.CancellationToken));
     }
 
@@ -342,6 +315,7 @@ public class EmpresasServicioTests : IDisposable
         var m = await CrearMunicipioPruebaAsync(d, "Muni 400");
         var creado = await _servicio.CrearAsync(DtoBase(m.Id) with { Nit = "AM1" }, TestContext.Current.CancellationToken);
 
+        // Act
         var ex = await Assert.ThrowsAsync<ValidacionException>(() => _servicio.ActualizarAsync(creado.Id, DtoBase(9999), TestContext.Current.CancellationToken));
         // Assert
         Assert.Equal("MunicipioId", ex.Campo);
@@ -360,15 +334,13 @@ public class EmpresasServicioTests : IDisposable
 
         var creado = await _servicio.CrearAsync(DtoBase(m1.Id) with { Nit = "NITO1" }, TestContext.Current.CancellationToken);
 
+        // Act
         var ex = await Assert.ThrowsAsync<ValidacionException>(() => _servicio.ActualizarAsync(creado.Id, DtoBase(m2.Id) with { Nit = "NITO2" }, TestContext.Current.CancellationToken));
         // Assert
         Assert.Equal("MunicipioId", ex.Campo);
 
-        // Act
         var obtenido = await _servicio.ObtenerAsync(creado.Id, TestContext.Current.CancellationToken);
-        // Assert
         Assert.Equal(m1.Id, obtenido.MunicipioId);
-        // Assert
         Assert.Equal("NITO1", obtenido.Nit);
     }
 
@@ -386,25 +358,16 @@ public class EmpresasServicioTests : IDisposable
 
         // Act
         var actualizado = await _servicio.ActualizarAsync(creado.Id, DtoBase(m2.Id) with { Nit = "N1" }, TestContext.Current.CancellationToken);
-
         // Assert
         Assert.Equal(m2.Id, actualizado.MunicipioId);
-        // Assert
         Assert.Equal("Muni PM 2", actualizado.MunicipioNombre);
-        // Assert
         Assert.Equal(d2.Id, actualizado.DepartamentoId);
-        // Assert
         Assert.Equal("Depto PM 2", actualizado.DepartamentoNombre);
 
-        // Act
         var obtenido = await _servicio.ObtenerAsync(creado.Id, TestContext.Current.CancellationToken);
-        // Assert
         Assert.Equal(m2.Id, obtenido.MunicipioId);
-        // Assert
         Assert.Equal("Muni PM 2", obtenido.MunicipioNombre);
-        // Assert
         Assert.Equal(d2.Id, obtenido.DepartamentoId);
-        // Assert
         Assert.Equal("Depto PM 2", obtenido.DepartamentoNombre);
     }
 
@@ -421,7 +384,6 @@ public class EmpresasServicioTests : IDisposable
 
         // Act
         var act = await _servicio.ActualizarAsync(emp1.Id, DtoBase(m.Id) with { Nit = "E1", RazonSocial = "Cambio" }, TestContext.Current.CancellationToken);
-
         // Assert
         Assert.Equal("Cambio", act.RazonSocial);
     }
@@ -436,7 +398,6 @@ public class EmpresasServicioTests : IDisposable
 
         var emp1 = await _servicio.CrearAsync(DtoBase(m.Id) with { Nit = "E1" }, TestContext.Current.CancellationToken);
         var emp2 = await _servicio.CrearAsync(DtoBase(m.Id) with { Nit = "E2" }, TestContext.Current.CancellationToken);
-
         // Act & Assert
         await Assert.ThrowsAsync<ConflictoException>(() => _servicio.ActualizarAsync(emp1.Id, DtoBase(m.Id) with { Nit = "E2" }, TestContext.Current.CancellationToken));
     }
@@ -452,13 +413,12 @@ public class EmpresasServicioTests : IDisposable
         var m1 = await CrearMunicipioPruebaAsync(d1, "Muni MA");
         var m2 = await CrearMunicipioPruebaAsync(d2, "Muni MB");
 
-        // Act
         var empA = await _servicio.CrearAsync(DtoBase(m1.Id) with { Nit = "IGUAL" }, TestContext.Current.CancellationToken);
-        // Act
         var empB = await _servicio.CrearAsync(DtoBase(m2.Id) with { Nit = "IGUAL" }, TestContext.Current.CancellationToken);
 
         // Al intentar mover empA (que tiene NIT IGUAL) al municipio m2 del pais p2 donde ya hay un NIT IGUAL.
         // Debe saltar el error de RN8 (no se puede cambiar de país) ANTES que el error de RN5 (NIT duplicado en el país destino).
+        // Act
         var ex = await Assert.ThrowsAsync<ValidacionException>(() => _servicio.ActualizarAsync(empA.Id, DtoBase(m2.Id) with { Nit = "IGUAL" }, TestContext.Current.CancellationToken));
         // Assert
         Assert.Equal("MunicipioId", ex.Campo);
@@ -468,6 +428,7 @@ public class EmpresasServicioTests : IDisposable
     public async Task EliminarAsync_Inexistente_LanzaNoEncontradoException()
     {
         // Arrange
+        // Act & Assert
         await Assert.ThrowsAsync<NoEncontradoException>(() => _servicio.EliminarAsync(9999, TestContext.Current.CancellationToken));
     }
 
@@ -478,7 +439,6 @@ public class EmpresasServicioTests : IDisposable
         var p = await CrearPaisPruebaAsync("Pais Col", "PC");
         var d = await CrearDepartamentoPruebaAsync(p, "Depto Col");
         var m = await CrearMunicipioPruebaAsync(d, "Muni Col");
-        // Act
         var emp = await _servicio.CrearAsync(DtoBase(m.Id) with { Nit = "EMPCOL" }, TestContext.Current.CancellationToken);
 
         var col = await CrearColaboradorPruebaAsync("c@c.com");
@@ -489,7 +449,7 @@ public class EmpresasServicioTests : IDisposable
             FechaIngreso = new DateOnly(2020, 1, 1)
         });
         await _bd.Contexto.SaveChangesAsync(TestContext.Current.CancellationToken);
-
+        // Act & Assert
         await Assert.ThrowsAsync<ConflictoException>(() => _servicio.EliminarAsync(emp.Id, TestContext.Current.CancellationToken));
     }
 
@@ -500,12 +460,10 @@ public class EmpresasServicioTests : IDisposable
         var p = await CrearPaisPruebaAsync("Pais Sin", "PS");
         var d = await CrearDepartamentoPruebaAsync(p, "Depto Sin");
         var m = await CrearMunicipioPruebaAsync(d, "Muni Sin");
-        // Act
         var emp = await _servicio.CrearAsync(DtoBase(m.Id) with { Nit = "EMPSIN" }, TestContext.Current.CancellationToken);
 
-        // Act
         await _servicio.EliminarAsync(emp.Id, TestContext.Current.CancellationToken);
-
+        // Act & Assert
         await Assert.ThrowsAsync<NoEncontradoException>(() => _servicio.ObtenerAsync(emp.Id, TestContext.Current.CancellationToken));
     }
 }
