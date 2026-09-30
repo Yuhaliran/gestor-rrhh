@@ -1,10 +1,40 @@
-﻿@page
+@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Inicio";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<h1 class="mb-3">Gestor de Recursos Humanos</h1>
+<p class="lead">Colaboradores de varias empresas, ubicadas en distintos países.</p>
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h5 card-title">Colaboradores</h2>
+                <p class="card-text">Datos personales, edad y las empresas en las que trabajan.</p>
+                <a class="btn btn-primary" asp-page="/Colaboradores/Index">Ver colaboradores</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h5 card-title">Empresas</h2>
+                <p class="card-text">NIT, razón social, contacto y ubicación.</p>
+                <a class="btn btn-primary" asp-page="/Empresas/Index">Ver empresas</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h5 card-title">Geografía</h2>
+                <p class="card-text">Países (con su rango de edad laboral), departamentos y municipios.</p>
+                <a class="btn btn-outline-primary" asp-page="/Paises/Index">Países</a>
+                <a class="btn btn-outline-primary" asp-page="/Departamentos/Index">Departamentos</a>
+                <a class="btn btn-outline-primary" asp-page="/Municipios/Index">Municipios</a>
+            </div>
+        </div>
+    </div>
 </div>

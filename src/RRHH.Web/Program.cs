@@ -1,26 +1,27 @@
+using RRHH.Web.Api;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddRazorPages();
+
+// La web habla con la API sólo por HTTP (ARQ3); la dirección está en Api:UrlBase
+var urlApi = builder.Configuration["Api:UrlBase"]
+    ?? throw new InvalidOperationException("Falta la configuración Api:UrlBase (dirección de la API).");
+builder.Services.AddHttpClient<ClienteRrhh>(cliente => cliente.BaseAddress = new Uri(urlApi));
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
-
 app.UseRouting();
-
 app.UseAuthorization();
 
 app.MapStaticAssets();
-app.MapRazorPages()
-   .WithStaticAssets();
+app.MapRazorPages().WithStaticAssets();
 
 app.Run();

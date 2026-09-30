@@ -1,0 +1,15 @@
+@model string?
+@* Buscador de los listados: GET a la misma página, desde la primera *@
+<form method="get" class="row g-2 mb-3" role="search">
+    <div class="col-sm-8 col-md-6">
+        <input type="search" name="buscar" value="@Model" maxlength="100" class="form-control"
+               placeholder="@ViewData["Placeholder"]" aria-label="Buscar" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-primary">Buscar</button>
+        @if (!string.IsNullOrEmpty(Model))
+        {
+            <a class="btn btn-link" asp-route-buscar="">Limpiar</a>
+        }
+    </div>
+</form>
