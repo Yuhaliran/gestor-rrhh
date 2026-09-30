@@ -1,0 +1,50 @@
+@page "{id:int?}"
+@model RRHH.Web.Pages.Paises.EditarModel
+@using RRHH.Contratos.Paises
+@{
+    ViewData["Title"] = Model.Id is null ? "Nuevo país" : "Editar país";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<form method="post" class="col-md-8 col-lg-6">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <div class="mb-3">
+        <label asp-for="Datos.Nombre" class="form-label">Nombre</label>
+        <input asp-for="Datos.Nombre" class="form-control" maxlength="100" />
+        <span asp-validation-for="Datos.Nombre" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Datos.CodigoIso2" class="form-label">Código ISO (2 letras)</label>
+        <input asp-for="Datos.CodigoIso2" class="form-control text-uppercase" maxlength="2" />
+        <span asp-validation-for="Datos.CodigoIso2" class="text-danger"></span>
+    </div>
+    <div class="row">
+        <div class="col-sm-6 mb-3">
+            <label asp-for="Datos.EdadMinima" class="form-label">Edad mínima</label>
+            <input asp-for="Datos.EdadMinima" class="form-control" min="0" />
+            <span asp-validation-for="Datos.EdadMinima" class="text-danger"></span>
+        </div>
+        <div class="col-sm-6 mb-3">
+            <label asp-for="Datos.EdadMaxima" class="form-label">Edad máxima</label>
+            <input asp-for="Datos.EdadMaxima" class="form-control" min="0" />
+            <span asp-validation-for="Datos.EdadMaxima" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Datos.Regla29Febrero" class="form-label">Los nacidos el 29 de febrero cumplen años, en los años no bisiestos, el</label>
+        <select asp-for="Datos.Regla29Febrero" class="form-select">
+            <option value="@Regla29Febrero.VeintiochoDeFebrero">28 de febrero</option>
+            <option value="@Regla29Febrero.PrimeroDeMarzo">1 de marzo</option>
+        </select>
+        <span asp-validation-for="Datos.Regla29Febrero" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <a class="btn btn-link" asp-page="Index">Cancelar</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

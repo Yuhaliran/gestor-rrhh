@@ -23,5 +23,6 @@ app.UseAuthorization();
 
 app.MapStaticAssets();
 app.MapRazorPages().WithStaticAssets();
+app.MapCascada();
 
 app.Run();

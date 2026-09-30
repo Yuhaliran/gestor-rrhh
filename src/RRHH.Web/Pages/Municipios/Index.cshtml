@@ -1,0 +1,47 @@
+@page
+@model RRHH.Web.Pages.Municipios.IndexModel
+@{
+    ViewData["Title"] = "Municipios";
+    ViewData["Placeholder"] = "Nombre del municipio";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Municipios</h1>
+    <a class="btn btn-primary" asp-page="Editar">Nuevo municipio</a>
+</div>
+
+<partial name="_Busqueda" model="Model.Buscar" view-data="ViewData" />
+
+<table class="table table-striped align-middle">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Departamento</th>
+            <th>País</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var municipio in Model.Municipios.Elementos)
+        {
+            <tr>
+                <td>@municipio.Nombre</td>
+                <td>@municipio.DepartamentoNombre</td>
+                <td>@municipio.PaisNombre</td>
+                <td class="text-end text-nowrap">
+                    <a class="btn btn-sm btn-outline-secondary" asp-page="Editar" asp-route-id="@municipio.Id">Editar</a>
+                    <form method="post" asp-page-handler="Eliminar" asp-route-id="@municipio.Id" asp-route-pagina="@Model.NumeroPagina"
+                          asp-route-buscar="@Model.Buscar" class="d-inline" data-confirmar="¿Eliminar el municipio «@municipio.Nombre»?">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        @if (Model.Municipios.Elementos.Count == 0)
+        {
+            <tr><td colspan="4" class="text-muted">No hay municipios@(string.IsNullOrEmpty(Model.Buscar) ? "" : " con ese texto").</td></tr>
+        }
+    </tbody>
+</table>
+
+<partial name="_Paginacion" model="Paginacion.De(Model.Municipios, Model.Buscar)" />

@@ -1,0 +1,45 @@
+@page
+@model RRHH.Web.Pages.Departamentos.IndexModel
+@{
+    ViewData["Title"] = "Departamentos";
+    ViewData["Placeholder"] = "Nombre del departamento";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Departamentos</h1>
+    <a class="btn btn-primary" asp-page="Editar">Nuevo departamento</a>
+</div>
+
+<partial name="_Busqueda" model="Model.Buscar" view-data="ViewData" />
+
+<table class="table table-striped align-middle">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>País</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var departamento in Model.Departamentos.Elementos)
+        {
+            <tr>
+                <td>@departamento.Nombre</td>
+                <td>@departamento.PaisNombre</td>
+                <td class="text-end text-nowrap">
+                    <a class="btn btn-sm btn-outline-secondary" asp-page="Editar" asp-route-id="@departamento.Id">Editar</a>
+                    <form method="post" asp-page-handler="Eliminar" asp-route-id="@departamento.Id" asp-route-pagina="@Model.NumeroPagina"
+                          asp-route-buscar="@Model.Buscar" class="d-inline" data-confirmar="¿Eliminar el departamento «@departamento.Nombre»?">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        @if (Model.Departamentos.Elementos.Count == 0)
+        {
+            <tr><td colspan="3" class="text-muted">No hay departamentos@(string.IsNullOrEmpty(Model.Buscar) ? "" : " con ese texto").</td></tr>
+        }
+    </tbody>
+</table>
+
+<partial name="_Paginacion" model="Paginacion.De(Model.Departamentos, Model.Buscar)" />
