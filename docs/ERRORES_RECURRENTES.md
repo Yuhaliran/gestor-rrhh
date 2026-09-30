@@ -214,6 +214,19 @@ Compilación, paquetes, pruebas, EF Core, git.
                  recordados en `%USERPROFILE%\.gemini\antigravity-cli\settings.json`.
 - Origen:        tarea 14 · 2026-09-30 · implementador
 
+### E-017 · La API que levanta el tester responde 503 en /health
+- Síntoma:       con `dotnet run --project src/RRHH.Api` desde agy, `/health` responde 503
+                 (`Unhealthy`) y cada intento de conexión a la base tarda unos 18 segundos. Newman
+                 falla desde el principio. La misma API levantada desde una terminal común anda.
+- Causa:         agy ejecuta los comandos del tester en un entorno aislado, desde el que no se llega
+                 a LocalDB.
+- Solución:      la API la levanta el responsable o el implementador, fuera de agy
+                 (`dotnet run --project src/RRHH.Api --launch-profile http`); el tester sólo corre
+                 Newman contra `http://localhost:5279`.
+- Cómo evitarlo: antes de correr Newman, comprobar `GET /health`. Con 503, no esperar: pedir que
+                 se levante la API fuera de agy.
+- Origen:        tarea 14 · 2026-09-30 · implementador
+
 ## Funcionalidad
 Comportamiento que no cumplía la especificación, detectado por pruebas o revisión.
 
