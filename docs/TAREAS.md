@@ -49,7 +49,7 @@ Cada paso es un commit propio; el merge se hace al cerrar la fase, con el PR.
 ## Fase 2 · rama `feature/api-geografia`
 - [x] 8. Manejo global de errores con ProblemDetails, paginación común y /health
        (`feat(api): errores, paginación y health check`)
-- [ ] 9. Países: servicio, endpoints y pruebas (`feat(api): mantenimiento de países`)
+- [x] 9. Países: servicio, endpoints y pruebas (`feat(api): mantenimiento de países`)
 - [ ] 10. Departamentos, con listado por país (`feat(api): mantenimiento de departamentos`)
 - [ ] 11. Municipios, con listado por departamento (`feat(api): mantenimiento de municipios`)
 

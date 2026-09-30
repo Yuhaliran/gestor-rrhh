@@ -27,8 +27,9 @@ public class PaisesServicio(IRrhhDbContext db) : IPaisesServicio
         var paises = db.Paises.AsNoTracking();
         if (!string.IsNullOrWhiteSpace(consulta.Buscar))
         {
-            var buscar = consulta.Buscar.Trim().ToUpperInvariant();
-            paises = paises.Where(p => p.Nombre.ToUpper().Contains(buscar) || p.CodigoIso2.Contains(buscar));
+            var patron = Busqueda.PatronContiene(consulta.Buscar);
+            paises = paises.Where(p => EF.Functions.Like(p.Nombre, patron, Busqueda.Escape)
+                || EF.Functions.Like(p.CodigoIso2, patron, Busqueda.Escape));
         }
         return paises.OrderBy(p => p.Nombre).Select(ADto).PaginarAsync(consulta, ct);
     }
@@ -66,14 +67,14 @@ public class PaisesServicio(IRrhhDbContext db) : IPaisesServicio
     }
 
     // Normaliza los datos del DTO (ya validado por la API), revisa duplicados (RN5) y los copia.
-    // Los duplicados no distinguen mayúsculas ni espacios en los extremos; sí tildes.
+    // Los duplicados no distinguen mayúsculas (lo resuelve la intercalación de la columna) ni
+    // espacios en los extremos; sí tildes. Dos consultas para decir qué dato se repite.
     private async Task CopiarAsync(GuardarPaisDto dto, Pais pais, CancellationToken ct)
     {
         var nombre = dto.Nombre!.Trim();
-        var nombreComparable = nombre.ToUpperInvariant();
         var codigo = dto.CodigoIso2!.Trim().ToUpperInvariant();   // se guarda siempre en mayúsculas
 
-        if (await db.Paises.AnyAsync(p => p.Id != pais.Id && p.Nombre.ToUpper() == nombreComparable, ct))
+        if (await db.Paises.AnyAsync(p => p.Id != pais.Id && p.Nombre == nombre, ct))
         {
             throw new ConflictoException($"Ya existe un país con el nombre «{nombre}».");
         }

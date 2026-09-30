@@ -180,17 +180,22 @@ public class PaisesServicio(IRrhhDbContext db) : IPaisesServicio
 {
     public Task<Pagina<PaisDto>> ListarAsync(Consulta c, CancellationToken ct) =>
         db.Paises.AsNoTracking()
-          .Where(p => c.Buscar == null || p.Nombre.Contains(c.Buscar))
+          .Where(p => c.Buscar == null
+                      || EF.Functions.Like(p.Nombre, Busqueda.PatronContiene(c.Buscar), Busqueda.Escape))
           .OrderBy(p => p.Nombre)
           .Select(p => new PaisDto(p.Id, p.Nombre, p.CodigoIso2))
           .PaginarAsync(c, ct);                     // extensión común para Skip/Take y total
 
     public async Task<PaisDto> CrearAsync(GuardarPaisDto dto, CancellationToken ct)
     {
-        var nombre = dto.Nombre.Trim();
-        var codigo = dto.CodigoIso2.ToUpperInvariant();
-        if (await db.Paises.AnyAsync(p => p.Nombre == nombre || p.CodigoIso2 == codigo, ct))
-            throw new ConflictoException("Ya existe un país con ese nombre o código.");
+        var nombre = dto.Nombre!.Trim();
+        var codigo = dto.CodigoIso2!.Trim().ToUpperInvariant();
+        // Sin UPPER(): la intercalación de la columna ya no distingue mayúsculas, y así se usa el
+        // índice. Una consulta por dato, para que el mensaje diga cuál se repite.
+        if (await db.Paises.AnyAsync(p => p.Nombre == nombre, ct))
+            throw new ConflictoException($"Ya existe un país con el nombre «{nombre}».");
+        if (await db.Paises.AnyAsync(p => p.CodigoIso2 == codigo, ct))
+            throw new ConflictoException($"Ya existe un país con el código ISO «{codigo}».");
 
         var pais = new Pais { Nombre = nombre, CodigoIso2 = codigo };
         db.Paises.Add(pais);
@@ -210,6 +215,10 @@ public class PaisesServicio(IRrhhDbContext db) : IPaisesServicio
 }
 ```
 Lecturas: `AsNoTracking()` y proyección directa al DTO. Nunca devolver entidades.
+Comparaciones de texto: nunca `ToUpper()`/`ToLower()` sobre columnas (impiden usar los índices).
+Las columnas de texto tienen intercalación sin mayúsculas (`Modern_Spanish_CI_AS` en SQL Server,
+`NOCASE` en SQLite), definida en `RrhhDbContext`; las búsquedas usan `EF.Functions.Like` con
+`Busqueda.PatronContiene`, que escapa los comodines del texto buscado.
 
 ### Controlador (Api)
 Delgado: sin lógica de negocio.

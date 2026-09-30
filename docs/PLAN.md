@@ -46,6 +46,9 @@ Pais 1──N Departamento 1──N Municipio 1──N Empresa
 | EmpresaColaborador | EmpresaId, ColaboradorId, FechaIngreso, Puesto | PK compuesta; FK Empresa (Restrict), FK Colaborador (Cascade) |
 
 Tipos: textos con largo máximo (`nvarchar(n)`), fechas `date`, todo `NOT NULL` salvo Puesto.
+Intercalación de los textos: `Modern_Spanish_CI_AS` (no distingue mayúsculas, sí tildes, ordena la
+Ñ en español); así los índices únicos cumplen RN5 también en la base. En las pruebas, SQLite usa
+`NOCASE` (sólo ASCII).
 `Regla29Febrero` es un enum del dominio guardado como texto (`VeintiochoDeFebrero` o
 `PrimeroDeMarzo`), legible en la base. Valores por defecto de país: 18, 100 y `VeintiochoDeFebrero`,
 definidos en el dominio y no en la base: son una decisión de negocio, y con un `DEFAULT` EF Core
