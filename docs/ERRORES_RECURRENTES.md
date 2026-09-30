@@ -200,6 +200,20 @@ Compilación, paquetes, pruebas, EF Core, git.
                  comando que no se puede leer.
 - Origen:        tareas 12 y 13 · 2026-09-30 · implementador
 
+### E-016 · agy pide permiso para comandos que el hook permite
+- Síntoma:       el tester pide aprobación para `dotnet format --include tests/`, `dotnet test` o
+                 una edición en `tests/`, aunque el registro del hook (`%TEMP%\rrhh-permisos.log`)
+                 dice `allow`. Algunos comandos no preguntan (`git status`) y otros sí.
+- Causa:         agy no toma el `allow` del hook como aprobación: sólo deja de preguntar si el
+                 permiso está concedido, y los concedidos son los que se aprobaron con «permitir
+                 siempre» (en `settings.json` de agy), con el comando exacto.
+- Solución:      el hook devuelve con cada `allow` el permiso de esa llamada
+                 (`permissionOverrides`), y con cada pregunta al tester, `force_ask`, para que un
+                 permiso recordado no apruebe solo un comando riesgoso.
+- Cómo evitarlo: no usar «permitir siempre» con comandos del tester; revisar los permisos
+                 recordados en `%USERPROFILE%\.gemini\antigravity-cli\settings.json`.
+- Origen:        tarea 14 · 2026-09-30 · implementador
+
 ## Funcionalidad
 Comportamiento que no cumplía la especificación, detectado por pruebas o revisión.
 

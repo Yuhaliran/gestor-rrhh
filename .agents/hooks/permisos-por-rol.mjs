@@ -335,12 +335,7 @@ function decidirComando(args) {
       + 'Para leer el diff, por partes: git diff main...HEAD -- <ruta>.');
 }
 
-function decidir(entrada) {
-  const llamada = entrada?.toolCall ?? {};
-  const herramienta = llamada.name;
-  const args = typeof llamada.args === 'string' ? JSON.parse(llamada.args) : (llamada.args ?? {});
-  const artefactos = entrada?.artifactDirectoryPath;
-
+function decidirHerramienta(herramienta, args, artefactos) {
   if (herramienta === 'run_command') return decidirComando(args);
   if (HERRAMIENTAS_SUBAGENTES.has(herramienta)) {
     return niega('Los subagentes no pasan por este hook y podrían saltear los permisos del rol: no se usan.');
@@ -348,6 +343,39 @@ function decidir(entrada) {
   if (HERRAMIENTAS_ESCRITURA.has(herramienta)) return decidirEscritura(args, artefactos);
   if (HERRAMIENTAS_LECTURA.has(herramienta)) return decidirLectura(args, artefactos);
   return pregunta;
+}
+
+// Permisos exactos de una llamada, con el formato de agy: command(...), write_file(...), read_file(...)
+function permisosDe(herramienta, args) {
+  if (herramienta === 'run_command') return [`command(${String(args.CommandLine ?? '')})`];
+  if (HERRAMIENTAS_ESCRITURA.has(herramienta)) {
+    const destino = aAbsoluta(args.TargetFile);
+    return destino === null ? [] : [`write_file(${destino})`];
+  }
+  if (HERRAMIENTAS_LECTURA.has(herramienta)) {
+    return Object.entries(args)
+      .filter(([campo]) => !CAMPOS_DESCRIPTIVOS.has(campo))
+      .map(([, valor]) => aAbsoluta(valor))
+      .filter((ruta) => ruta !== null)
+      .map((ruta) => `read_file(${ruta})`);
+  }
+  return [];
+}
+
+// agy no toma un "allow" del hook como aprobación: sólo no pregunta si el permiso está concedido.
+// Por eso un "allow" lleva el permiso exacto de la llamada (permissionOverrides, temporal). Y el
+// "ask" del tester es "force_ask": pregunta siempre, aunque haya un permiso recordado en la
+// configuración de agy (algunos recordados eran scripts que editaban archivos, E-015).
+function decidir(entrada) {
+  const llamada = entrada?.toolCall ?? {};
+  const args = typeof llamada.args === 'string' ? JSON.parse(llamada.args) : (llamada.args ?? {});
+  const respuesta = decidirHerramienta(llamada.name, args, entrada?.artifactDirectoryPath);
+  if (respuesta.decision === 'allow') {
+    const permisos = permisosDe(llamada.name, args);
+    return permisos.length > 0 ? { ...respuesta, permissionOverrides: permisos } : respuesta;
+  }
+  if (respuesta.decision === 'ask' && rol === 'tester') return { ...respuesta, decision: 'force_ask' };
+  return respuesta;
 }
 
 // Registro de cada decisión en la carpeta temporal, para revisar qué se permitió, qué se

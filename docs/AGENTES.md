@@ -98,7 +98,14 @@ Bloqueados:
 - borrar archivos;
 - mencionar la implementación que no lee.
 
-Para el resto (`git checkout`, un `diff` completo, `newman`…), pregunta.
+Para el resto (`git checkout`, un `diff` completo, `newman`…), pregunta siempre (`force_ask`), aunque
+agy tenga un permiso recordado para ese comando.
+
+agy no toma el `allow` del hook como aprobación: sólo deja de preguntar si hay un permiso concedido.
+Por eso cada `allow` lleva el permiso exacto de esa llamada (`permissionOverrides`:
+`command(...)`, `write_file(...)`, `read_file(...)`). Los permisos que agy recuerda («permitir
+siempre») quedan en `%USERPROFILE%\.gemini\antigravity-cli\settings.json`: conviene revisarlos
+de vez en cuando (E-016).
 
 Comandos de lectura del revisor: `git` de consulta (`diff`, `log`, `show`, `status`, `blame`,
 `grep`, `branch` sin modificar…), `dotnet build`, `test`, `format --verify-no-changes` y
