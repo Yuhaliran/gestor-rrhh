@@ -29,23 +29,26 @@ crear, editar y eliminar.
 - Nombre (obligatorio, único dentro del departamento)
 
 ### Empresa
-- Geografía: municipio (obligatorio). El departamento y el país se obtienen del municipio.
-- NIT (obligatorio, único dentro del país de la empresa)
+- Geografía: municipio (obligatorio). El departamento y el país se obtienen del municipio. Al
+  editar, el municipio puede cambiar dentro del mismo país (RN8).
+- NIT (obligatorio, único dentro del país de la empresa). Se guarda sin espacios en los extremos
+  y en mayúsculas; su formato depende de cada país y no se valida.
 - Razón social (obligatoria)
 - Nombre comercial (obligatorio)
-- Teléfono (obligatorio)
+- Teléfono (obligatorio, formato válido)
 - Correo electrónico (obligatorio, formato válido)
 
 ### Colaborador
 - Nombre completo (obligatorio)
 - Fecha de nacimiento (obligatoria); la **edad** se calcula a partir de ella
-- Teléfono (obligatorio)
+- Teléfono (obligatorio, formato válido)
 - Correo electrónico (obligatorio, formato válido, único)
-- Empresas: una o varias (al menos una)
+- Empresas: una o varias (al menos una). Se eligen al crearlo; después se agregan, editan o
+  quitan desde su detalle.
 
 ### Relación Empresa – Colaborador
 - Un colaborador puede pertenecer a una o varias empresas.
-- Datos de la relación: fecha de ingreso (obligatoria) y puesto (opcional).
+- Datos de la relación: fecha de ingreso (obligatoria, RN9) y puesto (opcional); se pueden editar.
 
 ## Reglas de negocio
 - **RN1.** No se puede eliminar un país con departamentos, un departamento con municipios,
@@ -54,8 +57,9 @@ crear, editar y eliminar.
 - **RN3.** Un colaborador siempre tiene al menos una empresa: al crearlo se exige una,
   y no se puede quitar la última (409).
 - **RN4.** La edad del colaborador debe estar dentro del rango (edad mínima y máxima) del país
-  de cada una de sus empresas. Se valida al crear o editar un colaborador y al asociarlo a una
-  empresa (400). Cambiar el rango de un país no afecta a los colaboradores ya registrados.
+  de cada una de sus empresas. Se valida al crear un colaborador, al editarlo si cambia la fecha
+  de nacimiento, y al asociarlo a una empresa (400). Cambiar el rango de un país no afecta a los
+  colaboradores ya registrados.
 - **RN5.** No se permiten duplicados: NIT dentro del mismo país, código ISO y nombre de país,
   correo de colaborador, nombres dentro de su padre, y la misma empresa dos veces en un
   colaborador (409). La comparación no distingue mayúsculas ni espacios en los extremos
@@ -68,13 +72,19 @@ crear, editar y eliminar.
   la empresa con la fecha de ingreso más antigua (si hay varias, la de menor id). Una fecha de
   nacimiento posterior a la fecha actual da una edad negativa, fuera de cualquier rango (RN4).
 - **RN8.** Al editar un departamento o un municipio no cambia su padre (el país o el
-  departamento): se elige al crearlo. Si se envía uno distinto del actual, 400 en ese campo.
+  departamento): se elige al crearlo. Una empresa puede cambiar de municipio, pero no de país.
+  Si se envía uno no permitido, 400 en ese campo.
+- **RN9.** La fecha de ingreso a una empresa no puede ser posterior a la fecha actual ni anterior
+  a la fecha de nacimiento del colaborador (400). Al cambiar la fecha de nacimiento, se revisa
+  contra las fechas de ingreso ya registradas.
 
 ## Validaciones de entrada
 - **V1.** Campos obligatorios presentes (400).
 - **V2.** Correos con formato válido (400).
 - **V3.** Largos máximos respetados (400).
 - **V4.** Referencias existentes: país, departamento, municipio o empresa inexistente (400).
+- **V5.** Teléfonos con formato válido: dígitos, espacios, `+`, `-` y paréntesis, de 7 a 20
+  caracteres (400).
 
 ## Criterios de aceptación de la evaluación
 - **CA1.** Empresas con geografía (país, departamento, municipio), NIT, razón social,
@@ -101,7 +111,16 @@ crear, editar y eliminar.
 - **Padre fijo al editar (RN8):** editar un departamento o un municipio no cambia a qué país o
   departamento pertenece; cada nivel se edita en su propio mantenimiento. Así las empresas nunca
   cambian de país de forma indirecta, y la unicidad del NIT se valida siempre en el servicio de
-  empresas.
+  empresas. Una empresa sí puede mudarse de municipio dentro de su país; a otro país no: el NIT
+  lo emite un país (en otro sería otra empresa), y cambiaría el rango de edad de sus
+  colaboradores (RN4) sin validarlo.
+- **RN4 al editar:** sólo se revalida si cambia la fecha de nacimiento. Revalidar siempre
+  impediría, por ejemplo, corregir el teléfono de un colaborador que superó la edad máxima después
+  de registrado; es coherente con que cambiar el rango de un país no afecte a los ya registrados.
+- **Fecha de ingreso (RN9):** no puede ser futura porque RN4 usa la edad de hoy; una fecha futura
+  sugeriría que se valida la edad al momento de ingresar.
+- **Empresas del colaborador:** se eligen al crearlo (RN3); editar el colaborador cambia sólo sus
+  datos personales, y sus empresas se agregan, editan o quitan con endpoints propios.
 - **Eliminación física:** eliminar borra el registro, protegido por RN1 y RN2 (409). Un estado
   activo/inactivo (borrado lógico) abriría casos de uso que la evaluación no pide (reactivar,
   unicidad entre inactivos, historial de la relación laboral); queda como mejora futura.

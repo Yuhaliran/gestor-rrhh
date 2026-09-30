@@ -151,13 +151,21 @@ contrastada con Wikipedia, «Anexo:Municipios de Guatemala».
 | GET | /api/empresas/{id}/colaboradores | Colaboradores de una empresa |
 | GET/POST, GET/PUT/DELETE | /api/colaboradores, /api/colaboradores/{id} | Mantenimiento (detalle con empresas y edad) |
 | POST | /api/colaboradores/{id}/empresas | Asociar a una empresa |
+| PUT | /api/colaboradores/{id}/empresas/{empresaId} | Editar la relación (fecha de ingreso y puesto) |
 | DELETE | /api/colaboradores/{id}/empresas/{empresaId} | Quitar de una empresa (no la última) |
 | GET | /health | Estado de la API (prueba de humo) |
 
 Respuestas: 200, 201 con `Location`, 204, 400 `ValidationProblem`, 404, 409 `ProblemDetails`.
 - **Listados paginados:** `?pagina=1&tamanio=20&buscar=texto`. `pagina` desde 1 y `tamanio` de 1 a
   100 (por defecto 1 y 20); fuera de rango, 400. `buscar` filtra por nombre sin distinguir
-  mayúsculas (en países, también por código ISO).
+  mayúsculas (en países, también por código ISO; en empresas, por NIT, razón social o nombre
+  comercial; en colaboradores, por nombre o correo).
+- **Listados por padre** (`/api/paises/{id}/departamentos`, `/api/departamentos/{id}/municipios`):
+  sin paginar, para las listas en cascada; 404 si el padre no existe.
+- **Colaboradores:** el POST los crea con sus empresas (al menos una, RN3); el PUT cambia sólo sus
+  datos personales, y las empresas se manejan con `/api/colaboradores/{id}/empresas`.
+- **Fecha actual** (edad, RN4, RN9): la da `TimeProvider`, inyectado en los servicios; las pruebas
+  usan un reloj con una fecha fija.
 - **Errores:** 400 para toda validación (formato del DTO o regla del servicio sobre un campo, como
   V4 o RN4), con el error en el campo; 404 si no existe; 409 por reglas de negocio. Un error de la
   base por un único o una clave foránea (dos pedidos simultáneos que pasan la validación del

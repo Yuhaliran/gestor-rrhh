@@ -185,6 +185,48 @@ Compilación, paquetes, pruebas, EF Core, git.
                  los datos de prueba, generar nombres y códigos únicos para cada entidad creada.
 - Origen:        tareas 10 y 11 · 2026-09-30 · implementador
 
+### E-015 · El tester edita archivos con scripts y rompe las pruebas
+- Síntoma:       pruebas con comentarios Arrange-Act-Assert insertados en cualquier lugar, código
+                 borrado o valores esperados copiados de otra prueba; comandos
+                 `node -e "eval(Buffer.from('…','base64'))"` que el responsable aprueba sin poder
+                 leerlos; archivos temporales (`inject.py`, `postman/update.js`).
+- Causa:         para editar muchas líneas, el tester genera scripts (a veces en base64, para
+                 esquivar el escapado de PowerShell) en lugar de usar la herramienta de edición.
+                 Un script no pasa por el control de escritura del hook, y como todos los comandos
+                 pedían aprobación, la de un script se perdía entre las demás.
+- Solución:      el hook bloquea los intérpretes para el tester (salvo validar un JSON) y permite
+                 sin aprobación sus comandos de cada tarea (docs/AGENTES.md).
+- Cómo evitarlo: editar sólo con la herramienta de edición, prueba por prueba. No aprobar un
+                 comando que no se puede leer.
+- Origen:        tareas 12 y 13 · 2026-09-30 · implementador
+
+### E-016 · agy pide permiso para comandos que el hook permite
+- Síntoma:       el tester pide aprobación para `dotnet format --include tests/`, `dotnet test` o
+                 una edición en `tests/`, aunque el registro del hook (`%TEMP%\rrhh-permisos.log`)
+                 dice `allow`. Algunos comandos no preguntan (`git status`) y otros sí.
+- Causa:         agy no toma el `allow` del hook como aprobación: sólo deja de preguntar si el
+                 permiso está concedido, y los concedidos son los que se aprobaron con «permitir
+                 siempre» (en `settings.json` de agy), con el comando exacto.
+- Solución:      el hook devuelve con cada `allow` el permiso de esa llamada
+                 (`permissionOverrides`), y con cada pregunta al tester, `force_ask`, para que un
+                 permiso recordado no apruebe solo un comando riesgoso.
+- Cómo evitarlo: no usar «permitir siempre» con comandos del tester; revisar los permisos
+                 recordados en `%USERPROFILE%\.gemini\antigravity-cli\settings.json`.
+- Origen:        tarea 14 · 2026-09-30 · implementador
+
+### E-017 · La API que levanta el tester responde 503 en /health
+- Síntoma:       con `dotnet run --project src/RRHH.Api` desde agy, `/health` responde 503
+                 (`Unhealthy`) y cada intento de conexión a la base tarda unos 18 segundos. Newman
+                 falla desde el principio. La misma API levantada desde una terminal común anda.
+- Causa:         agy ejecuta los comandos del tester en un entorno aislado, desde el que no se llega
+                 a LocalDB.
+- Solución:      la API la levanta el responsable o el implementador, fuera de agy
+                 (`dotnet run --project src/RRHH.Api --launch-profile http`); el tester sólo corre
+                 Newman contra `http://localhost:5279`.
+- Cómo evitarlo: antes de correr Newman, comprobar `GET /health`. Con 503, no esperar: pedir que
+                 se levante la API fuera de agy.
+- Origen:        tarea 14 · 2026-09-30 · implementador
+
 ## Funcionalidad
 Comportamiento que no cumplía la especificación, detectado por pruebas o revisión.
 
