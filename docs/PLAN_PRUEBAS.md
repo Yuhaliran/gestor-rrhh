@@ -92,6 +92,8 @@ U = unitaria · I = integración · A = aceptación (Postman) · E = E2E · R = 
   vacía de LocalDB y verificar que se crean las tablas y los datos iniciales.
 
 ## Aceptación con Postman
+- La colección crece con la API: en cada tarea de la API (8 a 14), el tester agrega los requests
+  de los endpoints nuevos. La tarea 22 la completa y la automatiza con Newman.
 - Un request por endpoint, agrupado por entidad, con variables de entorno (`{{baseUrl}}`).
 - Cada request tiene pruebas: código de estado, estructura de la respuesta y, en los
   casos de error, el `ProblemDetails` esperado.

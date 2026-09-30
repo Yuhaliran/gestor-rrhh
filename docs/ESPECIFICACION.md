@@ -15,9 +15,10 @@ crear, editar y eliminar.
 - Nombre (obligatorio, único)
 - Código ISO de 2 letras (obligatorio, único; p. ej. GT)
 - Edad mínima y edad máxima de los colaboradores (obligatorias, enteros no negativos, la mínima
-  no mayor que la máxima; por defecto 18 y 100)
-- Fecha de cumpleaños de los nacidos el 29 de febrero en años no bisiestos: 28 de febrero
-  (por defecto) o 1 de marzo
+  no mayor que la máxima; el formulario propone 18 y 100)
+- Fecha de cumpleaños de los nacidos el 29 de febrero en años no bisiestos: 28 de febrero o
+  1 de marzo (obligatoria; el formulario propone 28 de febrero)
+- La API exige estos tres datos: si falta alguno, responde 400; no completa los valores propuestos.
 
 ### Departamento
 - País (obligatorio)
@@ -57,7 +58,9 @@ crear, editar y eliminar.
   empresa (400). Cambiar el rango de un país no afecta a los colaboradores ya registrados.
 - **RN5.** No se permiten duplicados: NIT dentro del mismo país, código ISO y nombre de país,
   correo de colaborador, nombres dentro de su padre, y la misma empresa dos veces en un
-  colaborador (409).
+  colaborador (409). La comparación no distingue mayúsculas ni espacios en los extremos
+  («Guatemala» = «guatemala »; un NIT terminado en «k» = el mismo con «K») y sí distingue tildes
+  («Petén» ≠ «Peten»).
 - **RN6.** La geografía de la empresa se elige en cascada: país → departamento → municipio.
 - **RN7.** La edad se calcula a partir de la fecha de nacimiento y la fecha actual. Los nacidos
   el 29 de febrero cumplen años, en los años no bisiestos, el 28 de febrero o el 1 de marzo,

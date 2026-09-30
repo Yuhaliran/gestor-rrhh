@@ -110,6 +110,8 @@ b.HasOne(d => d.Pais).WithMany(p => p.Departamentos)
 ### DTOs (Contratos)
 Las validaciones de formato van en el DTO; las reglas de negocio, en el servicio.
 En records, los atributos se ponen en los parámetros (no con `property:`).
+Un número obligatorio va como `int?` con `[Required]`: con `int`, un dato no enviado llega como 0
+(que puede ser un valor válido) y no se puede responder 400.
 ```csharp
 namespace RRHH.Contratos.Paises;
 
@@ -142,7 +144,10 @@ Errores de negocio como excepciones propias, traducidas a ProblemDetails en un s
 public class NoEncontradoException(string recurso, int id)
     : Exception($"No existe {recurso} con id {id}.");
 public class ConflictoException(string mensaje) : Exception(mensaje);
-public class ValidacionException(string mensaje) : Exception(mensaje);
+public class ValidacionException(string campo, string mensaje) : Exception(mensaje)   // 400 en ese campo
+{
+    public string Campo { get; } = campo;
+}
 ```
 
 Acceso a datos desde Application, a través de una interfaz (para no depender de Infrastructure):
@@ -229,21 +234,23 @@ public class ManejadorExcepciones(IProblemDetailsService problemas) : IException
 {
     public async ValueTask<bool> TryHandleAsync(HttpContext ctx, Exception ex, CancellationToken ct)
     {
-        var (estado, titulo) = ex switch
+        ProblemDetails? problema = ex switch
         {
-            NoEncontradoException => (StatusCodes.Status404NotFound, "Recurso no encontrado"),
-            ConflictoException    => (StatusCodes.Status409Conflict, "Conflicto"),
-            ValidacionException   => (StatusCodes.Status400BadRequest, "Datos inválidos"),
-            _ => (0, "")
+            NoEncontradoException => new() { Status = 404, Title = "Recurso no encontrado", Detail = ex.Message },
+            ConflictoException    => new() { Status = 409, Title = "Conflicto", Detail = ex.Message },
+            // Violación de un único o de una clave foránea que se coló a la validación del servicio
+            DbUpdateException     => new() { Status = 409, Title = "Conflicto",
+                                             Detail = "La operación entra en conflicto con datos existentes." },
+            // Regla del servicio sobre un campo (V4, RN4): mismo formato que los errores del DTO
+            ValidacionException v => new ValidationProblemDetails(
+                                         new Dictionary<string, string[]> { [v.Campo] = [v.Message] })
+                                     { Status = 400, Title = "Datos inválidos" },
+            _ => null
         };
-        if (estado == 0) return false;          // lo no previsto: 500 genérico, sin detalles internos
+        if (problema is null) return false;     // lo no previsto: 500 genérico, sin detalles internos
 
-        ctx.Response.StatusCode = estado;
-        return await problemas.TryWriteAsync(new ProblemDetailsContext
-        {
-            HttpContext = ctx,
-            ProblemDetails = { Status = estado, Title = titulo, Detail = ex.Message }
-        });
+        ctx.Response.StatusCode = problema.Status!.Value;
+        return await problemas.TryWriteAsync(new ProblemDetailsContext { HttpContext = ctx, ProblemDetails = problema });
     }
 }
 

@@ -16,6 +16,8 @@ Convenciones y patrón de referencia: `docs/CODIFICACION.md`. Prompts de cada pa
 
 En las tareas de la API (9 a 14) se sigue el ciclo de `docs/AGENTES.md`:
 contrato → pruebas (tester) → implementación (implementador) → revisión.
+Desde la tarea 8, el tester agrega a `postman/` los requests de los endpoints nuevos; la tarea 22
+completa la colección y la corre con Newman.
 Cada paso es un commit propio; el merge se hace al cerrar la fase, con el PR.
 
 ## Fase 0 · rama `chore/estructura`
