@@ -303,7 +303,7 @@ public class DepartamentosServicioTests : IDisposable
     }
 
     [Fact]
-    public async Task ActualizarAsync_DuplicadoEnPaisDestino_LanzaConflictoException()
+    public async Task ActualizarAsync_DuplicadoEnPaisDestino_LanzaValidacionExceptionEnPaisIdAntesQueConflicto()
     {
         // Arrange
         var p1 = await CrearPaisPruebaAsync("Pais Act 409 B1", "B1");
@@ -314,11 +314,12 @@ public class DepartamentosServicioTests : IDisposable
         var dtoMoverDuplicado = DtoBase(p2.Id) with { Nombre = "Depto Existente" };
 
         // Act & Assert
-        await Assert.ThrowsAsync<ConflictoException>(() => _servicio.ActualizarAsync(creado.Id, dtoMoverDuplicado, TestContext.Current.CancellationToken));
+        var ex = await Assert.ThrowsAsync<ValidacionException>(() => _servicio.ActualizarAsync(creado.Id, dtoMoverDuplicado, TestContext.Current.CancellationToken));
+        Assert.Equal("PaisId", ex.Campo);
     }
 
     [Fact]
-    public async Task ActualizarAsync_CambioDePais_Exitoso()
+    public async Task ActualizarAsync_CambioDePais_LanzaValidacionExceptionEnPaisId()
     {
         // Arrange
         var p1 = await CrearPaisPruebaAsync("Pais Origen", "O1");
@@ -328,16 +329,13 @@ public class DepartamentosServicioTests : IDisposable
         var dtoActualizar = DtoBase(p2.Id) with { Nombre = "Moviendo" };
 
         // Act
-        var actualizado = await _servicio.ActualizarAsync(creado.Id, dtoActualizar, TestContext.Current.CancellationToken);
-        var guardado = await _servicio.ObtenerAsync(creado.Id, TestContext.Current.CancellationToken);
+        var ex = await Assert.ThrowsAsync<ValidacionException>(() => _servicio.ActualizarAsync(creado.Id, dtoActualizar, TestContext.Current.CancellationToken));
 
         // Assert
-        Assert.Equal(p2.Id, actualizado.PaisId);
-        Assert.Equal(p2.Nombre, actualizado.PaisNombre);
-        Assert.Equal("Moviendo", actualizado.Nombre);
+        Assert.Equal("PaisId", ex.Campo);
 
-        Assert.Equal(p2.Id, guardado.PaisId);
-        Assert.Equal(p2.Nombre, guardado.PaisNombre);
+        var guardado = await _servicio.ObtenerAsync(creado.Id, TestContext.Current.CancellationToken);
+        Assert.Equal(p1.Id, guardado.PaisId);
         Assert.Equal("Moviendo", guardado.Nombre);
     }
 

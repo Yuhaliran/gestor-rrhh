@@ -811,6 +811,49 @@
 					}
 				},
 				{
+					"name": "Actualizar con país inexistente",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });",
+									"pm.test(\"Error en campo PaisId\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.errors).to.exist;",
+									"    pm.expect(jsonData.errors).to.have.property('PaisId');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"paisId\":999999,\"nombre\":\"Depto Postman Mod\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/departamentos/{{departamentoId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"departamentos",
+								"{{departamentoId}}"
+							]
+						}
+					}
+				},
+				{
 					"name": "Eliminar Guatemala (Error)",
 					"event": [
 						{
