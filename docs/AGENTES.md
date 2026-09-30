@@ -75,16 +75,24 @@ una denegación gana siempre: «sólo estas carpetas» no se puede expresar con 
 un hook del proyecto (`.agents/hooks/permisos-por-rol.mjs`, en Node) revisa cada herramienta
 de archivos y cada comando antes de que se ejecuten:
 
-| Rol (`RRHH_ROL`) | Escritura en el repositorio | Lectura |
-|---|---|---|
-| `tester` (por defecto) | Sólo `tests/`, `postman/`, `docs/PLAN_PRUEBAS.md` y `docs/ERRORES_RECURRENTES.md` | Todo menos `src/RRHH.Application/Servicios/` y `src/RRHH.Infrastructure/` |
-| `revisor` | Nada | Todo |
+| Rol (`RRHH_ROL`) | Escritura en el repositorio | Lectura | Comandos |
+|---|---|---|---|
+| `tester` (por defecto) | Sólo `tests/`, `postman/`, `docs/PLAN_PRUEBAS.md` y `docs/ERRORES_RECURRENTES.md` | Todo menos `src/RRHH.Application/Servicios/` y `src/RRHH.Infrastructure/` | Cualquiera, con aprobación |
+| `revisor` | Nada | Todo | Sólo de lectura, con aprobación |
+
+Comandos de lectura del revisor: `git` de consulta (`diff`, `log`, `show`, `status`, `blame`,
+`grep`, `branch` sin modificar…), `dotnet build`, `test`, `format --verify-no-changes` y
+`ef migrations has-pending-model-changes`, y los de la terminal que sólo leen (`Get-Content`,
+`Select-String`, `Get-ChildItem`…). Se bloquea cualquier otro, y también un comando de lectura
+que redirija la salida a un archivo (`>`) o que incluya uno que escribe (`Set-Content`,
+`Remove-Item`…). En la revisión de la fase 1, el revisor había creado volcados del diff en la
+raíz del repositorio con `>` y `Set-Content`.
 
 Para los dos roles quedan bloqueados `git push` y los subagentes, porque las herramientas de un
-subagente no pasan por el hook. Un valor desconocido de `RRHH_ROL` bloquea toda escritura. Lo
-demás sigue como Antigravity lo hace por defecto: los comandos piden aprobación y, fuera del
-repositorio, se permiten sólo sus propias carpetas (artefactos, temporales y ayuda
-incorporada); para el resto, pregunta.
+subagente no pasan por el hook. Un valor desconocido de `RRHH_ROL` bloquea toda escritura y
+limita los comandos como al revisor. Lo demás sigue como Antigravity lo hace por defecto: los
+comandos piden aprobación y, fuera del repositorio, se permiten sólo sus propias carpetas
+(artefactos, temporales y ayuda incorporada); para el resto, pregunta.
 
 El rol se define en PowerShell antes de abrir `agy` (escrito en el chat no llega al hook):
 ```powershell
@@ -97,9 +105,10 @@ el comando desde la carpeta `.agents/` (por eso la ruta es `hooks/...`, ver E-00
 Windows, con `cmd /C`, que no interpreta comillas escapadas: el comando va sin comillas. Si el
 hook falla o responde sin decisión, `agy` bloquea la herramienta (E-007).
 
-Límites: los permisos controlan las herramientas del agente, no lo que hacen los programas que
-ejecuta (un `dotnet format` o un `type` desde la terminal), y una búsqueda sobre todo el
-repositorio puede mostrar líneas de la implementación. La revisión humana sigue siendo la
+Límites: con el tester, los permisos controlan sus herramientas de archivos, no lo que hacen los
+programas que ejecuta (un `dotnet format` o un `type` desde la terminal); una búsqueda sobre todo
+el repositorio puede mostrarle líneas de la implementación. Con el revisor, `dotnet build` y
+`dotnet test` escriben en `bin/` y `obj/`, que git ignora. La revisión humana sigue siendo la
 última barrera.
 
 ```
