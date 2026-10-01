@@ -96,6 +96,7 @@ public class MigracionesSqlServerTests : IAsyncLifetime
         {
             var depto = departamentos.SingleOrDefault(d => d.Id == id);
             Assert.NotNull(depto);
+            Assert.Equal(guate.Id, depto.PaisId);
             Assert.Equal(deptoNombre, depto.Nombre);
 
             var muni = municipios.SingleOrDefault(m => m.Id == id);
