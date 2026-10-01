@@ -245,6 +245,17 @@ Compilación, paquetes, pruebas, EF Core, git.
                  y las E2E. El implementador lo comprueba con mutaciones de los controladores.
 - Origen:        tarea 15 · 2026-09-30 · implementador
 
+### E-019 · `dotnet ef database update` falla en un clon nuevo
+- Síntoma:       en un clon recién hecho, `dotnet ef database update` termina con «Assets file
+                 '...\obj\project.assets.json' not found» y «Unable to retrieve project metadata».
+- Causa:         `dotnet ef` lee los proyectos antes de compilarlos, y para eso necesita los paquetes
+                 restaurados; en un clon nuevo todavía no hay `obj/`.
+- Solución:      `dotnet build` (o `dotnet restore`) antes de `dotnet ef`. El README y
+                 `docs/ENTORNO.md` lo incluyen en los pasos de la primera vez.
+- Cómo evitarlo: verificar las instrucciones de ejecución en un clon limpio, no en la carpeta de
+                 trabajo, donde `obj/` ya existe y oculta el paso que falta.
+- Origen:        tarea 26 · 2026-09-30 · implementador
+
 ## Funcionalidad
 Comportamiento que no cumplía la especificación, detectado por pruebas o revisión.
 

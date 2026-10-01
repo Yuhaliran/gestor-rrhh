@@ -176,7 +176,7 @@ Respuestas: 200, 201 con `Location`, 204, 400 `ValidationProblem`, 404, 409 `Pro
 
 ## Base de datos y entorno
 - La aplicación usa **SQL Server**. En desarrollo: LocalDB (viene con Visual Studio) o SQL Server Express.
-  Opcional: `docker-compose.yml` con SQL Server para quien prefiera Docker.
+  Un `docker-compose.yml` con SQL Server, para quien prefiera Docker, queda como mejora futura (README).
 - No hace falta SSMS: `dotnet ef database update` crea la base y carga los datos iniciales.
 - Cadena de conexión en user-secrets de RRHH.Api (nunca en el repositorio):
   `dotnet user-secrets set "ConnectionStrings:Rrhh" "Server=(localdb)\MSSQLLocalDB;Database=Rrhh;Trusted_Connection=True;TrustServerCertificate=True" --project src/RRHH.Api`

@@ -79,13 +79,15 @@ Cada paso es un commit propio; el merge se hace al cerrar la fase, con el PR.
 
 ## Fase 7 (opcional) · rama `test/e2e`
 - [ ] 23. Proyecto E2E con Playwright y los 3 flujos de PLAN_PRUEBAS.md, categoría E2E
-        (`test(e2e): flujos principales con Playwright`)
+        (`test(e2e): flujos principales con Playwright`).
+        No se hizo: queda como mejora futura (README)
 - [x] 24. Prueba MIG2 contra LocalDB, categoría SqlServer (`test(datos): migraciones sobre SQL Server`)
-- [ ] 25. docker-compose.yml con SQL Server (`chore: docker-compose para SQL Server`)
+- [ ] 25. docker-compose.yml con SQL Server (`chore: docker-compose para SQL Server`).
+        No se hizo (sin Docker para probarlo): queda como mejora futura (README)
 
 ## Fase 8 · rama `docs/entrega`
-- [ ] 26. README final: ejecución, decisiones, pruebas por categoría y uso de IA (`docs: README`)
-- [ ] 27. Revisión final: `dotnet format`, sin advertencias, sin secretos, todo en verde
+- [x] 26. README final: ejecución, decisiones, pruebas por categoría y uso de IA (`docs: README`)
+- [x] 27. Revisión final: `dotnet format`, sin advertencias, sin secretos, todo en verde
         (`chore: revisión final`)
-- [ ] 28. PR de la fase 8 a `main`; después, tag sobre `main`:
+- [x] 28. PR de la fase 8 a `main`; después, tag sobre `main`:
         `git tag -a v1.0.0 -m "Entrega de la evaluación"`

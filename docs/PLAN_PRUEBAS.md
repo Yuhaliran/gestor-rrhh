@@ -7,13 +7,13 @@ de prueba, diseñado al mismo tiempo que la especificación. La implementación 
 **incremental** (entidad por entidad, cada una terminada y probada), para que lo entregado
 funcione en cualquier punto.
 
-``
-Requisitos (ESPECIFICACION.md) ◄──────────────► Aceptación: Postman/Newman, E2E (opcional)
+```
+Requisitos (ESPECIFICACION.md) ◄──────────────► Aceptación: Postman/Newman (E2E: mejora futura)
    Diseño (PLAN.md) ◄─────────────────────► Integración: API con WebApplicationFactory
       Arquitectura ◄────────────────────► Arquitectura: dependencias entre capas
          Módulos ◄───────────────────► Unitarias: dominio, validaciones, servicios
                         Código
-``
+```
 
 ## Independencia de las pruebas
 Las pruebas se escriben **desde la especificación y antes de la implementación**, por un
@@ -26,18 +26,18 @@ pruebas no heredan los errores de interpretación del código. Detalle en `docs/
 | Unitarias | tests/RRHH.UnitTests | xUnit, SQLite en memoria | Nada |
 | Integración | tests/RRHH.IntegrationTests | xUnit, WebApplicationFactory, SQLite en memoria | Nada |
 | Arquitectura | tests/RRHH.ArchitectureTests | xUnit, NetArchTest | Nada |
-| Migraciones | comando de EF + prueba opcional | dotnet-ef, SQL Server | SQL Server sólo para la prueba opcional |
+| Migraciones | comando de EF (MIG1) + prueba MIG2 en tests/RRHH.IntegrationTests | dotnet-ef, SQL Server | SQL Server sólo para MIG2 |
 | Aceptación de la API | postman/ | Postman, Newman | La API corriendo |
-| E2E (opcional) | tests/RRHH.E2ETests | xUnit, Playwright | API, web y navegadores instalados |
+| E2E (mejora futura, no implementadas) | tests/RRHH.E2ETests | xUnit, Playwright | API, web y navegadores instalados |
 
-`dotnet test` corre unitarias, integración y arquitectura. Las E2E y la prueba de migraciones
-sobre SQL Server están marcadas con `[Trait("Categoria", "E2E")]` y `[Trait("Categoria", "SqlServer")]`
-y se excluyen por defecto:
+`dotnet test` corre unitarias, integración y arquitectura. La prueba de migraciones sobre SQL Server
+está marcada con `[Trait("Categoria", "SqlServer")]`, y las E2E, si se agregan, irán con
+`[Trait("Categoria", "E2E")]`; las dos categorías se excluyen por defecto:
 
-``
+```
 dotnet test --filter "Categoria!=E2E&Categoria!=SqlServer"    # lo de siempre
-dotnet test --filter "Categoria=E2E"                           # con la app corriendo
-``
+dotnet test --filter "Categoria=SqlServer"                     # MIG2, con SQL Server (LocalDB)
+```
 
 Convención de nombres: `Metodo_Escenario_ResultadoEsperado`, con estructura Arrange-Act-Assert.
 
@@ -53,7 +53,7 @@ U = unitaria · I = integración · A = aceptación (Postman) · E = E2E · R = 
 |---|---|---|---|
 | CA1 | Detalle de empresa con país, departamento y municipio | I, A | `GetEmpresa_Existente_DevuelveGeografiaCompleta`; Postman «Empresas / Obtener empresa», `ObtenerAsync_Existente_DevuelveDatosConGeografiaCompleta` |
 | CA2 | Colaborador con empresas, edad, teléfono y correo | U, I, A | `Calcular_CumpleaniosHoyManianaYAyer_DevuelveEdadSegunSiYaCumplio`, `Calcular_Nacido29FebreroEnAnioNoBisiesto_Regla28Febrero_CumpleEl28Febrero`, `Calcular_Nacido29FebreroEnAnioNoBisiesto_Regla1Marzo_CumpleEl1Marzo`, `Calcular_Nacido29FebreroEnAnioBisiesto_CumpleEl29FebreroIndependientementeDeRegla`, `Calcular_FechaNacimientoIgualAHoy_DevuelveCero`, `Calcular_FechaNacimientoPosteriorAHoy_DevuelveEdadNegativa`; `GetColaborador_Existente_DevuelveEdadYEmpresas`, `CrearAsync_Valido_DevuelveEdadYEmpresasGuardandoTextosSinEspacios`, `ListarAsync_SinBusqueda_OrdenadoPorNombre_DevuelveEdadYEmpresas`, `ListarAsync_BuscarPorNombreOCorreo_DevuelveConjuntoExacto`, `ObtenerAsync_Existente_DevuelveTodosLosCampos`, `ObtenerAsync_Inexistente_LanzaNoEncontradoException`, `ActualizarAsync_CambiaDatosPersonalesYNoTocaEmpresas_GuardaSinEspacios`, `EliminarAsync_Inexistente_LanzaNoEncontradoException`, `EliminarAsync_Existente_BorraColaboradorYSusRelaciones`; Postman «Crear colaborador», «Obtener colaborador», «Actualizar colaborador», «Listar colaboradores», «Obtener inexistente», «Eliminar colaborador» |
-| CA3 | Un colaborador en varias empresas | I, A, E | `EliminarEmpresa_ConDos_QuedaUnaYDevuelve204`, `AsociarEmpresa_SegundaEmpresa_QuedaConDos`; Postman «Colaboradores / Asociar empresa», `CrearAsync_DosEmpresasConRangosDistintos_SiEdadEntraEnUnoSoloLanzaValidacionException`, `CrearAsync_MismaEmpresaDosVeces_LanzaConflictoException` |
+| CA3 | Un colaborador en varias empresas | U, I, A | `EliminarEmpresa_ConDos_QuedaUnaYDevuelve204`, `AsociarEmpresa_SegundaEmpresa_QuedaConDos`; Postman «Empresas Colaborador / Asociar empresa», `CrearAsync_DosEmpresasConRangosDistintos_SiEdadEntraEnUnoSoloLanzaValidacionException`, `CrearAsync_MismaEmpresaDosVeces_LanzaConflictoException` |
 | CA4 | Migraciones completas y aplicables | M | MIG1, MIG2: `Migrar_BaseVacia_CreaTablasYDatosIniciales`, `Semilla_Pais_CargaGuatemalaConValoresPorDefecto`, `Semilla_Departamentos_Carga22DepartamentosYCabeceras`, `Semilla_Departamentos_CargaExactamente22`, `Semilla_NoCargaEmpresasNiColaboradores` |
 | CA5 | Pruebas unitarias correctas | U | Todo RRHH.UnitTests; cobertura con coverlet |
 | CA6 | La arquitectura se respeta | R | `VerificarDependencias_DomainYContratos_NoDependenDeOtrosProyectos`, `VerificarDependencias_Application_NoDependeDeInfraestructuraApiNiWeb`, `VerificarDependencias_Web_SoloDependeDeContratos`, `VerificarDependencias_ControladoresApi_NoUsanTiposDeDominio` |
@@ -64,7 +64,7 @@ U = unitaria · I = integración · A = aceptación (Postman) · E = E2E · R = 
 | RN3 | Al menos una empresa | U, I | `Crear_ColaboradorSinEmpresas_Error`; `QuitarEmpresa_UltimaEmpresa_Conflicto`, `QuitarEmpresaAsync_UltimaEmpresa_LanzaConflictoException`, Pruebas de `CrearColaboradorDtoTests`; Postman «V1: Sin empresas», «Quitar ultima 409» |
 | RN4 | Edad dentro del rango del país de cada empresa (por defecto 18 a 100) | U, I | `Crear_DemasiadoJoven_ErrorRN4`, Valores límite contra el rango del país (mínima − 1, mínima, máxima, máxima + 1) y colaborador en dos países con rangos distintos, `CrearAsync_EdadMinimaMenosUno_LanzaValidacionExceptionEnFechaNacimiento`, `CrearAsync_EdadMaximaMasUno_LanzaValidacionExceptionEnFechaNacimiento`, `CrearAsync_EdadMinima_Permitido`, `CrearAsync_EdadMaxima_Permitido`, `CrearAsync_DosEmpresasConRangosDistintos_SiEdadEntraEnUnoSoloLanzaValidacionException`, `CrearAsync_FechaNacimientoFutura_LanzaValidacionException`, `CrearAsync_ErroresMultiples_LanzaV4AntesQueRN4Y409`, `ActualizarAsync_CambiaFechaNacimientoYQuedaFueraDeRango_LanzaValidacionException`, `ActualizarAsync_MismaFechaNacimiento_SePuedeEditarAunqueEdadHoyFueraDeRango`, `CrearAsync_EdadMinimaAlBorde29Febrero_ConReglaPrimeroDeMarzo_Rechaza`, `CrearAsync_EdadMinimaAlBorde29Febrero_ConReglaVeintiocho_Permitido`, `AsociarEmpresaAsync_EdadFueraDeRango_LanzaValidacionExceptionEnEmpresaId`; Postman «RN4: Demasiado joven», «Asociar RN4» |
 | RN5 | Sin duplicados (NIT por país) | U, I | `Crear_NitDuplicadoEnMismoPais_Conflicto`, `Crear_NitRepetidoEnOtroPais_Creada`, `Crear_CorreoDuplicado_Conflicto`, `AsociarEmpresa_YaAsociada_Conflicto`, `Insertar_PaisMismoNombre_LanzaExcepcion`, `Insertar_PaisMismoCodigo_LanzaExcepcion`, `Insertar_DepartamentoMismoNombreEnPais_LanzaExcepcion`, `Insertar_MunicipioMismoNombreEnDepartamento_LanzaExcepcion`, `Insertar_MunicipioMismoNombreEnOtroDepartamento_Permitido`, `Insertar_ColaboradorMismoCorreo_LanzaExcepcion`, `CrearAsync_NombreDuplicadoDiferentesMayusculasOEspacios_LanzaConflictoException`, `CrearAsync_CodigoIsoDuplicadoEnMinusculas_LanzaConflictoException`, `ActualizarAsync_DuplicarNombreDeOtroPais_LanzaConflictoException`, `CrearAsync_NombreDuplicadoEnMismoPais_LanzaConflictoException`, `CrearAsync_MismoNombreDiferenteTilde_Permitido`, `CrearAsync_MismoNombreEnOtroPais_Permitido`, `ActualizarAsync_DuplicadoEnMismoPais_LanzaConflictoException`, `CrearAsync_MismoNombreEnOtroDepartamento_Permitido`, `ActualizarAsync_DuplicadoEnDepartamentoDestino_LanzaValidacionExceptionEnDepartamentoIdAntesQueConflicto`, `ActualizarAsync_NombreDuplicadoEnMismoDepartamento_LanzaConflictoException`, `ActualizarAsync_MismoMunicipio_NoLanzaConflicto`, `CrearAsync_NitRepetidoEnOtroDepartamentoDelMismoPais_LanzaConflictoException`, `CrearAsync_NitRepetidoDiferentesMayusculasYEspacios_LanzaConflictoException`, `CrearAsync_MismoNitEnOtroPais_Permitido`, `ActualizarAsync_NitDeOtraEmpresa_LanzaConflictoException`, `CrearAsync_CorreoDeOtroColaboradorConOtrasMayusculasYEspacios_LanzaConflictoException`, `CrearAsync_MismaEmpresaDosVeces_LanzaConflictoException`, `ActualizarAsync_CorreoDeOtroColaborador_LanzaConflictoException`, `AsociarEmpresaAsync_YaAsociada_LanzaConflictoException`; Postman «RN5: Correo repetido», «RN5: Empresa dos veces», «Asociar 409» |
-| RN6 | Geografía en cascada | I, E | `ObtenerDepartamentos_*`, `GetMunicipiosDeDepartamento_*`; E2E «Crear empresa eligiendo geografía», `ListarPorPaisAsync_ConDepartamentos_DevuelveOrdenado`, `ListarPorPaisAsync_PaisInexistente_LanzaNoEncontradoException`, `ListarPorPaisAsync_SinDepartamentos_DevuelveListaVacia`, `ListarPorDepartamentoAsync_ConMunicipios_DevuelveOrdenado`, `ListarPorDepartamentoAsync_DepartamentoInexistente_LanzaNoEncontradoException`, `ListarPorDepartamentoAsync_SinMunicipios_DevuelveListaVacia` |
+| RN6 | Geografía en cascada | U, I, A | `ObtenerDepartamentos_*`, `GetMunicipiosDeDepartamento_*`; `ListarPorPaisAsync_ConDepartamentos_DevuelveOrdenado`, `ListarPorPaisAsync_PaisInexistente_LanzaNoEncontradoException`, `ListarPorPaisAsync_SinDepartamentos_DevuelveListaVacia`, `ListarPorDepartamentoAsync_ConMunicipios_DevuelveOrdenado`, `ListarPorDepartamentoAsync_DepartamentoInexistente_LanzaNoEncontradoException`, `ListarPorDepartamentoAsync_SinMunicipios_DevuelveListaVacia`; Postman «Departamentos / Listar por país» y «Municipios / Listar por departamento» (y sus inexistentes) |
 | RN7 | Cálculo de edad; 29 de febrero según el país | U, I | `GetColaborador_Existente_DevuelveEdadYEmpresas`, `Calcular_CumpleaniosHoyManianaYAyer_DevuelveEdadSegunSiYaCumplio`, `Calcular_Nacido29FebreroEnAnioNoBisiesto_Regla28Febrero_CumpleEl28Febrero`, `Calcular_Nacido29FebreroEnAnioNoBisiesto_Regla1Marzo_CumpleEl1Marzo`, `Calcular_Nacido29FebreroEnAnioBisiesto_CumpleEl29FebreroIndependientementeDeRegla`, `Calcular_FechaNacimientoIgualAHoy_DevuelveCero`, `Calcular_FechaNacimientoPosteriorAHoy_DevuelveEdadNegativa`, `CrearAsync_Nacido29Febrero_EdadSegunEmpresaMasAntigua_MandaRegla28`, `CrearAsync_Nacido29Febrero_EdadSegunEmpresaMasAntigua_MandaRegla1Marzo`, `CrearAsync_Nacido29Febrero_EdadSegunEmpresaMasAntigua_EmpateMandaMenorId` |
 | RN8 | Padre fijo al editar geografía | U, I, A | `Actualizar_CambiarPais_ErrorRN8`, `ActualizarAsync_CambioDePais_LanzaValidacionExceptionEnPaisId`, `ActualizarAsync_DuplicadoEnPaisDestino_LanzaValidacionExceptionEnPaisIdAntesQueConflicto`; Postman «Departamentos / Actualizar con país inexistente»; `ActualizarAsync_CambioDeDepartamento_LanzaValidacionExceptionEnDepartamentoId`; Postman «Municipios / Actualizar con departamento inexistente», `ActualizarAsync_MunicipioDeOtroPais_LanzaValidacionExceptionEnMunicipioIdSinCambiarNada`, `ActualizarAsync_MudarAOtroPaisDondeNitYaExiste_LanzaValidacionExceptionAntesQueConflicto`; Postman «Actualizar empresa RN8» |
 | RN9 | Fecha de ingreso y nacimiento | U, I | `Crear_FechaIngresoFutura_Error`, `CrearAsync_FechaIngresoManiana_LanzaValidacionExceptionEnFechaIngreso`, `CrearAsync_FechaIngresoHoy_Permitido`, `CrearAsync_FechaIngresoUnDiaAntesDeNacimiento_LanzaValidacionException`, `CrearAsync_FechaIngresoMismoDiaDeNacimiento_Permitido`, `ActualizarAsync_NuevaFechaNacimientoPosteriorAFechaIngreso_LanzaValidacionException`, `CrearAsync_FechaIngresoInvalidaEnSegundaEmpresa_LanzaValidacionExceptionConIndice`, `AsociarEmpresaAsync_FechaIngresoFutura_LanzaValidacionExceptionEnFechaIngreso`, `ActualizarEmpresaAsync_FechaIngresoInvalida_LanzaValidacionExceptionEnFechaIngreso`; Postman «RN9: Ingreso futuro», «Asociar RN9», «Actualizar RN9» |
@@ -105,8 +105,9 @@ U = unitaria · I = integración · A = aceptación (Postman) · E = E2E · R = 
 - Ejecución de toda la colección:
   `newman run postman/RRHH.postman_collection.json -e postman/local.postman_environment.json`
 
-## E2E (opcional, Playwright)
-Sólo flujos clave, no toda la interfaz:
+## E2E (mejora futura, Playwright)
+Planificadas y no implementadas en esta entrega (ver README, «Mejoras futuras»). Los flujos de la
+web se verificaron a mano en el navegador. Sólo flujos clave, no toda la interfaz:
 1. Crear una empresa eligiendo país, departamento y municipio en cascada.
 2. Crear un colaborador asociado a dos empresas y ver su edad en el detalle.
 3. Intentar eliminar una empresa con colaboradores y ver el mensaje de error.
