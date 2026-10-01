@@ -1,10 +1,7 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Xunit;
-using RRHH.Infrastructure.Datos;
+
 using RRHH.Domain.Reglas;
+using RRHH.Infrastructure.Datos;
 
 namespace RRHH.IntegrationTests.Datos;
 
@@ -18,11 +15,11 @@ public class MigracionesSqlServerTests : IAsyncLifetime
     {
         _servidor = Environment.GetEnvironmentVariable("RRHH_MIG2_SERVIDOR") ?? @"(localdb)\MSSQLLocalDB";
         var conexion = $"Server={_servidor};Database={_bdNombre};Trusted_Connection=True;TrustServerCertificate=True";
-        
+
         var opciones = new DbContextOptionsBuilder<RrhhDbContext>()
             .UseSqlServer(conexion)
             .Options;
-            
+
         _contexto = new RrhhDbContext(opciones);
     }
 
@@ -38,20 +35,45 @@ public class MigracionesSqlServerTests : IAsyncLifetime
     [Trait("Categoria", "SqlServer")]
     public async Task Migrar_BaseVacia_CreaTablasYDatosIniciales()
     {
+        // Arrange
         var ct = TestContext.Current.CancellationToken;
+        var departamentosEsperados = new[]
+        {
+            (1, "Guatemala", "Guatemala"),
+            (2, "El Progreso", "Guastatoya"),
+            (3, "Sacatepéquez", "Antigua Guatemala"),
+            (4, "Chimaltenango", "Chimaltenango"),
+            (5, "Escuintla", "Escuintla"),
+            (6, "Santa Rosa", "Cuilapa"),
+            (7, "Sololá", "Sololá"),
+            (8, "Totonicapán", "Totonicapán"),
+            (9, "Quetzaltenango", "Quetzaltenango"),
+            (10, "Suchitepéquez", "Mazatenango"),
+            (11, "Retalhuleu", "Retalhuleu"),
+            (12, "San Marcos", "San Marcos"),
+            (13, "Huehuetenango", "Huehuetenango"),
+            (14, "Quiché", "Santa Cruz del Quiché"),
+            (15, "Baja Verapaz", "Salamá"),
+            (16, "Alta Verapaz", "Cobán"),
+            (17, "Petén", "Flores"),
+            (18, "Izabal", "Puerto Barrios"),
+            (19, "Zacapa", "Zacapa"),
+            (20, "Chiquimula", "Chiquimula"),
+            (21, "Jalapa", "Jalapa"),
+            (22, "Jutiapa", "Jutiapa")
+        };
 
-        // 1. Aplicar migraciones
+        // Act
         await _contexto.Database.MigrateAsync(ct);
 
-        // 2. Verificar que no quedan migraciones pendientes
+        // Assert
         var pendientes = await _contexto.Database.GetPendingMigrationsAsync(ct);
         Assert.Empty(pendientes);
 
-        // Verificar que las aplicadas son las del proyecto
         var aplicadas = await _contexto.Database.GetAppliedMigrationsAsync(ct);
-        Assert.NotEmpty(aplicadas);
+        var delProyecto = _contexto.Database.GetMigrations();
+        Assert.Equal(delProyecto, aplicadas);
 
-        // 3. Verificar que cada tabla existe (consultar cada DbSet)
         var paises = await _contexto.Paises.ToListAsync(ct);
         var departamentos = await _contexto.Departamentos.ToListAsync(ct);
         var municipios = await _contexto.Municipios.ToListAsync(ct);
@@ -59,8 +81,6 @@ public class MigracionesSqlServerTests : IAsyncLifetime
         var colaboradores = await _contexto.Colaboradores.ToListAsync(ct);
         var empresasColaboradores = await _contexto.EmpresasColaboradores.ToListAsync(ct);
 
-        // 4. Datos iniciales de PLAN.md
-        // Guatemala con id 1, GT, edades 18 a 100 y regla del 28 de febrero
         var guate = Assert.Single(paises);
         Assert.Equal(1, guate.Id);
         Assert.Equal("Guatemala", guate.Nombre);
@@ -69,30 +89,32 @@ public class MigracionesSqlServerTests : IAsyncLifetime
         Assert.Equal(100, guate.EdadMaxima);
         Assert.Equal(Regla29Febrero.VeintiochoDeFebrero, guate.Regla29Febrero);
 
-        // Los 22 departamentos y sus 22 cabeceras con su id
         Assert.Equal(22, departamentos.Count);
         Assert.Equal(22, municipios.Count);
 
-        foreach (var depto in departamentos)
+        foreach (var (id, deptoNombre, cabeceraNombre) in departamentosEsperados)
         {
-            var muni = municipios.SingleOrDefault(m => m.Id == depto.Id);
+            var depto = departamentos.SingleOrDefault(d => d.Id == id);
+            Assert.NotNull(depto);
+            Assert.Equal(deptoNombre, depto.Nombre);
+
+            var muni = municipios.SingleOrDefault(m => m.Id == id);
             Assert.NotNull(muni);
             Assert.Equal(depto.Id, muni.DepartamentoId);
+            Assert.Equal(cabeceraNombre, muni.Nombre);
         }
 
-        // Ninguna empresa ni colaborador
         Assert.Empty(empresas);
         Assert.Empty(colaboradores);
         Assert.Empty(empresasColaboradores);
 
-        // 5. La intercalación de los textos es Modern_Spanish_CI_AS
         await _contexto.Database.OpenConnectionAsync(ct);
         using var cmd = _contexto.Database.GetDbConnection().CreateCommand();
         cmd.CommandText = @"
             SELECT collation_name 
             FROM sys.columns 
             WHERE object_id = OBJECT_ID('Pais') AND name = 'Nombre'";
-            
+
         var collation = (string)(await cmd.ExecuteScalarAsync(ct) ?? string.Empty);
         Assert.Equal("Modern_Spanish_CI_AS", collation);
     }
