@@ -319,7 +319,12 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });"
+									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+									"pm.test(\"ProblemDetails title y detail\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.exist;",
+									"    pm.expect(jsonData.detail).to.exist;",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -357,7 +362,12 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });"
+									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+									"pm.test(\"ProblemDetails title y detail\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.exist;",
+									"    pm.expect(jsonData.detail).to.exist;",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -565,6 +575,44 @@
 							"path": [
 								"api",
 								"departamentos"
+							]
+						}
+					}
+				},
+				{
+					"name": "Listar inválido",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });",
+									"pm.test(\"Error en campo Tamanio\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.errors).to.exist;",
+									"    pm.expect(jsonData.errors).to.have.property('Tamanio');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/departamentos?tamanio=0",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"departamentos"
+							],
+							"query": [
+								{
+									"key": "tamanio",
+									"value": "0"
+								}
 							]
 						}
 					}
@@ -884,7 +932,12 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });"
+									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+									"pm.test(\"ProblemDetails title y detail\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.exist;",
+									"    pm.expect(jsonData.detail).to.exist;",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -922,7 +975,12 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });"
+									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+									"pm.test(\"ProblemDetails title y detail\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.exist;",
+									"    pm.expect(jsonData.detail).to.exist;",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -1125,6 +1183,44 @@
 							"path": [
 								"api",
 								"municipios"
+							]
+						}
+					}
+				},
+				{
+					"name": "Listar inválido",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });",
+									"pm.test(\"Error en campo Tamanio\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.errors).to.exist;",
+									"    pm.expect(jsonData.errors).to.have.property('Tamanio');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/municipios?tamanio=0",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"municipios"
+							],
+							"query": [
+								{
+									"key": "tamanio",
+									"value": "0"
+								}
 							]
 						}
 					}
@@ -1446,7 +1542,12 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });"
+									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+									"pm.test(\"ProblemDetails title y detail\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.exist;",
+									"    pm.expect(jsonData.detail).to.exist;",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -1484,7 +1585,12 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });"
+									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+									"pm.test(\"ProblemDetails title y detail\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.exist;",
+									"    pm.expect(jsonData.detail).to.exist;",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -1808,6 +1914,44 @@
 					}
 				},
 				{
+					"name": "Listar inválido",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });",
+									"pm.test(\"Error en campo Tamanio\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.errors).to.exist;",
+									"    pm.expect(jsonData.errors).to.have.property('Tamanio');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/empresas?tamanio=0",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"empresas"
+							],
+							"query": [
+								{
+									"key": "tamanio",
+									"value": "0"
+								}
+							]
+						}
+					}
+				},
+				{
 					"name": "Crear empresa",
 					"event": [
 						{
@@ -1896,7 +2040,12 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });"
+									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+									"pm.test(\"ProblemDetails title y detail\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.exist;",
+									"    pm.expect(jsonData.detail).to.exist;",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -1924,7 +2073,12 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });"
+									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+									"pm.test(\"ProblemDetails title y detail\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.exist;",
+									"    pm.expect(jsonData.detail).to.exist;",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -1962,7 +2116,12 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });"
+									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+									"pm.test(\"ProblemDetails title y detail\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.exist;",
+									"    pm.expect(jsonData.detail).to.exist;",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -2922,13 +3081,56 @@
 					}
 				},
 				{
+					"name": "Listar inválido",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });",
+									"pm.test(\"Error en campo Tamanio\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.errors).to.exist;",
+									"    pm.expect(jsonData.errors).to.have.property('Tamanio');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/colaboradores?tamanio=0",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"colaboradores"
+							],
+							"query": [
+								{
+									"key": "tamanio",
+									"value": "0"
+								}
+							]
+						}
+					}
+				},
+				{
 					"name": "Obtener inexistente",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });"
+									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+									"pm.test(\"ProblemDetails title y detail\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.exist;",
+									"    pm.expect(jsonData.detail).to.exist;",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -2957,7 +3159,12 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });"
+									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+									"pm.test(\"ProblemDetails title y detail\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.exist;",
+									"    pm.expect(jsonData.detail).to.exist;",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -2995,7 +3202,12 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });"
+									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+									"pm.test(\"ProblemDetails title y detail\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.exist;",
+									"    pm.expect(jsonData.detail).to.exist;",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -3598,7 +3810,12 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });"
+									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+									"pm.test(\"ProblemDetails title y detail\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.exist;",
+									"    pm.expect(jsonData.detail).to.exist;",
+									"});"
 								],
 								"type": "text/javascript"
 							}
