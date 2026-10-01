@@ -16,7 +16,7 @@ especificación, no desde el código.
 | Rol | Herramienta y modelo | Puede modificar | No puede |
 |---|---|---|---|
 | **Implementador** | Claude Code (Claude) | `src/`; entradas en `docs/ERRORES_RECURRENTES.md` | Modificar `tests/` |
-| **Tester** | Antigravity CLI (`agy`) con un modelo Gemini | `tests/`, `postman/`, tabla de trazabilidad de `docs/PLAN_PRUEBAS.md`; entradas en `docs/ERRORES_RECURRENTES.md` | Leer la implementación de los servicios; modificar `src/` |
+| **Tester** | Antigravity CLI (`agy`) con un modelo de otro proveedor (ver «Modelos por rol») | `tests/`, `postman/`, tabla de trazabilidad de `docs/PLAN_PRUEBAS.md`; entradas en `docs/ERRORES_RECURRENTES.md` | Leer la implementación de los servicios; modificar `src/` |
 | **Revisor** | El agente tester, en una sesión nueva | Nada: sólo informa | Aprobar o hacer merge |
 | **Responsable** | La persona | Todo | — |
 
@@ -146,8 +146,7 @@ Mensaje inicial de una sesión del tester:
 ```
 
 Nota (septiembre de 2026): Gemini CLI dejó de funcionar con cuentas Google AI Pro el
-18 de junio de 2026; su reemplazo es Antigravity CLI. Alternativa: OpenCode con una
-clave de API de Gemini de Google AI Studio.
+18 de junio de 2026; su reemplazo es Antigravity CLI.
 
 ## Modelos por rol
 Cada rol usa un modelo distinto, definido por configuración de cada herramienta, no en el
@@ -155,11 +154,50 @@ código del proyecto. Cambiar el modelo de un rol no requiere cambiar nada más.
 En una plataforma en la nube, lo equivalente sería un servicio multimodelo como
 Amazon Bedrock, Azure AI Foundry o Vertex AI, o un gateway como LiteLLM.
 
+Modelos usados en este proyecto (septiembre de 2026):
+- **Implementador:** Claude (Anthropic), en todas las fases.
+- **Tester y revisor:** Gemini 3.1 Pro (Google). Cuando llegó a su límite de uso:
+  - se descartó Claude Opus para el tester: es el mismo proveedor que el implementador;
+  - la revisión de la fase 5 se hizo con GPT-OSS 120B (OpenAI);
+  - en la fase 6, GPT-OSS 120B también se probó como tester, pero cortaba sin editar la colección
+    de Postman; la tarea se hizo con Gemini cuando recuperó su cuota.
+
+## Usar otra herramienta o modelo
+Cualquier herramienta de agentes, también una gratuita o un modelo abierto, puede tomar el rol de
+tester o de revisor si cumple con esto:
+
+- **Otro proveedor que el implementador.** Si el implementador es Claude, el tester y el revisor no
+  usan un modelo de Anthropic (ver «Principio: verificación independiente»).
+- **Lee las instrucciones del repositorio.** `AGENTS.md` (la mayoría de las herramientas lo leen
+  solas; Claude Code lo importa desde `CLAUDE.md`) y el archivo de su rol en `docs/agentes/`. Si
+  la herramienta no lo lee sola, lo indica el mensaje inicial de `docs/PROMPTS.md`.
+- **Edita con una herramienta de archivos**, que respete UTF-8, y no con reemplazos o scripts
+  desde la terminal (E-013, E-015).
+- **Ejecuta comandos:** `dotnet` (build, test, format), `git`, `node` (validar un JSON) y `newman`.
+- **Maneja archivos grandes:** la colección de Postman tiene unas 2000 líneas; el modelo tiene que
+  poder buscar y editar por partes.
+- **Permisos impuestos por la herramienta, no sólo pedidos.** El tester escribe sólo en `tests/`,
+  `postman/`, `docs/PLAN_PRUEBAS.md` y `docs/ERRORES_RECURRENTES.md`; no lee
+  `src/RRHH.Application/Servicios/` ni `src/RRHH.Infrastructure/`; no ejecuta intérpretes de
+  scripts; nadie hace `git push`. El revisor sólo lee. Sirven reglas de permisos por ruta o un
+  hook previo a cada herramienta; la lógica de `.agents/hooks/permisos-por-rol.mjs` se puede
+  adaptar al formato de otra herramienta. Si no hay forma de imponerlos, la revisión humana de
+  cada diff tiene que compensarlo.
+- **Base de datos:** si la herramienta ejecuta los comandos en un entorno aislado, puede no llegar a
+  SQL Server (E-017). Las pruebas de siempre usan SQLite y no lo necesitan; para Newman y MIG2, la
+  API o la prueba se corren fuera de la herramienta.
+- **Registro:** los commits llevan la línea de rol con el modelo usado (ver «Registro»).
+
+Ejemplo de opción gratuita: OpenCode (código abierto) con una clave de API de Gemini de Google AI
+Studio. Con un modelo nuevo, conviene comprobar sus primeras pruebas con mutaciones, como se hizo en
+este proyecto (E-018).
+
 ## Registro
 Cada commit indica qué rol lo produjo en el cuerpo del mensaje:
 
 ```
 test(empresas): pruebas desde la especificación
 
-Rol: tester (Gemini). Revisado por: <responsable>.
+Rol: tester (Gemini 3.1 Pro). Revisado por: <responsable>.
 ```
+El modelo entre paréntesis es el que se usó en ese commit.
