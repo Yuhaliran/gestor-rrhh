@@ -33,7 +33,6 @@ tests/
   RRHH.UnitTests/
   RRHH.IntegrationTests/
   RRHH.ArchitectureTests/
-  RRHH.E2ETests/        opcional, Playwright
 postman/
 docs/
 ```
@@ -41,7 +40,7 @@ docs/
 ## Comandos
 - Compilar:            `dotnet build`
 - Pruebas:             `dotnet test --filter "Categoria!=E2E&Categoria!=SqlServer"` (antes de cada commit)
-- Pruebas E2E:         `dotnet test --filter "Categoria=E2E"` (con API y web corriendo)
+- Migraciones (MIG2):  `dotnet test --filter "Categoria=SqlServer"` (con LocalDB; fuera de agy, E-017)
 - Postman:             `newman run postman/RRHH.postman_collection.json -e postman/local.postman_environment.json`
 - Cambios de modelo sin migración: `dotnet ef migrations has-pending-model-changes -p src/RRHH.Infrastructure -s src/RRHH.Api`
 - Formato:             `dotnet format`

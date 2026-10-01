@@ -127,8 +127,8 @@ crear, editar y eliminar.
 - **Geografía de la empresa:** se guarda sólo el municipio (tercera forma normal), para
   que país, departamento y municipio nunca queden inconsistentes.
 - **"Poseen empresa" y "una o varias empresas":** relación muchos a muchos, con al menos una.
-- **Base de datos:** la aplicación usa SQL Server (LocalDB o Express en desarrollo; opcionalmente
-  Docker). Las pruebas automatizadas usan SQLite en memoria para correr sin instalar nada.
+- **Base de datos:** la aplicación usa SQL Server (LocalDB o Express en desarrollo; Docker
+  queda como mejora futura). Las pruebas automatizadas usan SQLite en memoria para correr sin instalar nada.
 
 ## Fuera de alcance
 - Autenticación y roles (mejora futura en el README).

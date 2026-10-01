@@ -7,13 +7,13 @@ de prueba, diseñado al mismo tiempo que la especificación. La implementación 
 **incremental** (entidad por entidad, cada una terminada y probada), para que lo entregado
 funcione en cualquier punto.
 
-``
-Requisitos (ESPECIFICACION.md) ◄──────────────► Aceptación: Postman/Newman, E2E (opcional)
+```
+Requisitos (ESPECIFICACION.md) ◄──────────────► Aceptación: Postman/Newman (E2E: mejora futura)
    Diseño (PLAN.md) ◄─────────────────────► Integración: API con WebApplicationFactory
       Arquitectura ◄────────────────────► Arquitectura: dependencias entre capas
          Módulos ◄───────────────────► Unitarias: dominio, validaciones, servicios
                         Código
-``
+```
 
 ## Independencia de las pruebas
 Las pruebas se escriben **desde la especificación y antes de la implementación**, por un
@@ -26,18 +26,18 @@ pruebas no heredan los errores de interpretación del código. Detalle en `docs/
 | Unitarias | tests/RRHH.UnitTests | xUnit, SQLite en memoria | Nada |
 | Integración | tests/RRHH.IntegrationTests | xUnit, WebApplicationFactory, SQLite en memoria | Nada |
 | Arquitectura | tests/RRHH.ArchitectureTests | xUnit, NetArchTest | Nada |
-| Migraciones | comando de EF + prueba opcional | dotnet-ef, SQL Server | SQL Server sólo para la prueba opcional |
+| Migraciones | comando de EF (MIG1) + prueba MIG2 en tests/RRHH.IntegrationTests | dotnet-ef, SQL Server | SQL Server sólo para MIG2 |
 | Aceptación de la API | postman/ | Postman, Newman | La API corriendo |
-| E2E (opcional) | tests/RRHH.E2ETests | xUnit, Playwright | API, web y navegadores instalados |
+| E2E (mejora futura, no implementadas) | tests/RRHH.E2ETests | xUnit, Playwright | API, web y navegadores instalados |
 
-`dotnet test` corre unitarias, integración y arquitectura. Las E2E y la prueba de migraciones
-sobre SQL Server están marcadas con `[Trait("Categoria", "E2E")]` y `[Trait("Categoria", "SqlServer")]`
-y se excluyen por defecto:
+`dotnet test` corre unitarias, integración y arquitectura. La prueba de migraciones sobre SQL Server
+está marcada con `[Trait("Categoria", "SqlServer")]`, y las E2E, si se agregan, irán con
+`[Trait("Categoria", "E2E")]`; las dos categorías se excluyen por defecto:
 
-``
+```
 dotnet test --filter "Categoria!=E2E&Categoria!=SqlServer"    # lo de siempre
-dotnet test --filter "Categoria=E2E"                           # con la app corriendo
-``
+dotnet test --filter "Categoria=SqlServer"                     # MIG2, con SQL Server (LocalDB)
+```
 
 Convención de nombres: `Metodo_Escenario_ResultadoEsperado`, con estructura Arrange-Act-Assert.
 
@@ -105,8 +105,9 @@ U = unitaria · I = integración · A = aceptación (Postman) · E = E2E · R = 
 - Ejecución de toda la colección:
   `newman run postman/RRHH.postman_collection.json -e postman/local.postman_environment.json`
 
-## E2E (opcional, Playwright)
-Sólo flujos clave, no toda la interfaz:
+## E2E (mejora futura, Playwright)
+Planificadas y no implementadas en esta entrega (ver README, «Mejoras futuras»). Los flujos de la
+web se verificaron a mano en el navegador. Sólo flujos clave, no toda la interfaz:
 1. Crear una empresa eligiendo país, departamento y municipio en cascada.
 2. Crear un colaborador asociado a dos empresas y ver su edad en el detalle.
 3. Intentar eliminar una empresa con colaboradores y ver el mensaje de error.
