@@ -118,54 +118,6 @@
 					}
 				},
 				{
-					"name": "Buscar",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
-									"pm.test(\"Estructura y contiene Guatemala\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.have.property('elementos');",
-									"    pm.expect(jsonData).to.have.property('total');",
-									"    pm.expect(jsonData).to.have.property('numero');",
-									"    pm.expect(jsonData).to.have.property('tamanio');",
-									"    pm.expect(jsonData).to.have.property('totalPaginas');",
-									"    var guate = jsonData.elementos.find(p => p.nombre === 'Guatemala');",
-									"    pm.expect(guate).to.not.be.undefined;",
-									"    pm.expect(jsonData.elementos.every(p => p.nombre.toLowerCase().includes('guate'))).to.be.true;",
-									"    var paisId = pm.environment.get('paisId');",
-									"    if (paisId) {",
-									"        pm.expect(jsonData.elementos.some(p => p.id === paisId)).to.be.false;",
-									"    }",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{baseUrl}}/api/paises?buscar=guate",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"api",
-								"paises"
-							],
-							"query": [
-								{
-									"key": "buscar",
-									"value": "guate"
-								}
-							]
-						}
-					}
-				},
-				{
 					"name": "Obtener",
 					"event": [
 						{
@@ -497,6 +449,54 @@
 								"api",
 								"paises",
 								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "Buscar",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+									"pm.test(\"Estructura y contiene Guatemala\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('elementos');",
+									"    pm.expect(jsonData).to.have.property('total');",
+									"    pm.expect(jsonData).to.have.property('numero');",
+									"    pm.expect(jsonData).to.have.property('tamanio');",
+									"    pm.expect(jsonData).to.have.property('totalPaginas');",
+									"    var guate = jsonData.elementos.find(p => p.nombre === 'Guatemala');",
+									"    pm.expect(guate).to.not.be.undefined;",
+									"    pm.expect(jsonData.elementos.every(p => p.nombre.toLowerCase().includes('guate'))).to.be.true;",
+									"    var paisId = pm.environment.get('paisId');",
+									"    if (paisId) {",
+									"        pm.expect(jsonData.elementos.some(p => p.id === paisId)).to.be.false;",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/paises?buscar=guate",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"paises"
+							],
+							"query": [
+								{
+									"key": "buscar",
+									"value": "guate"
+								}
 							]
 						}
 					}
@@ -2841,6 +2841,44 @@
 					}
 				},
 				{
+					"name": "Crear colaborador no coincide",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+									"pm.environment.set(\"colNoCoincideId\", pm.response.json().id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombreCompleto\":\"Pedro Original\",\"fechaNacimiento\":\"1992-02-02\",\"telefono\":\"8888-8888\",\"correo\":\"pedro@correo.com\",\"empresas\":[{\"empresaId\":{{colEmpId}},\"fechaIngreso\":\"2024-01-01\"}]}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/colaboradores",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"colaboradores"
+							]
+						}
+					}
+				},
+				{
 					"name": "Listar colaboradores",
 					"event": [
 						{
@@ -2852,6 +2890,10 @@
 									"pm.test(\"Elements exist\", function () { pm.expect(data.elementos.length).to.be.greaterThan(0); });",
 									"pm.test(\"Verificar que todos coinciden con la busqueda\", function () {",
 									"    pm.expect(data.elementos.every(c => c.nombreCompleto.toLowerCase().includes('modificado') || c.correo.toLowerCase().includes('modificado'))).to.be.true;",
+									"    var colNoCoincideId = pm.environment.get('colNoCoincideId');",
+									"    if (colNoCoincideId) {",
+									"        pm.expect(data.elementos.some(c => c.id === colNoCoincideId)).to.be.false;",
+									"    }",
 									"});"
 								],
 								"type": "text/javascript"
@@ -2970,6 +3012,34 @@
 								"api",
 								"colaboradores",
 								"999999"
+							]
+						}
+					}
+				},
+				{
+					"name": "Teardown: Eliminar colaborador no coincide",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"url": {
+							"raw": "{{baseUrl}}/api/colaboradores/{{colNoCoincideId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"colaboradores",
+								"{{colNoCoincideId}}"
 							]
 						}
 					}
@@ -3205,6 +3275,30 @@
 					}
 				},
 				{
+					"name": "Setup: Crear colaborador 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+									"pm.environment.set(\"t14Col2\", pm.response.json().id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type","value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombreCompleto\":\"Col Solo Emp1\",\"fechaNacimiento\":\"2000-01-01\",\"telefono\":\"4444444\",\"correo\":\"col2@t14.com\",\"empresas\":[{\"empresaId\":{{t14Emp1}},\"fechaIngreso\":\"2025-01-01\"}]}"
+						},
+						"url": {"raw": "{{baseUrl}}/api/colaboradores","host": ["{{baseUrl}}"],"path": ["api","colaboradores"]}
+					}
+				},
+				{
 					"name": "Listar por empresa",
 					"event": [
 						{
@@ -3215,7 +3309,7 @@
 									"pm.test(\"Verificar colaboradores\", function () {",
 									"    var data = pm.response.json();",
 									"    pm.expect(data.elementos.some(c => c.id === pm.environment.get('t14Col'))).to.be.true;",
-									"    pm.expect(data.elementos.some(c => c.id === pm.environment.get('colaboradorId'))).to.be.false;",
+									"    pm.expect(data.elementos.some(c => c.id === pm.environment.get('t14Col2'))).to.be.false;",
 									"});"
 								],
 								"type": "text/javascript"
@@ -3595,6 +3689,24 @@
 					"request": {
 						"method": "DELETE",
 						"url": {"raw": "{{baseUrl}}/api/colaboradores/{{t14Col}}","host": ["{{baseUrl}}"],"path": ["api","colaboradores","{{t14Col}}"]}
+					}
+				},
+				{
+					"name": "Teardown: Colaborador 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"url": {"raw": "{{baseUrl}}/api/colaboradores/{{t14Col2}}","host": ["{{baseUrl}}"],"path": ["api","colaboradores","{{t14Col2}}"]}
 					}
 				},
 				{
