@@ -28,6 +28,7 @@ No hace falta SSMS: las migraciones crean la base.
 ## En la carpeta del repositorio
 ```powershell
 dotnet tool restore     # dotnet-ef con la versión fijada en dotnet-tools.json
+dotnet build            # restaura los paquetes; dotnet ef lo necesita en un clon nuevo
 dotnet user-secrets set "ConnectionStrings:Rrhh" "Server=(localdb)\MSSQLLocalDB;Database=Rrhh;Trusted_Connection=True;TrustServerCertificate=True" --project src/RRHH.Api
 dotnet ef database update -p src/RRHH.Infrastructure -s src/RRHH.Api
 ```
