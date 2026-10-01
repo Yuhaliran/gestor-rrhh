@@ -41,8 +41,10 @@ dotnet run --project src/RRHH.Web --launch-profile http    # web en http://local
 ```
 - La web habla con la API por HTTP, en la dirección de `Api:UrlBase` (`src/RRHH.Web/appsettings.json`).
   Si la API no está corriendo, la web lo indica en lugar de fallar.
+
 - `GET /health` verifica que la API responde y llega a la base. Si responde 503, la API no llega a
   la base de su cadena de conexión: ver `docs/ERRORES_RECURRENTES.md`, E-020.
+
 - En desarrollo, la especificación OpenAPI está en `http://localhost:5279/openapi/v1.json`.
 
 ## Pruebas

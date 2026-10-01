@@ -282,6 +282,7 @@ Compilación, paquetes, pruebas, EF Core, git.
                  de escritorio; Claude Code puede verificarlos después. Ante un 503 en `/health`,
                  comparar con qué base se conecta cada proceso y revisar si existe
                  `%LOCALAPPDATA%\Packages\Claude_*\LocalCache\` antes de buscar el error en el código.
+
 - Origen:        verificación posterior a la entrega (v1.0.0) · 2026-09-30 · implementador
 
 ## Funcionalidad
