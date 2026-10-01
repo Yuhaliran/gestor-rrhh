@@ -28,6 +28,11 @@ La cadena de conexión queda en user-secrets, fuera del repositorio. `database u
 `Rrhh` con las tablas y los datos iniciales: Guatemala, sus 22 departamentos y la cabecera de cada
 uno.
 
+Si después se borra la base, el mismo `database update` la vuelve a crear:
+- con la API detenida, correrlo y después levantar la API;
+- con la API corriendo, agregarle `--no-build` (para no recompilar mientras la API tiene sus archivos
+  en uso) y después reiniciar el motor de SQL Server: hasta entonces la aplicación no vuelve a cargar.
+
 ### Levantar la aplicación
 En dos terminales:
 ```powershell
@@ -36,8 +41,10 @@ dotnet run --project src/RRHH.Web --launch-profile http    # web en http://local
 ```
 - La web habla con la API por HTTP, en la dirección de `Api:UrlBase` (`src/RRHH.Web/appsettings.json`).
   Si la API no está corriendo, la web lo indica en lugar de fallar.
-- `GET /health` verifica que la API responde y llega a la base. Si responde 503 con LocalDB, ver
-  `docs/ERRORES_RECURRENTES.md`, E-020.
+
+- `GET /health` verifica que la API responde y llega a la base. Si responde 503, la API no llega a
+  la base de su cadena de conexión: ver `docs/ERRORES_RECURRENTES.md`, E-020.
+
 - En desarrollo, la especificación OpenAPI está en `http://localhost:5279/openapi/v1.json`.
 
 ## Pruebas
