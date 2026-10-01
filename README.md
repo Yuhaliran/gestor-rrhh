@@ -28,6 +28,11 @@ La cadena de conexión queda en user-secrets, fuera del repositorio. `database u
 `Rrhh` con las tablas y los datos iniciales: Guatemala, sus 22 departamentos y la cabecera de cada
 uno.
 
+Si después se borra la base, el mismo `database update` la vuelve a crear:
+- con la API detenida, correrlo y después levantar la API;
+- con la API corriendo, agregarle `--no-build` (para no recompilar mientras la API tiene sus archivos
+  en uso) y después reiniciar el motor de SQL Server: hasta entonces la aplicación no vuelve a cargar.
+
 ### Levantar la aplicación
 En dos terminales:
 ```powershell
