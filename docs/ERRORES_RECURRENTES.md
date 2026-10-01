@@ -256,6 +256,30 @@ Compilación, paquetes, pruebas, EF Core, git.
                  trabajo, donde `obj/` ya existe y oculta el paso que falta.
 - Origen:        tarea 26 · 2026-09-30 · implementador
 
+### E-020 · LocalDB no termina de arrancar y la API responde 503 en /health
+- Síntoma:       `GET /health` responde 503 (`Unhealthy`) y los pedidos que usan la base no responden.
+                 `sqllocaldb info MSSQLLocalDB` dice `Stopped` aunque hay un `sqlservr.exe` de LocalDB
+                 corriendo, y `sqllocaldb start` falla con «SQL Server process failed to start». En el
+                 registro de LocalDB (`%LOCALAPPDATA%\Microsoft\Microsoft SQL Server Local
+                 DB\Instances\MSSQLLocalDB\error.log`) el arranque no aparece, o aparece «Login failed
+                 ... Failed to open the explicitly specified database 'Rrhh'».
+- Causa:         LocalDB se apaga sola a los 5 minutos sin conexiones («The RANU instance is
+                 terminating in response to its internal time out»), y la siguiente conexión la vuelve
+                 a arrancar como proceso hijo de la API. En el equipo del responsable ese arranque
+                 automático quedó colgado, con la API lanzada desde Visual Studio y desde una terminal;
+                 la causa exacta no se confirmó. Además, la API conserva el error: aunque la base
+                 vuelva, sigue respondiendo 503 hasta reiniciarla.
+- Solución:      detener la API, `sqllocaldb stop MSSQLLocalDB` (o cerrar el `sqlservr.exe` de LocalDB
+                 que quedó colgado), `sqllocaldb start MSSQLLocalDB` y levantar la API de nuevo. En ese
+                 equipo se pasó a una instancia de SQL Server de servicio, que no se apaga sola: un login
+                 de Windows con el rol `dbcreator`, el user-secret con
+                 `Server=.;Database=Rrhh;Trusted_Connection=True;TrustServerCertificate=True` y
+                 `dotnet ef database update`.
+- Cómo evitarlo: con LocalDB, iniciarla con `sqllocaldb start MSSQLLocalDB` antes de levantar la API,
+                 y de nuevo si estuvo más de 5 minutos sin uso. Ante un 503 en `/health`, revisar
+                 `sqllocaldb info` y el registro de LocalDB antes de buscar el error en el código.
+- Origen:        verificación posterior a la entrega (v1.0.0) · 2026-09-30 · implementador
+
 ## Funcionalidad
 Comportamiento que no cumplía la especificación, detectado por pruebas o revisión.
 
