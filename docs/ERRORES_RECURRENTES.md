@@ -256,6 +256,34 @@ Compilación, paquetes, pruebas, EF Core, git.
                  trabajo, donde `obj/` ya existe y oculta el paso que falta.
 - Origen:        tarea 26 · 2026-09-30 · implementador
 
+### E-020 · La API del responsable no ve la base ni los user-secrets que preparó Claude Code
+- Síntoma:       la API levantada desde Visual Studio o desde una terminal propia responde 503 en
+                 `/health`, mientras la misma API levantada por Claude Code responde 200. El registro
+                 de LocalDB dice «Login failed ... Failed to open the explicitly specified database
+                 'Rrhh'»; `sqllocaldb info MSSQLLocalDB` dice `Stopped` aunque hay un `sqlservr.exe` de
+                 LocalDB corriendo, y algunos arranques de LocalDB se cuelgan. Un `dotnet user-secrets
+                 set` hecho por Claude Code no cambia nada para esa API.
+- Causa:         la aplicación de escritorio de Claude es un paquete de Windows (MSIX): lo que escriben
+                 en `AppData` los procesos que lanza (Claude Code, `dotnet`, `sqllocaldb` y el propio
+                 LocalDB) va a una copia privada, en `%LOCALAPPDATA%\Packages\Claude_<id>\LocalCache\`.
+                 Así quedan dos user-secrets (`Roaming\Microsoft\UserSecrets`) y dos instancias
+                 `MSSQLLocalDB` con su propio `master.mdf` (`Local\Microsoft\Microsoft SQL Server Local
+                 DB`). La base `Rrhh`, creada desde Claude Code, quedó registrada sólo en la instancia del
+                 paquete; Visual Studio y las terminales del responsable usan la instancia real, que no
+                 la conoce. Las dos instancias tienen el mismo nombre y se pisan, de ahí los arranques
+                 colgados. Además, la API conserva el error de conexión hasta reiniciarla.
+- Solución:      el responsable configuró los user-secrets desde su propia terminal y pasó a una
+                 instancia de SQL Server de servicio, que no depende de `AppData`: un login de Windows
+                 con el rol `dbcreator`, el user-secret con
+                 `Server=.;Database=Rrhh;Trusted_Connection=True;TrustServerCertificate=True` y la base
+                 creada con `dotnet ef database update`.
+- Cómo evitarlo: los pasos que guardan estado en `AppData` (user-secrets, crear o migrar una base de
+                 LocalDB) los ejecuta el responsable en su terminal, no Claude Code desde la aplicación
+                 de escritorio; Claude Code puede verificarlos después. Ante un 503 en `/health`,
+                 comparar con qué base se conecta cada proceso y revisar si existe
+                 `%LOCALAPPDATA%\Packages\Claude_*\LocalCache\` antes de buscar el error en el código.
+- Origen:        verificación posterior a la entrega (v1.0.0) · 2026-09-30 · implementador
+
 ## Funcionalidad
 Comportamiento que no cumplía la especificación, detectado por pruebas o revisión.
 
