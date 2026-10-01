@@ -80,22 +80,17 @@
 					}
 				},
 				{
-					"name": "Buscar",
+					"name": "Listar inválido",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
-									"pm.test(\"Estructura y contiene Guatemala\", function () {",
+									"pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });",
+									"pm.test(\"Error en campo Tamanio\", function () {",
 									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.have.property('elementos');",
-									"    pm.expect(jsonData).to.have.property('total');",
-									"    pm.expect(jsonData).to.have.property('numero');",
-									"    pm.expect(jsonData).to.have.property('tamanio');",
-									"    pm.expect(jsonData).to.have.property('totalPaginas');",
-									"    var guate = jsonData.elementos.find(p => p.nombre === 'Guatemala');",
-									"    pm.expect(guate).to.not.be.undefined;",
+									"    pm.expect(jsonData.errors).to.exist;",
+									"    pm.expect(jsonData.errors).to.have.property('Tamanio');",
 									"});"
 								],
 								"type": "text/javascript"
@@ -105,7 +100,7 @@
 					"request": {
 						"method": "GET",
 						"url": {
-							"raw": "{{baseUrl}}/api/paises?buscar=guate",
+							"raw": "{{baseUrl}}/api/paises?tamanio=0",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -115,8 +110,8 @@
 							],
 							"query": [
 								{
-									"key": "buscar",
-									"value": "guate"
+									"key": "tamanio",
+									"value": "0"
 								}
 							]
 						}
@@ -164,7 +159,7 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
-									"pm.test(\"Cabecera Location\", function () { pm.response.to.have.header('Location'); });",
+									"pm.test(\"Cabecera Location\", function () { pm.response.to.have.header('Location'); pm.expect(pm.response.headers.get('Location').endsWith('/api/paises/' + pm.response.json().id)).to.be.true; });",
 									"pm.test(\"Datos y mayúsculas\", function () {",
 									"    var jsonData = pm.response.json();",
 									"    pm.expect(jsonData.id).to.be.a('number');",
@@ -318,6 +313,82 @@
 					}
 				},
 				{
+					"name": "Actualizar inexistente",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+									"pm.test(\"ProblemDetails title y detail\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.exist;",
+									"    pm.expect(jsonData.detail).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombre\":\"Pais Postman Mod\",\"codigoIso2\":\"PP\",\"edadMinima\":20,\"edadMaxima\":100,\"regla29Febrero\":\"VeintiochoDeFebrero\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/paises/9999",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"paises",
+								"9999"
+							]
+						}
+					}
+				},
+				{
+					"name": "Eliminar inexistente",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+									"pm.test(\"ProblemDetails title y detail\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.exist;",
+									"    pm.expect(jsonData.detail).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"url": {
+							"raw": "{{baseUrl}}/api/paises/9999",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"paises",
+								"9999"
+							]
+						}
+					}
+				},
+				{
 					"name": "Actualizar",
 					"event": [
 						{
@@ -393,6 +464,54 @@
 					}
 				},
 				{
+					"name": "Buscar",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+									"pm.test(\"Estructura y contiene Guatemala\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('elementos');",
+									"    pm.expect(jsonData).to.have.property('total');",
+									"    pm.expect(jsonData).to.have.property('numero');",
+									"    pm.expect(jsonData).to.have.property('tamanio');",
+									"    pm.expect(jsonData).to.have.property('totalPaginas');",
+									"    var guate = jsonData.elementos.find(p => p.nombre === 'Guatemala');",
+									"    pm.expect(guate).to.not.be.undefined;",
+									"    pm.expect(jsonData.elementos.every(p => p.nombre.toLowerCase().includes('guate'))).to.be.true;",
+									"    var paisId = pm.environment.get('paisId');",
+									"    if (paisId) {",
+									"        pm.expect(jsonData.elementos.some(p => p.id === paisId)).to.be.false;",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/paises?buscar=guate",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"paises"
+							],
+							"query": [
+								{
+									"key": "buscar",
+									"value": "guate"
+								}
+							]
+						}
+					}
+				},
+				{
 					"name": "Eliminar el creado",
 					"event": [
 						{
@@ -456,6 +575,44 @@
 							"path": [
 								"api",
 								"departamentos"
+							]
+						}
+					}
+				},
+				{
+					"name": "Listar inválido",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });",
+									"pm.test(\"Error en campo Tamanio\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.errors).to.exist;",
+									"    pm.expect(jsonData.errors).to.have.property('Tamanio');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/departamentos?tamanio=0",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"departamentos"
+							],
+							"query": [
+								{
+									"key": "tamanio",
+									"value": "0"
+								}
 							]
 						}
 					}
@@ -537,7 +694,7 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
-									"pm.test(\"Cabecera Location\", function () { pm.response.to.have.header('Location'); });",
+									"pm.test(\"Cabecera Location\", function () { pm.response.to.have.header('Location'); pm.expect(pm.response.headers.get('Location').endsWith('/api/departamentos/' + pm.response.json().id)).to.be.true; });",
 									"pm.test(\"Guarda ID y datos\", function () {",
 									"    var jsonData = pm.response.json();",
 									"    pm.expect(jsonData.id).to.be.a('number');",
@@ -769,6 +926,82 @@
 					}
 				},
 				{
+					"name": "Actualizar inexistente",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+									"pm.test(\"ProblemDetails title y detail\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.exist;",
+									"    pm.expect(jsonData.detail).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"paisId\":1,\"nombre\":\"Depto Postman Mod\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/departamentos/9999",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"departamentos",
+								"9999"
+							]
+						}
+					}
+				},
+				{
+					"name": "Eliminar inexistente",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+									"pm.test(\"ProblemDetails title y detail\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.exist;",
+									"    pm.expect(jsonData.detail).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"url": {
+							"raw": "{{baseUrl}}/api/departamentos/9999",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"departamentos",
+								"9999"
+							]
+						}
+					}
+				},
+				{
 					"name": "Actualizar",
 					"event": [
 						{
@@ -955,6 +1188,44 @@
 					}
 				},
 				{
+					"name": "Listar inválido",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });",
+									"pm.test(\"Error en campo Tamanio\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.errors).to.exist;",
+									"    pm.expect(jsonData.errors).to.have.property('Tamanio');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/municipios?tamanio=0",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"municipios"
+							],
+							"query": [
+								{
+									"key": "tamanio",
+									"value": "0"
+								}
+							]
+						}
+					}
+				},
+				{
 					"name": "Listar por departamento",
 					"event": [
 						{
@@ -1065,7 +1336,7 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
-									"pm.test(\"Cabecera Location\", function () { pm.response.to.have.header('Location'); });",
+									"pm.test(\"Cabecera Location\", function () { pm.response.to.have.header('Location'); pm.expect(pm.response.headers.get('Location').endsWith('/api/municipios/' + pm.response.json().id)).to.be.true; });",
 									"pm.test(\"Guarda ID y datos\", function () {",
 									"    var jsonData = pm.response.json();",
 									"    pm.expect(jsonData.id).to.be.a('number');",
@@ -1251,6 +1522,82 @@
 					],
 					"request": {
 						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/municipios/999999",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"municipios",
+								"999999"
+							]
+						}
+					}
+				},
+				{
+					"name": "Actualizar inexistente",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+									"pm.test(\"ProblemDetails title y detail\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.exist;",
+									"    pm.expect(jsonData.detail).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"departamentoId\":1,\"nombre\":\"Municipio Mod\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/municipios/999999",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"municipios",
+								"999999"
+							]
+						}
+					}
+				},
+				{
+					"name": "Eliminar inexistente",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+									"pm.test(\"ProblemDetails title y detail\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.exist;",
+									"    pm.expect(jsonData.detail).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
 						"url": {
 							"raw": "{{baseUrl}}/api/municipios/999999",
 							"host": [
@@ -1567,6 +1914,44 @@
 					}
 				},
 				{
+					"name": "Listar inválido",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });",
+									"pm.test(\"Error en campo Tamanio\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.errors).to.exist;",
+									"    pm.expect(jsonData.errors).to.have.property('Tamanio');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/empresas?tamanio=0",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"empresas"
+							],
+							"query": [
+								{
+									"key": "tamanio",
+									"value": "0"
+								}
+							]
+						}
+					}
+				},
+				{
 					"name": "Crear empresa",
 					"event": [
 						{
@@ -1574,7 +1959,7 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
-									"pm.test(\"Cabecera Location\", function () { pm.response.to.have.header(\"Location\"); });",
+									"pm.test(\"Cabecera Location\", function () { pm.response.to.have.header(\"Location\"); pm.expect(pm.response.headers.get(\"Location\").endsWith(\"/api/empresas/\" + pm.response.json().id)).to.be.true; });",
 									"pm.test(\"Geografia completa\", function () {",
 									"    var jsonData = pm.response.json();",
 									"    pm.expect(jsonData.municipioId).to.eql(pm.environment.get(\"empMuniId\"));",
@@ -1655,7 +2040,12 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });"
+									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+									"pm.test(\"ProblemDetails title y detail\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.exist;",
+									"    pm.expect(jsonData.detail).to.exist;",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -1663,6 +2053,82 @@
 					],
 					"request": {
 						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/empresas/999999",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"empresas",
+								"999999"
+							]
+						}
+					}
+				},
+				{
+					"name": "Actualizar inexistente",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+									"pm.test(\"ProblemDetails title y detail\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.exist;",
+									"    pm.expect(jsonData.detail).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"municipioId\":{{empMuniId}},\"nit\":\"NIT-EMP\",\"razonSocial\":\"RS Emp\",\"nombreComercial\":\"NC Emp\",\"telefono\":\"5555-1234\",\"correo\":\"empresa@correo.com\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/empresas/999999",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"empresas",
+								"999999"
+							]
+						}
+					}
+				},
+				{
+					"name": "Eliminar inexistente",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+									"pm.test(\"ProblemDetails title y detail\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.exist;",
+									"    pm.expect(jsonData.detail).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
 						"url": {
 							"raw": "{{baseUrl}}/api/empresas/999999",
 							"host": [
@@ -2355,7 +2821,7 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
-									"pm.test(\"Location header exists\", function () { pm.expect(pm.response.headers.get(\"Location\")).to.exist; });",
+									"pm.test(\"Location header exists\", function () { pm.expect(pm.response.headers.get(\"Location\")).to.exist; pm.expect(pm.response.headers.get(\"Location\").endsWith(\"/api/colaboradores/\" + pm.response.json().id)).to.be.true; });",
 									"pm.test(\"Edad exists\", function () { pm.expect(pm.response.json().edad).to.exist; });",
 									"pm.test(\"Empresas count\", function () { pm.expect(pm.response.json().empresas.length).to.eql(1); });",
 									"pm.environment.set(\"colId\", pm.response.json().id);"
@@ -2534,6 +3000,44 @@
 					}
 				},
 				{
+					"name": "Crear colaborador no coincide",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+									"pm.environment.set(\"colNoCoincideId\", pm.response.json().id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombreCompleto\":\"Pedro Original\",\"fechaNacimiento\":\"1992-02-02\",\"telefono\":\"8888-8888\",\"correo\":\"pedro@correo.com\",\"empresas\":[{\"empresaId\":{{colEmpId}},\"fechaIngreso\":\"2024-01-01\"}]}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/colaboradores",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"colaboradores"
+							]
+						}
+					}
+				},
+				{
 					"name": "Listar colaboradores",
 					"event": [
 						{
@@ -2543,7 +3047,13 @@
 									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
 									"var data = pm.response.json();",
 									"pm.test(\"Elements exist\", function () { pm.expect(data.elementos.length).to.be.greaterThan(0); });",
-									"pm.test(\"Verificar Juan Modificado\", function () { pm.expect(data.elementos[0].nombreCompleto).to.eql(\"Juan Modificado\"); });"
+									"pm.test(\"Verificar que todos coinciden con la busqueda\", function () {",
+									"    pm.expect(data.elementos.every(c => c.nombreCompleto.toLowerCase().includes('modificado') || c.correo.toLowerCase().includes('modificado'))).to.be.true;",
+									"    var colNoCoincideId = pm.environment.get('colNoCoincideId');",
+									"    if (colNoCoincideId) {",
+									"        pm.expect(data.elementos.some(c => c.id === colNoCoincideId)).to.be.false;",
+									"    }",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -2571,13 +3081,56 @@
 					}
 				},
 				{
+					"name": "Listar inválido",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });",
+									"pm.test(\"Error en campo Tamanio\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.errors).to.exist;",
+									"    pm.expect(jsonData.errors).to.have.property('Tamanio');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/api/colaboradores?tamanio=0",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"colaboradores"
+							],
+							"query": [
+								{
+									"key": "tamanio",
+									"value": "0"
+								}
+							]
+						}
+					}
+				},
+				{
 					"name": "Obtener inexistente",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });"
+									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+									"pm.test(\"ProblemDetails title y detail\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.exist;",
+									"    pm.expect(jsonData.detail).to.exist;",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -2595,6 +3148,110 @@
 								"api",
 								"colaboradores",
 								"999999"
+							]
+						}
+					}
+				},
+				{
+					"name": "Actualizar inexistente",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+									"pm.test(\"ProblemDetails title y detail\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.exist;",
+									"    pm.expect(jsonData.detail).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombreCompleto\":\"Colaborador Mod\",\"fechaNacimiento\":\"1990-01-01\",\"telefono\":\"5555-4321\",\"correo\":\"colaborador@correo.com\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/colaboradores/999999",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"colaboradores",
+								"999999"
+							]
+						}
+					}
+				},
+				{
+					"name": "Eliminar inexistente",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+									"pm.test(\"ProblemDetails title y detail\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.exist;",
+									"    pm.expect(jsonData.detail).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"url": {
+							"raw": "{{baseUrl}}/api/colaboradores/999999",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"colaboradores",
+								"999999"
+							]
+						}
+					}
+				},
+				{
+					"name": "Teardown: Eliminar colaborador no coincide",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"url": {
+							"raw": "{{baseUrl}}/api/colaboradores/{{colNoCoincideId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"colaboradores",
+								"{{colNoCoincideId}}"
 							]
 						}
 					}
@@ -2830,13 +3487,42 @@
 					}
 				},
 				{
+					"name": "Setup: Crear colaborador 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+									"pm.environment.set(\"t14Col2\", pm.response.json().id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type","value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombreCompleto\":\"Col Solo Emp1\",\"fechaNacimiento\":\"2000-01-01\",\"telefono\":\"4444444\",\"correo\":\"col2@t14.com\",\"empresas\":[{\"empresaId\":{{t14Emp1}},\"fechaIngreso\":\"2025-01-01\"}]}"
+						},
+						"url": {"raw": "{{baseUrl}}/api/colaboradores","host": ["{{baseUrl}}"],"path": ["api","colaboradores"]}
+					}
+				},
+				{
 					"name": "Listar por empresa",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+									"pm.test(\"Verificar colaboradores\", function () {",
+									"    var data = pm.response.json();",
+									"    pm.expect(data.elementos.some(c => c.id === pm.environment.get('t14Col'))).to.be.true;",
+									"    pm.expect(data.elementos.some(c => c.id === pm.environment.get('t14Col2'))).to.be.false;",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -3124,7 +3810,12 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });"
+									"pm.test(\"Status code is 404\", function () { pm.response.to.have.status(404); });",
+									"pm.test(\"ProblemDetails title y detail\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.exist;",
+									"    pm.expect(jsonData.detail).to.exist;",
+									"});"
 								],
 								"type": "text/javascript"
 							}
@@ -3177,6 +3868,29 @@
 					}
 				},
 				{
+					"name": "Eliminar empresa RN2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 409\", function () { pm.response.to.have.status(409); });",
+									"pm.test(\"ProblemDetails title y detail\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.exist;",
+									"    pm.expect(jsonData.detail).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"url": {"raw": "{{baseUrl}}/api/empresas/{{t14Emp1}}","host": ["{{baseUrl}}"],"path": ["api","empresas","{{t14Emp1}}"]}
+					}
+				},
+				{
 					"name": "Teardown: Colaborador",
 					"event": [
 						{
@@ -3192,6 +3906,24 @@
 					"request": {
 						"method": "DELETE",
 						"url": {"raw": "{{baseUrl}}/api/colaboradores/{{t14Col}}","host": ["{{baseUrl}}"],"path": ["api","colaboradores","{{t14Col}}"]}
+					}
+				},
+				{
+					"name": "Teardown: Colaborador 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"url": {"raw": "{{baseUrl}}/api/colaboradores/{{t14Col2}}","host": ["{{baseUrl}}"],"path": ["api","colaboradores","{{t14Col2}}"]}
 					}
 				},
 				{
