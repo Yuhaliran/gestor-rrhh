@@ -74,7 +74,7 @@ Cada paso es un commit propio; el merge se hace al cerrar la fase, con el PR.
 - [x] 21. Mensajes de error de la API en los formularios (`feat(web): validaciones`)
 
 ## Fase 6 · rama `docs/postman`
-- [ ] 22. Colección y entorno de Postman con pruebas en cada request; correr con Newman
+- [x] 22. Colección y entorno de Postman con pruebas en cada request; correr con Newman
         (`docs(postman): colección con pruebas de aceptación`)
 
 ## Fase 7 (opcional) · rama `test/e2e`
