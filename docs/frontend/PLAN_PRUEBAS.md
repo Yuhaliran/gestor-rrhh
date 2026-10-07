@@ -88,8 +88,8 @@ Por pantalla, sólo lo propio de ella (lo genérico ya está cubierto por las un
   empresa en el detalle.
 
 ## Pruebas de arquitectura
-- **ARQF1.** `contratos/` no importa módulos del proyecto; de bibliotecas, sólo tipos de `rxjs` y
-  `@angular/core`.
+- **ARQF1.** `contratos/` no importa módulos del proyecto; de bibliotecas, sólo tipos de `rxjs`,
+  `@angular/core` y `@angular/forms`.
 - **ARQF2.** `api/` sólo importa `contratos/`; `@angular/common/http` no se importa fuera de `api/`
   y `app.config.ts`; `fetch` no se usa.
 - **ARQF3.** `vistas/`, `componentes/` y `servicios/` no importan `api/` ni `environments/`.

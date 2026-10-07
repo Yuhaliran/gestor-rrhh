@@ -38,7 +38,7 @@ del «Contrato de interfaz» de la especificación: no se cambian sin cambiarla.
 
 ## 3. Estructura y dependencias
 ```
-contratos/    tipos e interfaces; sin lógica                     → nada (sólo tipos de rxjs y @angular/core)
+contratos/    tipos e interfaces; sin lógica                     → nada (sólo tipos de rxjs, @angular/core y @angular/forms)
 api/          ClienteRrhhHttp, interceptor de errores, URL_API   → contratos
 servicios/    lógica de pantallas, formatos, CLIENTE_RRHH        → contratos
 componentes/  piezas de interfaz reutilizables                   → servicios, contratos

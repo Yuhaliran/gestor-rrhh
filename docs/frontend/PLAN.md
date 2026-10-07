@@ -46,7 +46,7 @@ lugar de la red.
 **Reglas de dependencia** (se verifican con ESLint, ver «Pruebas de arquitectura» en el plan de
 pruebas):
 - **ARQF1.** `contratos/` no importa nada del proyecto; de bibliotecas, sólo tipos (`import type`)
-  de `rxjs` y `@angular/core` (`Observable`, `Signal`).
+  de `rxjs`, `@angular/core` y `@angular/forms` (`Observable`, `Signal`, `FormGroup`).
 - **ARQF2.** `api/` sólo importa `contratos/`. Es la única carpeta que usa `HttpClient`
   (`@angular/common/http`), además de `app.config.ts`, que lo registra. Nadie usa `fetch`.
 - **ARQF3.** `vistas/`, `componentes/` y `servicios/` no importan `api/` ni `environments/`; sólo
