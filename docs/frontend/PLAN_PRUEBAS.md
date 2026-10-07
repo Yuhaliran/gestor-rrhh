@@ -122,25 +122,25 @@ La columna «Pruebas» la completa el tester en cada tarea, con el nombre de cad
 | Id | Qué se verifica | Nivel | Pruebas |
 |---|---|---|---|
 | RF1 | Menú y página de inicio | C, A | |
-| RF2 | Listado paginado por la API, búsqueda con espera | U, C, A | |
-| RF3 | Confirmación al eliminar; 409 visible | U, C, A | |
-| RF4 | Avisos de éxito y regreso al listado | U, C | |
-| RF5 | Errores 400 debajo de cada campo, también con índice; JSON ilegible | U, C, A | |
-| RF6 | 409 como aviso general | U, C, A | |
-| RF7 | 404 al editar o ver | U, C, A | |
-| RF8 | Sin conexión y error no previsto | U, A | |
+| RF2 | Listado paginado por la API, búsqueda con espera | U, C, A | Listado_cargaInicial_PidePagina1YTamanioOpciones, Listado_cambiarPagina_PideNuevaPagina, Listado_cambiarTamanio_VuelveAPagina1YPideNuevoTamanio, Listado_cambiarBusqueda_Espera300msYVuelveAPagina1, Listado_respuestasMismaBusqueda_DescartaRespuestaVieja, ClienteRrhhHttp_listar_ConBusqueda_EnviaPaginaTamanioYBuscar, ClienteRrhhHttp_listar_SinBuscar_NoEnviaBuscar |
+| RF3 | Confirmación al eliminar; 409 visible | U, C, A | Eliminacion_eliminar_SinConfirmar_NoElimina, Eliminacion_eliminar_409_AvisaYNoRecarga |
+| RF4 | Avisos de éxito y regreso al listado | U, C | Formulario_enviar_Exito_AvisaYNavega, Formulario_enviar_MientrasEspera_GuardandoEsTrue, Eliminacion_eliminar_204_AvisaYRecarga, ClienteRrhhHttp_eliminar_204_NoDevuelveCuerpo, ClienteRrhhHttp_crear_CuerpoJsonYContentType_PoneEncabezado |
+| RF5 | Errores 400 debajo de cada campo, también con índice; JSON ilegible | U, C, A | Formulario_enviar_Error400_PoneMensajeEnControlYFormArray, Formulario_enviar_Error400JsonIlegible_MuestraElValorNoEsValidoYDescartaDto, Formulario_enviar_ErrorSinControl_VaAErrorGeneral, erroresInterceptor_interceptor_Error400_NormalizaClavesYDevuelveErrorApi, erroresInterceptor_interceptor_Error400JsonIlegible_LimpiaClavesYMensaje |
+| RF6 | 409 como aviso general | U, C, A | Formulario_enviar_Error409_VaAErrorGeneral, erroresInterceptor_interceptor_Error409_DevuelveErrorApiConDetalle |
+| RF7 | 404 al editar o ver | U, C, A | erroresInterceptor_interceptor_Error404_DevuelveErrorApiConDetalle, Formatos_mensajeDeError_SegunEstado_MuestraTextoCorrecto |
+| RF8 | Sin conexión y error no previsto | U, A | erroresInterceptor_interceptor_Error500_DevuelveErrorApiSoloConEstado, erroresInterceptor_interceptor_SinConexion_DevuelveErrorApiConEstado0, Listado_error_GuardaErrorSinRomperListado |
 | RF9 | Países: valores propuestos, código ISO en mayúsculas | C, A | |
 | RF10 | Departamentos: país fijo al editar | C, A | |
-| RF11 | Municipios: cascada al crear, padres fijos al editar | C, A | |
-| RF12 | Empresas: cascada, país fijo al editar | U, C, A | |
+| RF11 | Municipios: cascada al crear, padres fijos al editar | C, A | Cascada_cargaInicial_SinInicial_CargaPaisesYVaciaSeleccion, Cascada_cargaInicial_ConInicial_CargaPaisesDepartamentosYMunicipiosSinVaciar, Cascada_elegirPais_CambiaPaisVaciaHijosYCargaDepartamentos, Cascada_elegirDepartamento_CambiaDepartamentoVaciaMunicipioYCargaMunicipios, Cascada_elegirMunicipio_CambiaMunicipio |
+| RF12 | Empresas: cascada, país fijo al editar | U, C, A | Cascada_cargaInicial_SinInicial_CargaPaisesYVaciaSeleccion, Cascada_cargaInicial_ConInicial_CargaPaisesDepartamentosYMunicipiosSinVaciar, Cascada_elegirPais_CambiaPaisVaciaHijosYCargaDepartamentos, Cascada_elegirDepartamento_CambiaDepartamentoVaciaMunicipioYCargaMunicipios, Cascada_elegirMunicipio_CambiaMunicipio |
 | RF13 | Alta de colaborador con varias empresas; editar sólo datos personales | C, A | |
 | RF14 | Detalle: edad y empresas; asociar, editar, quitar | C, A | |
 | RF15 | Colaboradores de una empresa | C, A | |
-| VC1–VC5 | Validaciones en el navegador | U, C | |
-| RNF1 | URL de la API por configuración | U | |
-| RNF2 | Formatos de fecha (sin correrse un día) y enum | U | |
+| VC1–VC5 | Validaciones en el navegador | U, C | Formulario_enviar_Invalido_BloqueaEnvioYMarcaControles, Formatos_mensajeDeValidacion_SegunError_MuestraTextoCorrecto, ValidadoresLimite_edadMinimaNoMayorQueMaxima_Igual_EsValido, ValidadoresLimite_edadMinimaNoMayorQueMaxima_Mayor_EsInvalido, ValidadoresLimite_patronTelefono_ValoresLimite, ValidadoresLimite_patronCodigoIso_ValoresLimite |
+| RNF1 | URL de la API por configuración | U | ClienteRrhhHttp_listar_ConUrlBase_UsaTokenUrlApi |
+| RNF2 | Formatos de fecha (sin correrse un día) y enum | U | Formatos_fechaParaMostrar_ConvierteAFormatoLocal, Formatos_fechaDesdeIso_CreaFechaLocalSinCorrerseUnDia, Formatos_fechaAIso_ConvierteFechaLocalAFormatoIsoSinCorrerseUnDia, Formatos_textoRegla29Febrero_MuestraTextoCorrecto |
 | CORS1 | Preflight con origen permitido y no permitido; métodos, Content-Type y Location | I (backend) | Preflight_OrigenPermitido_DevuelveAccessControlAllowOrigin, Preflight_OrigenNoPermitido_NoDevuelveAccessControlAllowOrigin, Preflight_MetodosModificacionConContentType_DevuelveOrigenMetodoYEncabezadosPermitidos, Get_ConOrigenPermitido_ExponeEncabezadoLocation |
-| ARQF1–3 | Reglas de dependencia | R | |
+| ARQF1–3 | Reglas de dependencia | R | npm run lint (frontend/eslint.config.js) |
 | CAF1–4 | Aceptación | A | Lista de aceptación, puntos 1 a 8 |
 | CAF5 | Pruebas en verde | U, C | `npm test` en la CI |
 | CAF6 | Arquitectura | R | `npm run lint` en la CI |
