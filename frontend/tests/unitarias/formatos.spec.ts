@@ -9,6 +9,7 @@ import {
   mensajeDeValidacion,
   PATRON_TELEFONO,
   PATRON_CODIGO_ISO,
+  textoEdad,
 } from '../../src/app/servicios/formatos';
 
 describe('Formatos y Validadores', () => {
@@ -53,6 +54,11 @@ describe('Formatos y Validadores', () => {
     );
     expect(mensajeDeValidacion({ api: 'Mensaje de la API' })).toBe('Mensaje de la API');
     expect(mensajeDeValidacion(null)).toBeNull();
+  });
+
+  it('textoEdad_SegunCantidad_MuestraAnioOAnios', () => {
+    expect(textoEdad(34)).toBe('34 años');
+    expect(textoEdad(1)).toBe('1 año');
   });
 
   describe('Validadores Límite (VC)', () => {

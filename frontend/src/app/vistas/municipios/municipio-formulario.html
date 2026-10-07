@@ -4,22 +4,18 @@
   <p>El registro no existe.</p>
   <a matButton routerLink="/municipios">Volver al listado</a>
 } @else {
-  @if (errorCarga(); as mensaje) {
+  @if (errorCarga() ?? errorCascada(); as mensaje) {
     <p class="error-general" role="alert">{{ mensaje }}</p>
   }
   <form class="formulario" [formGroup]="grupo" (ngSubmit)="formulario.enviar()">
-    <!-- El país no viaja a la API: sólo elige los departamentos (RN6) -->
     <mat-form-field>
       <mat-label>País</mat-label>
-      <mat-select
-        [value]="paisElegido()"
-        [disabled]="edicion()"
-        (selectionChange)="elegirPais($event.value)"
-      >
+      <mat-select formControlName="paisId" (selectionChange)="elegirPais($event.value)">
         @for (pais of paises(); track pais.id) {
           <mat-option [value]="pais.id">{{ pais.nombre }}</mat-option>
         }
       </mat-select>
+      <mat-error>{{ mensajeDe(grupo.controls.paisId.errors) }}</mat-error>
     </mat-form-field>
 
     <mat-form-field>

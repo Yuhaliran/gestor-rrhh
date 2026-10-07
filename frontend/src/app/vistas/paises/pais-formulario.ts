@@ -58,7 +58,6 @@ const ERROR_DE_EDADES: ErrorStateMatcher = {
     MatSelect,
   ],
   templateUrl: './pais-formulario.html',
-  styleUrl: './pais-formulario.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PaisFormulario implements OnInit {

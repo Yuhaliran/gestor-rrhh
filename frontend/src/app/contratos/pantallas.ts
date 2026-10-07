@@ -19,7 +19,7 @@ import type { ErrorApi } from './errores';
 //   servicios/formulario.ts   crearFormulario
 //   servicios/eliminacion.ts  crearEliminacion
 //   servicios/formatos.ts     fechaParaMostrar, fechaDesdeIso, fechaAIso, textoRegla29Febrero,
-//                             mensajeDeError, mensajeDeValidacion, OPCIONES_REGLA_29_FEBRERO
+//                             textoEdad, mensajeDeError, mensajeDeValidacion, OPCIONES_REGLA_29_FEBRERO
 //                             (OpcionRegla[]), PATRON_TELEFONO y PATRON_CODIGO_ISO (RegExp, para
 //                             Validators.pattern) y edadMinimaNoMayorQueMaxima (ValidatorFn del grupo
 //                             de País: { edadMinimaMayorQueMaxima: true } si la mínima supera a la
@@ -99,14 +99,17 @@ export interface Formulario {
   enviar(): void;
 }
 
-// enviar(): si el grupo es inválido (VC), marca los controles y no llama a la API. Al guardar,
-// avisa con avisos.exito('Se guardó correctamente.') y navega a opciones.volverA (RF4). Un 400 pone cada mensaje en
-// su control con setErrors({ api: mensaje }), también dentro de un FormArray
-// ('empresas[1].fechaIngreso'); una clave sin control y cualquier otro error van a errorGeneral.
+// enviar(): si el grupo es inválido (VC), marca los controles y no llama a la API; un error que
+// puso la API no impide volver a enviar. Al guardar, avisa con
+// avisos.exito('Se guardó correctamente.') y navega a opciones.volverA (RF4); con
+// opciones.alGuardar (un diálogo, que se cierra con el resultado), en lugar de navegar le pasa la
+// respuesta de la API. Un 400 pone cada mensaje en su control con setErrors({ api: mensaje }),
+// también dentro de un FormArray ('empresas[1].fechaIngreso'); una clave sin control y cualquier
+// otro error van a errorGeneral.
 export type CrearFormulario = <TDatos, TRespuesta>(
   grupo: FormGroup,
   guardar: (datos: TDatos) => Observable<TRespuesta>,
-  opciones: { volverA: string },
+  opciones: { volverA: string } | { alGuardar: (respuesta: TRespuesta) => void },
 ) => Formulario;
 
 // RF3, RF4 · Eliminación con confirmación
@@ -133,6 +136,8 @@ export type FechaDesdeIso = (iso: string) => Date;
 export type FechaAIso = (fecha: Date) => string;
 // 'VeintiochoDeFebrero' → «28 de febrero»; 'PrimeroDeMarzo' → «1 de marzo»
 export type TextoRegla29Febrero = (regla: Regla29Febrero) => string;
+// RN7 · La edad tal como la calcula la API: 34 → «34 años»; 1 → «1 año»
+export type TextoEdad = (edad: number) => string;
 
 export interface OpcionRegla {
   valor: Regla29Febrero;

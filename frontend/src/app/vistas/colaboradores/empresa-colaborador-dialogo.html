@@ -1,0 +1,43 @@
+<h2 mat-dialog-title>{{ titulo }}</h2>
+
+<form [formGroup]="grupo" (ngSubmit)="formulario.enviar()">
+  <!-- Material le da su propio display a mat-dialog-content: la columna va en un div -->
+  <mat-dialog-content>
+    <div class="formulario">
+      @if (errorCarga(); as mensaje) {
+        <p class="error-general" role="alert">{{ mensaje }}</p>
+      }
+
+      <mat-form-field>
+        <mat-label>Empresa</mat-label>
+        <mat-select formControlName="empresaId">
+          @for (empresa of empresas(); track empresa.id) {
+            <mat-option [value]="empresa.id">{{ empresa.nombre }}</mat-option>
+          }
+        </mat-select>
+        <mat-error>{{ mensajeDe(grupo.controls.empresaId.errors) }}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Fecha de ingreso</mat-label>
+        <input matInput type="date" formControlName="fechaIngreso" [max]="hoy" />
+        <mat-error>{{ mensajeDe(grupo.controls.fechaIngreso.errors) }}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Puesto (opcional)</mat-label>
+        <input matInput formControlName="puesto" maxlength="100" />
+        <mat-error>{{ mensajeDe(grupo.controls.puesto.errors) }}</mat-error>
+      </mat-form-field>
+
+      @if (formulario.errorGeneral(); as mensaje) {
+        <p class="error-general" role="alert">{{ mensaje }}</p>
+      }
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button matButton type="button" mat-dialog-close>Cancelar</button>
+    <button matButton="filled" type="submit" [disabled]="formulario.guardando()">Guardar</button>
+  </mat-dialog-actions>
+</form>

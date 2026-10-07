@@ -1,0 +1,44 @@
+<h2>Editar colaborador</h2>
+
+@if (noExiste()) {
+  <p>El registro no existe.</p>
+  <a matButton routerLink="/colaboradores">Volver al listado</a>
+} @else {
+  @if (errorCarga(); as mensaje) {
+    <p class="error-general" role="alert">{{ mensaje }}</p>
+  }
+  <form class="formulario" [formGroup]="grupo" (ngSubmit)="formulario.enviar()">
+    <mat-form-field>
+      <mat-label>Nombre completo</mat-label>
+      <input matInput formControlName="nombreCompleto" maxlength="200" />
+      <mat-error>{{ mensajeDe(grupo.controls.nombreCompleto.errors) }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Fecha de nacimiento</mat-label>
+      <input matInput type="date" formControlName="fechaNacimiento" [max]="hoy" />
+      <mat-error>{{ mensajeDe(grupo.controls.fechaNacimiento.errors) }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Teléfono</mat-label>
+      <input matInput type="tel" formControlName="telefono" maxlength="20" />
+      <mat-error>{{ mensajeDe(grupo.controls.telefono.errors) }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Correo</mat-label>
+      <input matInput type="email" formControlName="correo" maxlength="254" />
+      <mat-error>{{ mensajeDe(grupo.controls.correo.errors) }}</mat-error>
+    </mat-form-field>
+
+    @if (formulario.errorGeneral(); as mensaje) {
+      <p class="error-general" role="alert">{{ mensaje }}</p>
+    }
+
+    <div class="acciones-formulario">
+      <button matButton="filled" type="submit" [disabled]="formulario.guardando()">Guardar</button>
+      <a matButton routerLink="/colaboradores">Cancelar</a>
+    </div>
+  </form>
+}

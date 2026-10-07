@@ -1,0 +1,75 @@
+<h2>Nuevo colaborador</h2>
+
+@if (errorCarga(); as mensaje) {
+  <p class="error-general" role="alert">{{ mensaje }}</p>
+}
+<form class="formulario" [formGroup]="grupo" (ngSubmit)="formulario.enviar()">
+  <mat-form-field>
+    <mat-label>Nombre completo</mat-label>
+    <input matInput formControlName="nombreCompleto" maxlength="200" />
+    <mat-error>{{ mensajeDe(grupo.controls.nombreCompleto.errors) }}</mat-error>
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Fecha de nacimiento</mat-label>
+    <input matInput type="date" formControlName="fechaNacimiento" [max]="hoy" />
+    <mat-error>{{ mensajeDe(grupo.controls.fechaNacimiento.errors) }}</mat-error>
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Teléfono</mat-label>
+    <input matInput type="tel" formControlName="telefono" maxlength="20" />
+    <mat-error>{{ mensajeDe(grupo.controls.telefono.errors) }}</mat-error>
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Correo</mat-label>
+    <input matInput type="email" formControlName="correo" maxlength="254" />
+    <mat-error>{{ mensajeDe(grupo.controls.correo.errors) }}</mat-error>
+  </mat-form-field>
+
+  <fieldset class="empresas" formArrayName="empresas">
+    <legend>Empresas</legend>
+    @for (fila of filas.controls; track fila; let i = $index) {
+      <!-- RN3: cada fila es un grupo con su número, para distinguir sus campos -->
+      <fieldset class="fila-empresa" [formGroupName]="i">
+        <legend>Empresa {{ i + 1 }}</legend>
+        <mat-form-field>
+          <mat-label>Empresa</mat-label>
+          <mat-select formControlName="empresaId">
+            @for (empresa of empresas(); track empresa.id) {
+              <mat-option [value]="empresa.id">{{ empresa.nombreComercial }}</mat-option>
+            }
+          </mat-select>
+          <mat-error>{{ mensajeDe(fila.controls.empresaId.errors) }}</mat-error>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Fecha de ingreso</mat-label>
+          <input matInput type="date" formControlName="fechaIngreso" [max]="hoy" />
+          <mat-error>{{ mensajeDe(fila.controls.fechaIngreso.errors) }}</mat-error>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Puesto (opcional)</mat-label>
+          <input matInput formControlName="puesto" maxlength="100" />
+          <mat-error>{{ mensajeDe(fila.controls.puesto.errors) }}</mat-error>
+        </mat-form-field>
+
+        <button matButton type="button" [disabled]="filas.length === 1" (click)="quitarEmpresa(i)">
+          Quitar
+        </button>
+      </fieldset>
+    }
+    <button matButton type="button" (click)="agregarEmpresa()">Agregar empresa</button>
+  </fieldset>
+
+  @if (formulario.errorGeneral(); as mensaje) {
+    <p class="error-general" role="alert">{{ mensaje }}</p>
+  }
+
+  <div class="acciones-formulario">
+    <button matButton="filled" type="submit" [disabled]="formulario.guardando()">Guardar</button>
+    <a matButton routerLink="/colaboradores">Cancelar</a>
+  </div>
+</form>

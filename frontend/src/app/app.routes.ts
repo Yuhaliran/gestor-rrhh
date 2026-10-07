@@ -1,48 +1,123 @@
 import { Routes } from '@angular/router';
 
-import { DepartamentoFormulario } from './vistas/departamentos/departamento-formulario';
-import { DepartamentosListado } from './vistas/departamentos/departamentos-listado';
-import { Inicio } from './vistas/inicio';
-import { MunicipioFormulario } from './vistas/municipios/municipio-formulario';
-import { MunicipiosListado } from './vistas/municipios/municipios-listado';
-import { PaisFormulario } from './vistas/paises/pais-formulario';
-import { PaisesListado } from './vistas/paises/paises-listado';
-import { Pendiente } from './vistas/pendiente';
-
-// Rutas del «Contrato de interfaz» (docs/frontend/ESPECIFICACION.md). Las pantallas llegan en las
-// tareas 38 a 42 y reemplazan a Pendiente. Las rutas fijas («nuevo») van antes que las de :id.
+// Rutas del «Contrato de interfaz» (docs/frontend/ESPECIFICACION.md). Las rutas fijas («nuevo») van
+// antes que las de :id.
+// Cada pantalla se carga al entrar en ella (loadComponent): el bundle inicial queda con el layout
+// y lo común, por debajo del presupuesto de angular.json.
 export const routes: Routes = [
-  { path: '', component: Inicio, title: 'Recursos Humanos' },
+  {
+    path: '',
+    loadComponent: () => import('./vistas/inicio').then((m) => m.Inicio),
+    title: 'Recursos Humanos',
+  },
 
-  { path: 'paises', component: PaisesListado, title: 'Países' },
-  { path: 'paises/nuevo', component: PaisFormulario, title: 'Nuevo país' },
-  { path: 'paises/:id/editar', component: PaisFormulario, title: 'Editar país' },
+  {
+    path: 'paises',
+    loadComponent: () => import('./vistas/paises/paises-listado').then((m) => m.PaisesListado),
+    title: 'Países',
+  },
+  {
+    path: 'paises/nuevo',
+    loadComponent: () => import('./vistas/paises/pais-formulario').then((m) => m.PaisFormulario),
+    title: 'Nuevo país',
+  },
+  {
+    path: 'paises/:id/editar',
+    loadComponent: () => import('./vistas/paises/pais-formulario').then((m) => m.PaisFormulario),
+    title: 'Editar país',
+  },
 
-  { path: 'departamentos', component: DepartamentosListado, title: 'Departamentos' },
-  { path: 'departamentos/nuevo', component: DepartamentoFormulario, title: 'Nuevo departamento' },
+  {
+    path: 'departamentos',
+    loadComponent: () =>
+      import('./vistas/departamentos/departamentos-listado').then((m) => m.DepartamentosListado),
+    title: 'Departamentos',
+  },
+  {
+    path: 'departamentos/nuevo',
+    loadComponent: () =>
+      import('./vistas/departamentos/departamento-formulario').then(
+        (m) => m.DepartamentoFormulario,
+      ),
+    title: 'Nuevo departamento',
+  },
   {
     path: 'departamentos/:id/editar',
-    component: DepartamentoFormulario,
+    loadComponent: () =>
+      import('./vistas/departamentos/departamento-formulario').then(
+        (m) => m.DepartamentoFormulario,
+      ),
     title: 'Editar departamento',
   },
 
-  { path: 'municipios', component: MunicipiosListado, title: 'Municipios' },
-  { path: 'municipios/nuevo', component: MunicipioFormulario, title: 'Nuevo municipio' },
-  { path: 'municipios/:id/editar', component: MunicipioFormulario, title: 'Editar municipio' },
+  {
+    path: 'municipios',
+    loadComponent: () =>
+      import('./vistas/municipios/municipios-listado').then((m) => m.MunicipiosListado),
+    title: 'Municipios',
+  },
+  {
+    path: 'municipios/nuevo',
+    loadComponent: () =>
+      import('./vistas/municipios/municipio-formulario').then((m) => m.MunicipioFormulario),
+    title: 'Nuevo municipio',
+  },
+  {
+    path: 'municipios/:id/editar',
+    loadComponent: () =>
+      import('./vistas/municipios/municipio-formulario').then((m) => m.MunicipioFormulario),
+    title: 'Editar municipio',
+  },
 
-  { path: 'empresas', component: Pendiente, title: 'Empresas' },
-  { path: 'empresas/nuevo', component: Pendiente, title: 'Nueva empresa' },
-  { path: 'empresas/:id/editar', component: Pendiente, title: 'Editar empresa' },
+  {
+    path: 'empresas',
+    loadComponent: () =>
+      import('./vistas/empresas/empresas-listado').then((m) => m.EmpresasListado),
+    title: 'Empresas',
+  },
+  {
+    path: 'empresas/nuevo',
+    loadComponent: () =>
+      import('./vistas/empresas/empresa-formulario').then((m) => m.EmpresaFormulario),
+    title: 'Nueva empresa',
+  },
+  {
+    path: 'empresas/:id/editar',
+    loadComponent: () =>
+      import('./vistas/empresas/empresa-formulario').then((m) => m.EmpresaFormulario),
+    title: 'Editar empresa',
+  },
   {
     path: 'empresas/:id/colaboradores',
-    component: Pendiente,
+    loadComponent: () =>
+      import('./vistas/empresas/empresa-colaboradores').then((m) => m.EmpresaColaboradores),
     title: 'Colaboradores de la empresa',
   },
 
-  { path: 'colaboradores', component: Pendiente, title: 'Colaboradores' },
-  { path: 'colaboradores/nuevo', component: Pendiente, title: 'Nuevo colaborador' },
-  { path: 'colaboradores/:id/editar', component: Pendiente, title: 'Editar colaborador' },
-  { path: 'colaboradores/:id', component: Pendiente, title: 'Detalle del colaborador' },
+  {
+    path: 'colaboradores',
+    loadComponent: () =>
+      import('./vistas/colaboradores/colaboradores-listado').then((m) => m.ColaboradoresListado),
+    title: 'Colaboradores',
+  },
+  {
+    path: 'colaboradores/nuevo',
+    loadComponent: () =>
+      import('./vistas/colaboradores/colaborador-alta').then((m) => m.ColaboradorAlta),
+    title: 'Nuevo colaborador',
+  },
+  {
+    path: 'colaboradores/:id/editar',
+    loadComponent: () =>
+      import('./vistas/colaboradores/colaborador-editar').then((m) => m.ColaboradorEditar),
+    title: 'Editar colaborador',
+  },
+  {
+    path: 'colaboradores/:id',
+    loadComponent: () =>
+      import('./vistas/colaboradores/colaborador-detalle').then((m) => m.ColaboradorDetalle),
+    title: 'Detalle del colaborador',
+  },
 
   { path: '**', redirectTo: '' },
 ];

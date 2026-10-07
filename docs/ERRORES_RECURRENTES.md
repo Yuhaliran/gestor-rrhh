@@ -310,4 +310,22 @@ Compilación, paquetes, pruebas, EF Core, git.
 ## Funcionalidad
 Comportamiento que no cumplía la especificación, detectado por pruebas o revisión.
 
-(Sin entradas todavía.)
+### E-022 · Un control deshabilitado no se valida ni muestra su error
+- Síntoma:       en el alta de municipio (frontend Angular), «Guardar» sin elegir el país envía el
+                 formulario; la API responde 400 «El departamento es obligatorio.» y la pantalla no
+                 muestra nada.
+- Causa:         en los formularios reactivos de Angular, un control deshabilitado queda fuera de
+                 la validación del grupo (`grupo.invalid` es `false` aunque esté vacío y sea
+                 obligatorio) y su estado es `DISABLED`, no `INVALID`: el error que le pone
+                 `setErrors` tampoco se muestra. El departamento estaba deshabilitado hasta elegir
+                 el país, y el país no era un control del formulario: no quedaba ningún control
+                 habilitado y vacío que impidiera guardar. La prueba sólo enviaba el formulario
+                 completo o todo vacío, y en los dos casos pasaba.
+- Solución:      cada nivel de la cascada es un control obligatorio del formulario, aunque el país
+                 (y el departamento, en la empresa) no viajen a la API. El primer nivel sin elegir
+                 siempre está habilitado: VC1 lo exige y muestra «Este campo es obligatorio.».
+- Cómo evitarlo: no deshabilitar un control obligatorio si ningún otro control habilitado y
+                 obligatorio impide guardar mientras tanto. Probar «Guardar» con todo completo
+                 salvo el campo que se verifica, para que el error sólo pueda venir de ese campo
+                 (E-018).
+- Origen:        tarea 40 · 2026-10-07 · implementador

@@ -93,13 +93,14 @@ frontend/
                                  error y mat-paginator (RF2)
       vistas/
         inicio.ts
-        pendiente.ts        lugar de las pantallas que todavía no están (tareas 38 a 42)
         paises/             paises-listado.ts, pais-formulario.ts
         departamentos/      departamentos-listado.ts, departamento-formulario.ts
         municipios/         municipios-listado.ts, municipio-formulario.ts
         empresas/           empresas-listado.ts, empresa-formulario.ts, empresa-colaboradores.ts
         colaboradores/      colaboradores-listado.ts, colaborador-alta.ts, colaborador-editar.ts,
-                            colaborador-detalle.ts
+                            datos-personales.ts (los usan el alta y la edición),
+                            colaborador-detalle.ts y empresa-colaborador-dialogo.ts (asociar y
+                            editar una empresa)
   tests/
     unitarias/              api/ (HttpTestingController) y servicios/ (cliente falso)
     componentes/            vistas con @testing-library/angular y HttpTestingController
@@ -228,8 +229,10 @@ al inicializar un componente (usan `inject()`) y devuelven su estado en signals:
   municipio y carga los municipios. Con `inicial` (editar) carga las tres listas sin vaciar la
   selección.
 - **`crearFormulario(grupo, guardar, opciones)`**: `errorGeneral`, `guardando`, `enviar()`.
-  `enviar` marca los controles y, si el grupo es inválido (VC), no llama a la API. Al guardar,
-  avisa «Se guardó correctamente.» y navega a `opciones.volverA` (RF4). Un `ErrorApi` 400 pone cada
+  `enviar` marca los controles y, si el grupo es inválido (VC), no llama a la API; un error que
+  puso la API no impide volver a enviar. Al guardar, avisa «Se guardó correctamente.» y navega a
+  `opciones.volverA` (RF4) o, en un diálogo, le pasa la respuesta a `opciones.alGuardar`, que lo
+  cierra. Un `ErrorApi` 400 pone cada
   mensaje en su control (`setErrors({ api: mensaje })`), también dentro de un `FormArray`
   (`empresas[1].fechaIngreso`); las claves sin control y cualquier otro error van a `errorGeneral`.
 - **`crearEliminacion(eliminar, alTerminar)`**: confirma (`CONFIRMACION`), elimina, avisa

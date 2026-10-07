@@ -15,7 +15,7 @@ const VALOR_NO_VALIDO = 'El valor no es válido.';
 export const crearFormulario: CrearFormulario = <TDatos, TRespuesta>(
   grupo: FormGroup,
   guardar: (datos: TDatos) => Observable<TRespuesta>,
-  opciones: { volverA: string },
+  opciones: { volverA: string } | { alGuardar: (respuesta: TRespuesta) => void },
 ): Formulario => {
   const avisos = inject(AVISOS);
   const router = inject(Router);
@@ -54,6 +54,8 @@ export const crearFormulario: CrearFormulario = <TDatos, TRespuesta>(
     guardando: guardando.asReadonly(),
     enviar: () => {
       errorGeneral.set(null);
+      // Sólo VC impide enviar: el error que puso la API se borra y, si sigue, la API lo repite
+      revalidar(grupo);
       if (grupo.invalid) {
         grupo.markAllAsTouched();
         return;
@@ -62,10 +64,15 @@ export const crearFormulario: CrearFormulario = <TDatos, TRespuesta>(
       guardar(grupo.getRawValue() as TDatos)
         .pipe(takeUntilDestroyed(destruccion))
         .subscribe({
-          next: () => {
+          next: (respuesta) => {
             guardando.set(false);
             avisos.exito('Se guardó correctamente.');
-            void router.navigateByUrl(opciones.volverA);
+            // RF4: se vuelve a la pantalla indicada o, en un diálogo, se le pasa la respuesta
+            if ('volverA' in opciones) {
+              void router.navigateByUrl(opciones.volverA);
+            } else {
+              opciones.alGuardar(respuesta);
+            }
           },
           error: (error: ErrorApi) => {
             guardando.set(false);
@@ -75,6 +82,16 @@ export const crearFormulario: CrearFormulario = <TDatos, TRespuesta>(
     },
   };
 };
+
+// Vuelve a correr los validadores de cada control, de adentro hacia afuera: quita el error de la
+// API (setErrors({ api })), que puede depender de otro campo (RN4 cae en la fecha de nacimiento,
+// pero se corrige eligiendo otra empresa), y deja sólo los de VC.
+function revalidar(control: AbstractControl): void {
+  if (control instanceof FormGroup || control instanceof FormArray) {
+    Object.values(control.controls).forEach(revalidar);
+  }
+  control.updateValueAndValidity({ onlySelf: true, emitEvent: false });
+}
 
 // Control de una clave de la API ('empresas[1].fechaIngreso'), sin distinguir mayúsculas (RF5),
 // o null si el formulario no tiene ese campo.

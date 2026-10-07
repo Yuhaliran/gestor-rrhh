@@ -1,6 +1,10 @@
 /* Estilos globales. El tema de Angular Material (azure-blue) se carga en angular.json. */
 
+/* Fondo y texto del tema: sin ellos, con el sistema en modo oscuro, algunos navegadores pintan el
+   fondo oscuro y el texto queda negro sobre negro */
 body {
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
   font-family: system-ui, sans-serif;
   margin: 0;
 }
@@ -43,6 +47,11 @@ body {
 
 .error-general {
   color: #991b1b;
+}
+
+/* RF9 y el NIT de la empresa: se muestran en mayúsculas mientras se escriben */
+.mayusculas {
+  text-transform: uppercase;
 }
 
 /* Visible sólo para lectores de pantalla */
