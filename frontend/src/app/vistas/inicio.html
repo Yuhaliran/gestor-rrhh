@@ -1,0 +1,11 @@
+<h2>Inicio</h2>
+<p>Elegí qué mantener:</p>
+
+<ul class="mantenimientos">
+  @for (mantenimiento of mantenimientos; track mantenimiento.ruta) {
+    <li>
+      <a [routerLink]="mantenimiento.ruta">{{ mantenimiento.nombre }}</a>
+      <span>{{ mantenimiento.descripcion }}</span>
+    </li>
+  }
+</ul>

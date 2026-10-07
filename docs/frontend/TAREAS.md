@@ -46,7 +46,8 @@ funcional (CAF1 a CAF4) ni las pruebas unitarias de lo genérico.
        `Program.cs` y los appsettings (`feat(api): CORS para el frontend`). Postman sigue pasando
 - [x] 31. Crear `frontend/` con `npx @angular/cli@22 new` (sin SSR, sin zone.js, con CSS y
        Vitest); `ng add angular-eslint`; agregar PrimeNG, `@angular/cdk`, `@primeuix/themes` y
-       PrimeIcons, @testing-library/angular, @testing-library/dom y user-event (Prettier ya viene
+       PrimeIcons (en la tarea 37 se reemplazaron por Angular Material: E-021),
+       @testing-library/angular, @testing-library/dom y user-event (Prettier ya viene
        con el CLI); scripts de `package.json`; `environments/`; puerto 4200 fijo en
        `angular.json`; `strict` y `strictTemplates` explícitos; Prettier con `endOfLine: auto`
        (`core.autocrlf` deja CRLF en Windows); borrar el `.editorconfig` que genera el CLI y

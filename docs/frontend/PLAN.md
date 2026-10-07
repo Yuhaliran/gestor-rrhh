@@ -33,15 +33,15 @@ vistas/ ──► servicios/ ──► contratos/ ◄── api/
 |---|---|---|
 | `contratos/` | `RRHH.Contratos` | Tipos de los DTOs, `Pagina`, `Consulta`, `ErrorApi`, interfaz `ClienteRrhh` e interfaces de la lógica de pantallas. Sin lógica |
 | `api/` | `ClienteRrhh` de `RRHH.Web` | `ClienteRrhhHttp`, que implementa `ClienteRrhh` con `HttpClient`, y el interceptor que traduce los errores a `ErrorApi` |
-| `servicios/` | `RRHH.Application` | Lógica de las pantallas: listado, cascada, formulario, eliminación, formatos. Estado con signals. Declara el token `CLIENTE_RRHH` |
-| `vistas/`, `componentes/` | Razor Pages | Componentes standalone con PrimeNG. Usan `servicios/`; nunca `api/` ni `HttpClient` |
-| `app.config.ts` | `Program.cs` | Raíz de composición: router, `HttpClient` con el interceptor, PrimeNG (tema Aura), `{ provide: CLIENTE_RRHH, useClass: ClienteRrhhHttp }` y la URL de la API |
+| `servicios/` | `RRHH.Application` | Lógica de las pantallas: listado, cascada, formulario, eliminación, formatos. Estado con signals. Declara los tokens `CLIENTE_RRHH`, `AVISOS` y `CONFIRMACION` |
+| `vistas/`, `componentes/` | Razor Pages | Componentes standalone con Angular Material. Usan `servicios/`; nunca `api/` ni `HttpClient`. `componentes/` tiene además los adaptadores de Material para `Avisos` y `Confirmacion` |
+| `app.config.ts` | `Program.cs` | Raíz de composición: router, `HttpClient` con el interceptor, la URL de la API y la implementación de cada token (`ClienteRrhhHttp`, `AvisosMaterial`, `ConfirmacionMaterial`) |
 
-El token `CLIENTE_RRHH` (un `InjectionToken<ClienteRrhh>`) vive en `servicios/` y no en
-`contratos/`, para que `contratos/` no dependa de Angular. Servicios y vistas piden
-`inject(CLIENTE_RRHH)`, igual que un servicio inyectado por su interfaz en .NET. Así las pruebas de
-`servicios/` usan un cliente falso, y las de vistas, el cliente real con `HttpTestingController` en
-lugar de la red.
+Los tokens (`InjectionToken`) viven en `servicios/` y no en `contratos/`, para que `contratos/` no
+dependa de Angular. La lógica pide `inject(CLIENTE_RRHH)`, `inject(AVISOS)` e
+`inject(CONFIRMACION)`, igual que un servicio inyectado por su interfaz en .NET: no conoce ni el
+`HttpClient` ni la biblioteca de componentes (E-021). Así las pruebas de `servicios/` usan dobles, y
+las de vistas, el cliente real con `HttpTestingController` en lugar de la red.
 
 **Reglas de dependencia** (se verifican con ESLint, ver «Pruebas de arquitectura» en el plan de
 pruebas):
@@ -65,28 +65,35 @@ frontend/
     app/
       app.config.ts         raíz de composición
       app.routes.ts         rutas de la especificación, «Contrato de interfaz»
-      app.ts, app.html      layout: menú (RF1), <router-outlet>, p-toast (p-confirmdialog va en cada vista que confirma)
+      app.ts, app.html      layout: menú (RF1) y <router-outlet>
       contratos/
         dtos.ts             un tipo por record de RRHH.Contratos, con el mismo nombre
         errores.ts          ProblemDetails y ErrorApi
         cliente.ts          interfaz ClienteRrhh
-        pantallas.ts        interfaces de listado, cascada, formulario y eliminación (contrato para el tester)
+        pantallas.ts        interfaces de listado, cascada, formulario, eliminación, avisos y
+                            confirmación (contrato para el tester)
       api/
         cliente-rrhh-http.ts     ClienteRrhhHttp: URL base, parámetros, cuerpo JSON
         errores.interceptor.ts   HttpErrorResponse → ErrorApi, con las claves normalizadas
         url-api.ts               token URL_API
       servicios/
         cliente.ts          token CLIENTE_RRHH
+        avisos.ts           token AVISOS
+        confirmacion.ts     token CONFIRMACION
         listado.ts          RF2
         cascada.ts          RN6, RF11, RF12
         formulario.ts       RF5 a RF8, VC1 a VC5
         eliminacion.ts      RF3, RF4
-        formatos.ts         RNF2: fechas y regla del 29 de febrero; validadores de VC
+        formatos.ts         RNF2: fechas y regla del 29 de febrero; validadores y textos de VC
+        mantenimientos.ts   RF1: los mantenimientos del menú y del inicio
       componentes/
-        campo-formulario.ts etiqueta + control + mensaje de error asociado (RNF3)
-        tabla-paginada.ts   p-table en modo lazy + «Buscar» + paginador
+        avisos-material.ts       Avisos con MatSnackBar
+        confirmacion-material.ts Confirmacion con MatDialog (y dialogo-confirmacion.ts)
+        listado-paginado.ts      alrededor de la tabla de cada vista: «Buscar», total, carga,
+                                 error y mat-paginator (RF2)
       vistas/
         inicio.ts
+        pendiente.ts        lugar de las pantallas que todavía no están (tareas 38 a 42)
         paises/             paises-listado.ts, pais-formulario.ts
         departamentos/      departamentos-listado.ts, departamento-formulario.ts
         municipios/         municipios-listado.ts, municipio-formulario.ts
@@ -111,7 +118,8 @@ ruta), salvo el colaborador: el alta incluye las empresas y la edición no (como
 | Rutas | Angular Router | Rutas de la especificación |
 | HTTP | `HttpClient` con un interceptor funcional | Traducción de errores en un solo lugar |
 | Formularios | Formularios reactivos tipados | Validadores de VC; errores de la API en cada control con `setErrors` |
-| Componentes | PrimeNG (tema Aura de `@primeuix/themes`) + PrimeIcons | p-table con paginación lazy, p-select, p-datepicker, p-toast y p-confirmdialog ya hechos |
+| Componentes | Angular Material (tema `azure-blue`) | `mat-table` y `mat-paginator`, `mat-select`, `mat-form-field`, `MatSnackBar` y `MatDialog`, de Google, con la misma versión que Angular y licencia MIT. Se descartó PrimeNG, que ahora es comercial (E-021) |
+| Fechas | `<input matInput type="date">` | Su valor ya es `aaaa-mm-dd`, el formato de la API: sin conversiones ni riesgo de correr un día; `max` cumple VC5 |
 | Estado | Signals en cada pantalla; sin store global (sin NgRx) | El estado es de cada pantalla; un store no aporta nada aquí |
 | Pruebas | Vitest (el ejecutor de `ng test`), @testing-library/angular, user-event, `HttpTestingController` | Ver plan de pruebas |
 | Calidad | angular-eslint (trae typescript-eslint), Prettier | RNF6 y reglas ARQF: `@typescript-eslint/no-restricted-imports` por carpeta, con `allowTypeImports` para ARQF1. `eslint-plugin-import` no es compatible con ESLint 10 |
@@ -121,7 +129,7 @@ Node.js ya está en el entorno (`docs/ENTORNO.md`, por Newman). `.editorconfig` 
 `frontend/`; Prettier lo respeta: el mismo estilo en todo el repositorio, como hace `dotnet format`
 en .NET.
 
-Versiones: las estables al crear el proyecto (hoy, Angular 22.2 y PrimeNG 22.1), fijadas en
+Versiones: las estables al crear el proyecto (hoy, Angular y Angular Material 22.2), fijadas en
 `package-lock.json` (versionado). La CI instala con `npm ci`, que falla si el lock no coincide, como
 `--locked-mode` en .NET. Node.js: Angular 22 pide `^22.22.3 || ^24.15.0`; se usa la LTS 24, indicada
 en `package.json` (`engines`) y en la CI. Agregar una dependencia se avisa y se justifica, como con
@@ -134,6 +142,22 @@ El Angular CLI **no se instala global**: viene como dependencia del proyecto. Se
 Scripts de `package.json`: `start` (`ng serve`), `build` (`ng build`), `test`
 (`ng test --watch=false`), `lint` (`ng lint`), `format` (`prettier --write .`) y `format:check`
 (`prettier --check .`).
+
+## Licencias
+Las dependencias de terceros, con la licencia que declaran (E-021: se revisa al empezar, al
+agregar una dependencia y al cambiar de versión mayor). Todas permiten usar y distribuir el
+proyecto.
+
+| Dependencia | Licencia |
+|---|---|
+| Angular (`@angular/*`, incluidos Material, CDK, CLI y build) | MIT |
+| RxJS · TypeScript | Apache-2.0 |
+| tslib | 0BSD |
+| ESLint, typescript-eslint, angular-eslint, Prettier | MIT |
+| Vitest, jsdom, Testing Library (`@testing-library/*`) | MIT |
+| Backend: paquetes de Microsoft (ASP.NET Core, EF Core), coverlet | MIT |
+| Backend: xunit.v3 · Newman (Postman) | Apache-2.0 |
+| Backend: NetArchTest.Rules | MIT (lo declara su repositorio, no el paquete) |
 
 ## Contrato del cliente
 Los tipos de `contratos/dtos.ts` se escriben a mano, uno por record de `RRHH.Contratos`, con un
@@ -208,9 +232,13 @@ al inicializar un componente (usan `inject()`) y devuelven su estado en signals:
   avisa «Se guardó correctamente.» y navega a `opciones.volverA` (RF4). Un `ErrorApi` 400 pone cada
   mensaje en su control (`setErrors({ api: mensaje })`), también dentro de un `FormArray`
   (`empresas[1].fechaIngreso`); las claves sin control y cualquier otro error van a `errorGeneral`.
-- **`crearEliminacion(eliminar, alTerminar)`**: confirma (`ConfirmationService` de PrimeNG),
-  elimina, avisa (`MessageService`) y recarga; un 409 se muestra como aviso con el `detalle`. En
-  las pruebas, los dos servicios de PrimeNG se reemplazan por dobles.
+- **`crearEliminacion(eliminar, alTerminar)`**: confirma (`CONFIRMACION`), elimina, avisa
+  (`AVISOS`) y recarga; un 409 se muestra como aviso con el `detalle`. En las pruebas, los dos
+  tokens se reemplazan por dobles.
+- **`Avisos` y `Confirmacion`**: interfaces propias, para que la lógica no dependa de la biblioteca
+  de componentes (E-021). Las implementan `AvisosMaterial` (snackbar) y `ConfirmacionMaterial`
+  (diálogo con «Sí, eliminar» y «Cancelar»), en `componentes/`. Como Material abre los dos en su
+  propia capa, sobre el `body`, ni el layout ni las vistas los incluyen en la plantilla.
 
 ## Cambio en la API (CORS1)
 En `src/RRHH.Api/Program.cs`:

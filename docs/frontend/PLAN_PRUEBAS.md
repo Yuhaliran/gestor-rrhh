@@ -22,8 +22,8 @@ la implementación. En el frontend eso se logra así:
   las pantallas»).
 - **Componentes:** el tester busca los elementos como un usuario, por etiqueta, rol o texto
   (`getByLabelText('Nombre')`, `getByRole('button', { name: 'Guardar' })`), según el «Contrato de
-  interfaz» de la especificación. No depende de clases CSS, de la estructura de PrimeNG ni de
-  nombres internos.
+  interfaz» de la especificación. No depende de clases CSS, de la estructura de Angular Material
+  ni de nombres internos.
 - **API simulada:** las respuestas que se entregan con `HttpTestingController` (en
   `frontend/tests/apoyo/`) se escriben desde `docs/PLAN.md`, «API» (rutas, códigos y formato de
   `ProblemDetails`), no desde el cliente del frontend.

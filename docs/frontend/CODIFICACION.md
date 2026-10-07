@@ -8,8 +8,8 @@ Países. Las demás pantallas siguen el mismo patrón, como las entidades del ba
 `docs/CODIFICACION.md`.
 
 > Los fragmentos son un patrón de referencia escrito antes de tener el código: se compilan y se
-> ajustan en las tareas 35 a 38. Si algo no funciona con Angular 22 o PrimeNG 22, se corrige el
-> código y este documento.
+> ajustan en las tareas 35 a 38. Si algo no funciona con Angular 22 o Angular Material 22, se
+> corrige el código y este documento.
 
 ## 1. Configuración del proyecto
 - Angular 22: componentes standalone, sin zone.js (la detección de cambios la disparan los
@@ -40,8 +40,10 @@ del «Contrato de interfaz» de la especificación: no se cambian sin cambiarla.
 ```
 contratos/    tipos e interfaces; sin lógica                     → nada (sólo tipos de rxjs, @angular/core y @angular/forms)
 api/          ClienteRrhhHttp, interceptor de errores, URL_API   → contratos
-servicios/    lógica de pantallas, formatos, CLIENTE_RRHH        → contratos
-componentes/  piezas de interfaz reutilizables                   → servicios, contratos
+servicios/    lógica de pantallas, formatos y los tokens         → contratos
+              CLIENTE_RRHH, AVISOS y CONFIRMACION
+componentes/  piezas de interfaz reutilizables y los adaptadores → servicios, contratos
+              de Material (AvisosMaterial, ConfirmacionMaterial)
 vistas/       una carpeta por mantenimiento                      → servicios, componentes, contratos
 app.config.ts raíz de composición                                → todo, incluidos api/ y environments/
 ```
@@ -53,23 +55,26 @@ Las reglas ARQF1 a ARQF3 (`docs/frontend/PLAN.md`) las verifica `npm run lint`. 
 - Dependencias con `inject()`, no por constructor. Entradas y salidas con `input()` y `output()`.
 - Estado de la pantalla en signals. Los `Observable` quedan en el cliente y en `servicios/`; el
   componente que se suscribe a uno usa `takeUntilDestroyed`.
+- El título de cada pantalla es un `<h2>`: el `<h1>` es el de la aplicación, en el layout.
 - Plantilla en su propio `.html`. En la plantilla sólo se leen signals y se llaman métodos: los
   cálculos van en el componente (`computed`) o en `servicios/formatos.ts`.
 - `@for` siempre con `track` (el `id` del DTO).
 - Texto de la API con interpolación `{{ }}`, nunca con `[innerHTML]` (RNF5).
 - **Enlace o botón**, según el «Contrato de interfaz» de la especificación (las pruebas los
-  buscan con `getByRole`): lo que navega es `<a pButton routerLink>`; lo que actúa,
-  `<button pButton type="button">`; «Guardar» es el `type="submit"` del formulario.
-- `p-toast` está una sola vez, en el layout. `p-confirmdialog` lo incluye cada vista que confirma
-  (los listados y el detalle del colaborador), para que su prueba de componente pueda confirmar.
-- PrimeNG 22: botones con la directiva `pButton` y el texto adentro (el componente `p-button` está
-  obsoleto). Cada componente se importa por separado: `ButtonDirective` (`primeng/button`),
-  `InputText`, `InputNumber`, `Select`, `DatePicker`, `Message`, `TableModule`, `Toast`,
-  `ConfirmDialog`; `MessageService` y `ConfirmationService` de `primeng/api`.
-- Formularios reactivos tipados con `NonNullableFormBuilder`. Cada campo va dentro de
-  `rrhh-campo-formulario`, que asocia la etiqueta (`<label for>`) con el control (`id` o
-  `inputId` en PrimeNG) y el error con el control (`aria-describedby`), para RNF3 y para que las
-  pruebas lo encuentren con `getByLabelText`.
+  buscan con `getByRole`): lo que navega es `<a matButton routerLink>`; lo que actúa,
+  `<button matButton type="button">`; «Guardar» es el `type="submit"` del formulario. La acción
+  principal de la pantalla va con `matButton="filled"`.
+- Avisos y confirmación: la lógica los pide por sus tokens (`AVISOS`, `CONFIRMACION`); ninguna
+  plantilla los incluye. Material los abre en su propia capa, sobre el `body`, donde también los
+  encuentra `screen` en las pruebas.
+- Angular Material 22: cada pieza se importa por separado. `MatButton` (`@angular/material/button`),
+  `MatFormField`, `MatLabel` y `MatError` (`form-field`), `MatInput` (`input`), `MatSelect` y
+  `MatOption` (`select`), `MatTableModule` (`table`), `MatPaginator` (`paginator`) y
+  `MatProgressBar` (`progress-bar`).
+- Formularios reactivos tipados con `NonNullableFormBuilder`. Cada campo es un `mat-form-field`
+  con su `mat-label` (queda asociado al control: `getByLabelText` lo encuentra) y un `mat-error`
+  con `mensajeDeValidacion(control.errors)`, que Material asocia al control (RNF3). Las fechas,
+  `<input matInput type="date">`: su valor ya es `aaaa-mm-dd`.
 - Los mensajes de las validaciones del navegador (los del «Contrato de interfaz») salen de
   `servicios/formatos.ts`. Un error de la API se muestra con el texto de la API (RF5).
 
@@ -166,7 +171,7 @@ El cliente no maneja errores.
 ```ts
 @Component({
   selector: 'rrhh-paises-listado',
-  imports: [RouterLink, ButtonDirective, TablaPaginada],
+  imports: [RouterLink, MatButton, MatTableModule, ListadoPaginado],
   templateUrl: './paises-listado.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -179,44 +184,37 @@ export class PaisesListado {
     () => this.listado.recargar(),
   );
   protected readonly textoRegla = textoRegla29Febrero; // servicios/formatos.ts
+  protected readonly columnas = ['nombre', 'codigoIso2', 'edades', 'regla', 'acciones'];
 }
 ```
 
 ```html
-<h1>Países</h1>
-<a pButton routerLink="/paises/nuevo">Nuevo</a>
+<h2>Países</h2>
+<a matButton="filled" routerLink="/paises/nuevo">Nuevo</a>
 
-<rrhh-tabla-paginada [listado]="listado">
-  <ng-template #encabezado>
-    <tr>
-      <th>Nombre</th>
-      <th>Código ISO</th>
-      <th>Edad mínima</th>
-      <th>Edad máxima</th>
-      <th>29 de febrero</th>
-      <th><span class="oculto">Acciones</span></th>
-    </tr>
-  </ng-template>
-  <ng-template #fila let-pais>
-    <tr>
-      <td>{{ pais.nombre }}</td>
-      <td>{{ pais.codigoIso2 }}</td>
-      <td>{{ pais.edadMinima }}</td>
-      <td>{{ pais.edadMaxima }}</td>
-      <td>{{ textoRegla(pais.regla29Febrero) }}</td>
-      <td>
-        <a pButton [routerLink]="['/paises', pais.id, 'editar']">Editar</a>
-        <button pButton type="button" severity="danger" (click)="eliminacion.eliminar(pais)">
-          Eliminar
-        </button>
+<rrhh-listado-paginado [listado]="listado">
+  <table mat-table [dataSource]="listado.elementos()">
+    <ng-container matColumnDef="nombre">
+      <th mat-header-cell *matHeaderCellDef>Nombre</th>
+      <td mat-cell *matCellDef="let pais">{{ pais.nombre }}</td>
+    </ng-container>
+    <!-- codigoIso2, edades (mínima y máxima) y regla, igual -->
+    <ng-container matColumnDef="acciones">
+      <th mat-header-cell *matHeaderCellDef><span class="oculto">Acciones</span></th>
+      <td mat-cell *matCellDef="let pais">
+        <a matButton [routerLink]="['/paises', pais.id, 'editar']">Editar</a>
+        <button matButton type="button" (click)="eliminacion.eliminar(pais)">Eliminar</button>
       </td>
-    </tr>
-  </ng-template>
-</rrhh-tabla-paginada>
+    </ng-container>
+    <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+    <tr mat-row *matRowDef="let fila; columns: columnas"></tr>
+  </table>
+</rrhh-listado-paginado>
 ```
-`TablaPaginada` pone el campo «Buscar», la tabla de PrimeNG en modo lazy, el paginador (10, 20 y
-50), el total, el indicador de carga y el error del listado (RF2, RF8). La plantilla de la vista
-agrega `<p-confirmdialog />` para la confirmación de «Eliminar».
+`ListadoPaginado` (`componentes/listado-paginado.ts`) rodea la tabla de la vista con lo que es
+igual en todos los listados: el campo «Buscar», el total, el indicador de carga, el error del
+listado y el `mat-paginator` (10, 20 y 50) conectado a `listado` (RF2, RF8). La tabla queda en la
+vista porque sus columnas son propias de cada una.
 
 ### Formulario (`vistas/paises/pais-formulario.ts` y `.html`)
 Un mismo componente crea y edita: el `:id` llega como entrada (`withComponentInputBinding()` en
@@ -225,8 +223,8 @@ Un mismo componente crea y edita: el `:id` llega como entrada (`withComponentInp
 ```ts
 @Component({
   selector: 'rrhh-pais-formulario',
-  imports: [ReactiveFormsModule, RouterLink, ButtonDirective, InputText, InputNumber, Select,
-    Message, CampoFormulario],
+  imports: [ReactiveFormsModule, RouterLink, MatButton, MatFormField, MatLabel, MatError,
+    MatInput, MatSelect, MatOption],
   templateUrl: './pais-formulario.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -238,12 +236,13 @@ export class PaisFormulario implements OnInit {
 
   protected readonly noExiste = signal(false);
   protected readonly opcionesRegla = OPCIONES_REGLA_29_FEBRERO; // servicios/formatos.ts
+  protected readonly mensajeDe = mensajeDeValidacion; // servicios/formatos.ts
 
   // RF9: al crear propone 18, 100 y «28 de febrero»
   protected readonly grupo = inject(NonNullableFormBuilder).group(
     {
       nombre: ['', [Validators.required, Validators.maxLength(100)]],
-      codigoIso2: ['', [Validators.required, Validators.pattern(/^[A-Za-z]{2}$/)]],
+      codigoIso2: ['', [Validators.required, Validators.pattern(PATRON_CODIGO_ISO)]],
       edadMinima: [18, [Validators.required, Validators.min(0)]],
       edadMaxima: [100, [Validators.required, Validators.min(0)]],
       regla29Febrero: ['VeintiochoDeFebrero' as Regla29Febrero, Validators.required],
@@ -277,26 +276,40 @@ export class PaisFormulario implements OnInit {
 ```
 
 ```html
-<h1>{{ id() ? 'Editar país' : 'Nuevo país' }}</h1>
+<h2>{{ id() ? 'Editar país' : 'Nuevo país' }}</h2>
 
 @if (noExiste()) {
   <p>El registro no existe.</p>
   <a routerLink="/paises">Volver al listado</a>
 } @else {
   <form [formGroup]="grupo" (ngSubmit)="formulario.enviar()">
-    <rrhh-campo-formulario etiqueta="Nombre" campo="nombre" [control]="grupo.controls.nombre">
-      <input pInputText id="nombre" formControlName="nombre" maxlength="100" />
-    </rrhh-campo-formulario>
-    <!-- Código ISO, Edad mínima, Edad máxima y Cumpleaños del 29 de febrero, igual -->
+    <mat-form-field>
+      <mat-label>Nombre</mat-label>
+      <input matInput formControlName="nombre" maxlength="100" />
+      <mat-error>{{ mensajeDe(grupo.controls.nombre.errors) }}</mat-error>
+    </mat-form-field>
+    <!-- Código ISO, Edad mínima y Edad máxima, igual -->
+    <mat-form-field>
+      <mat-label>Cumpleaños del 29 de febrero</mat-label>
+      <mat-select formControlName="regla29Febrero">
+        @for (opcion of opcionesRegla; track opcion.valor) {
+          <mat-option [value]="opcion.valor">{{ opcion.texto }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
 
     @if (formulario.errorGeneral(); as mensaje) {
-      <p-message severity="error">{{ mensaje }}</p-message>
+      <p class="error-general" role="alert">{{ mensaje }}</p>
     }
-    <button pButton type="submit" [disabled]="formulario.guardando()">Guardar</button>
-    <a pButton severity="secondary" routerLink="/paises">Cancelar</a>
+    <button matButton="filled" type="submit" [disabled]="formulario.guardando()">Guardar</button>
+    <a matButton routerLink="/paises">Cancelar</a>
   </form>
 }
 ```
+El error de VC4 es del grupo, no de un control: el campo «Edad máxima» lo muestra con un
+`ErrorStateMatcher` que también mira el grupo. Con OnPush y sin zone.js, los errores que
+`crearFormulario` pone con `setErrors` aparecen porque `guardando()` cambia con la respuesta: la
+plantilla lo lee y se vuelve a dibujar.
 `crearFormulario(grupo, guardar, opciones)`: si el grupo es inválido marca los controles y no
 llama a la API (VC); al guardar, avisa «Se guardó correctamente.» y navega a `volverA`; un 400 pone
 cada mensaje en su control y el resto va a `errorGeneral` (`docs/frontend/PLAN.md`, «Lógica de las
@@ -307,19 +320,23 @@ Las escribe el tester (`docs/frontend/PLAN_PRUEBAS.md`). Estos ejemplos fijan la
 
 ### Proveedores comunes (`tests/apoyo/proveedores.ts`)
 ```ts
-// La API se simula con HttpTestingController; el cliente y el interceptor son los reales.
-export function proveedoresDePrueba(): Provider[] {
+// La API se simula con HttpTestingController; el cliente, el interceptor, los avisos y la
+// confirmación son los reales (las pruebas de vistas hacen clic en «Sí, eliminar» y leen el aviso).
+export function proveedoresDePrueba(): (Provider | EnvironmentProviders)[] {
   return [
     provideHttpClient(withInterceptors([erroresInterceptor])),
     provideHttpClientTesting(),
     provideRouter([]),
     { provide: URL_API, useValue: 'http://api.prueba' },
     { provide: CLIENTE_RRHH, useClass: ClienteRrhhHttp },
-    MessageService,
-    ConfirmationService,
+    { provide: AVISOS, useClass: AvisosMaterial },
+    { provide: CONFIRMACION, useClass: ConfirmacionMaterial },
   ];
 }
 ```
+Las pruebas unitarias de `servicios/` reemplazan `AVISOS` y `CONFIRMACION` por dobles:
+`{ provide: AVISOS, useValue: { exito: vi.fn(), error: vi.fn() } }` y
+`{ provide: CONFIRMACION, useValue: { confirmar: () => of(true) } }`.
 
 ### Prueba unitaria del cliente
 ```ts
@@ -366,10 +383,8 @@ describe('PaisesListado', () => {
 });
 ```
 `paginaDe`, `guatemala` y `conflicto` son datos de `tests/apoyo/`, escritos desde
-`docs/PLAN.md`, «API». La confirmación funciona porque la vista incluye su `p-confirmdialog`. Los
-avisos de éxito (RF4) están en el `p-toast` del layout, que la prueba de una vista no tiene: se
-verifican con un doble de `MessageService` (`vi.spyOn(TestBed.inject(MessageService), 'add')`) y
-con la navegación.
+`docs/PLAN.md`, «API». El diálogo de confirmación y el aviso los abre Material sobre el `body`,
+así que `screen` los encuentra aunque la prueba renderice sólo la vista.
 
 ## 7. Terminado de cada tarea
 - [ ] `npm run lint` (incluye ARQF), `npm run format:check`, `npm test` y `npm run build` sin

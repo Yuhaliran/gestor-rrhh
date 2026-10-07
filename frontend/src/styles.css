@@ -1,2 +1,17 @@
-/* Estilos globales. El tema de PrimeNG (Aura) se registra en app.config.ts. */
-@import 'primeicons/primeicons.css';
+/* Estilos globales. El tema de Angular Material (azure-blue) se carga en angular.json. */
+
+body {
+  font-family: system-ui, sans-serif;
+  margin: 0;
+}
+
+/* RNF4: las tablas se desplazan solas en el ancho de un teléfono, sin mover la página */
+.tabla-desplazable {
+  overflow-x: auto;
+}
+
+/* Aviso de error (AvisosMaterial) */
+.aviso-error {
+  --mat-snack-bar-container-color: #991b1b;
+  --mat-snack-bar-supporting-text-color: #fff;
+}

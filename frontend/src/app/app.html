@@ -1,4 +1,18 @@
-<main>
-  <h1>Recursos Humanos</h1>
+<header class="encabezado">
+  <h1><a routerLink="/">Recursos Humanos</a></h1>
+  <nav aria-label="Mantenimientos">
+    <ul>
+      @for (mantenimiento of mantenimientos; track mantenimiento.ruta) {
+        <li>
+          <a [routerLink]="mantenimiento.ruta" routerLinkActive="activo">{{
+            mantenimiento.nombre
+          }}</a>
+        </li>
+      }
+    </ul>
+  </nav>
+</header>
+
+<main class="contenido">
   <router-outlet />
 </main>

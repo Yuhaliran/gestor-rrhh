@@ -25,7 +25,22 @@ import type { ErrorApi } from './errores';
 //                             de País: { edadMinimaMayorQueMaxima: true } si la mínima supera a la
 //                             máxima, VC4)
 // Las funciones crear* usan inject(): se llaman al inicializar un componente (o, en las pruebas,
-// dentro de TestBed.runInInjectionContext). El cliente lo toman de CLIENTE_RRHH (servicios/cliente.ts).
+// dentro de TestBed.runInInjectionContext). El cliente lo toman de CLIENTE_RRHH (servicios/cliente.ts);
+// los avisos, de AVISOS (servicios/avisos.ts), y la confirmación, de CONFIRMACION
+// (servicios/confirmacion.ts). Así la lógica no depende de la biblioteca de componentes (E-021).
+
+// RF3, RF4 y RF6 a RF8 · Avisos breves al usuario (con Angular Material, un snackbar)
+export interface Avisos {
+  exito(mensaje: string): void;
+  error(mensaje: string): void;
+}
+
+// RF3 · Confirmación antes de eliminar o quitar (con Angular Material, un diálogo)
+export interface Confirmacion {
+  // Muestra el mensaje con los botones «Sí, eliminar» y «Cancelar». Emite una vez: true si se
+  // confirma; false si se cancela o se cierra.
+  confirmar(mensaje: string): Observable<boolean>;
+}
 
 // RF2 · Listado paginado por la API
 export interface Listado<T> {
@@ -85,7 +100,7 @@ export interface Formulario {
 }
 
 // enviar(): si el grupo es inválido (VC), marca los controles y no llama a la API. Al guardar,
-// avisa «Se guardó correctamente.» y navega a opciones.volverA (RF4). Un 400 pone cada mensaje en
+// avisa con avisos.exito('Se guardó correctamente.') y navega a opciones.volverA (RF4). Un 400 pone cada mensaje en
 // su control con setErrors({ api: mensaje }), también dentro de un FormArray
 // ('empresas[1].fechaIngreso'); una clave sin control y cualquier otro error van a errorGeneral.
 export type CrearFormulario = <TDatos, TRespuesta>(
@@ -97,12 +112,13 @@ export type CrearFormulario = <TDatos, TRespuesta>(
 // RF3, RF4 · Eliminación con confirmación
 export interface Eliminacion<T> {
   readonly eliminando: Signal<boolean>;
-  // Pide confirmación (botones «Sí, eliminar» y «Cancelar»); si se confirma, elimina
+  // Pide confirmación con confirmacion.confirmar('¿Eliminar este registro?'); si se confirma, elimina
   eliminar(elemento: T): void;
 }
 
-// Al eliminar (204) avisa «Se eliminó correctamente.» y llama a alTerminar. Un error se avisa
-// con mensajeDeError (un 409, con su detalle) y no llama a alTerminar.
+// Al eliminar (204) avisa con avisos.exito('Se eliminó correctamente.') y llama a alTerminar. Un
+// error se avisa con avisos.error(mensajeDeError(error)) (un 409, con su detalle) y no llama a
+// alTerminar.
 export type CrearEliminacion = <T>(
   eliminar: (elemento: T) => Observable<void>,
   alTerminar: () => void,
