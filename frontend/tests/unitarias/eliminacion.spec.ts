@@ -1,30 +1,33 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { CONFIRMACION } from '../../src/app/servicios/confirmacion';
+import { AVISOS } from '../../src/app/servicios/avisos';
 import { crearEliminacion } from '../../src/app/servicios/eliminacion';
 
 describe('Eliminacion', () => {
-  let confirmationService: any;
-  let messageService: any;
+  let confirmacion: any;
+  let avisos: any;
   let recargarSpy: any;
   let eliminarLlamado = false;
 
   beforeEach(() => {
-    confirmationService = { confirm: vi.fn() };
-    messageService = { add: vi.fn() };
+    confirmacion = { confirmar: vi.fn(() => of(true)) };
+    avisos = { exito: vi.fn(), error: vi.fn() };
     recargarSpy = vi.fn();
     eliminarLlamado = false;
 
     TestBed.configureTestingModule({
       providers: [
-        { provide: ConfirmationService, useValue: confirmationService },
-        { provide: MessageService, useValue: messageService },
+        { provide: CONFIRMACION, useValue: confirmacion },
+        { provide: AVISOS, useValue: avisos },
       ],
     });
   });
 
   it('eliminar_SinConfirmar_NoElimina', () => {
+    confirmacion.confirmar.mockReturnValue(of(false));
+
     TestBed.runInInjectionContext(() => {
       const eliminacion = crearEliminacion(() => {
         eliminarLlamado = true;
@@ -33,13 +36,7 @@ describe('Eliminacion', () => {
 
       eliminacion.eliminar(1);
 
-      expect(confirmationService.confirm).toHaveBeenCalled();
-      const options = confirmationService.confirm.mock.calls[0][0];
-
-      if (options.reject) {
-        options.reject();
-      }
-
+      expect(confirmacion.confirmar).toHaveBeenCalledWith('¿Eliminar este registro?');
       expect(eliminarLlamado).toBe(false);
       expect(recargarSpy).not.toHaveBeenCalled();
     });
@@ -56,14 +53,10 @@ describe('Eliminacion', () => {
 
       eliminacion.eliminar(1);
 
-      const options = confirmationService.confirm.mock.calls[0][0];
-      options.accept();
-
+      expect(confirmacion.confirmar).toHaveBeenCalledWith('¿Eliminar este registro?');
       expect(eliminarLlamado).toBe(true);
       expect(elementoEliminado).toBe(1);
-      expect(messageService.add).toHaveBeenCalledWith(
-        expect.objectContaining({ summary: 'Se eliminó correctamente.' }),
-      );
+      expect(avisos.exito).toHaveBeenCalledWith('Se eliminó correctamente.');
       expect(recargarSpy).toHaveBeenCalled();
     });
   });
@@ -77,12 +70,8 @@ describe('Eliminacion', () => {
 
       eliminacion.eliminar(1);
 
-      const options = confirmationService.confirm.mock.calls[0][0];
-      options.accept();
-
-      expect(messageService.add).toHaveBeenCalledWith(
-        expect.objectContaining({ summary: 'Conflicto de prueba' }),
-      );
+      expect(confirmacion.confirmar).toHaveBeenCalledWith('¿Eliminar este registro?');
+      expect(avisos.error).toHaveBeenCalledWith('Conflicto de prueba');
       expect(recargarSpy).not.toHaveBeenCalled();
     });
   });

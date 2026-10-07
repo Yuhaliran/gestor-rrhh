@@ -24,7 +24,7 @@ describe('Formatos y Validadores', () => {
   });
 
   it('fechaAIso_ConvierteFechaLocalAFormatoIsoSinCorrerseUnDia', () => {
-    const fecha = new Date(2026, 9, 7, 0, 0, 0);
+    const fecha = new Date(2026, 9, 7, 23, 0);
     expect(fechaAIso(fecha)).toBe('2026-10-07');
   });
 

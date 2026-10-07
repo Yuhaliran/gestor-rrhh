@@ -123,7 +123,7 @@ La columna «Pruebas» la completa el tester en cada tarea, con el nombre de cad
 
 | Id | Qué se verifica | Nivel | Pruebas |
 |---|---|---|---|
-| RF1 | Menú y página de inicio | C, A | |
+| RF1 | Menú y página de inicio | C, A | App_menu_TieneEnlacesAMantenimientos, Inicio_inicio_TieneAccesosAMantenimientos |
 | RF2 | Listado paginado por la API, búsqueda con espera | U, C, A | Listado_cargaInicial_PidePagina1YTamanioOpciones, Listado_cambiarPagina_PideNuevaPagina, Listado_cambiarTamanio_VuelveAPagina1YPideNuevoTamanio, Listado_cambiarBusqueda_Espera300msYVuelveAPagina1, Listado_respuestasMismaBusqueda_DescartaRespuestaVieja, ClienteRrhhHttp_listar_ConBusqueda_EnviaPaginaTamanioYBuscar, ClienteRrhhHttp_listar_SinBuscar_NoEnviaBuscar |
 | RF3 | Confirmación al eliminar; 409 visible | U, C, A | Eliminacion_eliminar_SinConfirmar_NoElimina, Eliminacion_eliminar_409_AvisaYNoRecarga |
 | RF4 | Avisos de éxito y regreso al listado | U, C | Formulario_enviar_Exito_AvisaYNavega, Formulario_enviar_MientrasEspera_GuardandoEsTrue, Eliminacion_eliminar_204_AvisaYRecarga, ClienteRrhhHttp_eliminar_204_NoDevuelveCuerpo, ClienteRrhhHttp_crear_CuerpoJsonYContentType_PoneEncabezado |

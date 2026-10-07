@@ -3,21 +3,21 @@ import { TestBed } from '@angular/core/testing';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { of, throwError, Subject } from 'rxjs';
 import { Router } from '@angular/router';
-import { MessageService } from 'primeng/api';
+import { AVISOS } from '../../src/app/servicios/avisos';
 import { crearFormulario } from '../../src/app/servicios/formulario';
 
 describe('Formulario', () => {
   let router: any;
-  let messageService: any;
+  let avisos: any;
 
   beforeEach(() => {
     router = { navigateByUrl: vi.fn() };
-    messageService = { add: vi.fn() };
+    avisos = { exito: vi.fn(), error: vi.fn() };
 
     TestBed.configureTestingModule({
       providers: [
         { provide: Router, useValue: router },
-        { provide: MessageService, useValue: messageService },
+        { provide: AVISOS, useValue: avisos },
       ],
     });
   });
@@ -59,9 +59,7 @@ describe('Formulario', () => {
     });
 
     expect(valoresGuardados).toEqual({ nombre: 'A' });
-    expect(messageService.add).toHaveBeenCalledWith(
-      expect.objectContaining({ summary: 'Se guardó correctamente.' }),
-    );
+    expect(avisos.exito).toHaveBeenCalledWith('Se guardó correctamente.');
     expect(router.navigateByUrl).toHaveBeenCalledWith('/lista');
   });
 
@@ -81,8 +79,8 @@ describe('Formulario', () => {
           throwError(() => ({
             estado: 400,
             errores: {
-              nombre: ['Nombre inválido'],
-              'empresas[1].fechaIngreso': ['Fecha inválida'],
+              Nombre: ['Nombre inválido'],
+              'Empresas[1].fechaIngreso': ['Fecha inválida'],
             },
           })),
         { volverA: '/lista' },
