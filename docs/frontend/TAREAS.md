@@ -116,8 +116,9 @@ aprobación.
 **Antigravity CLI · pruebas** (`$env:RRHH_ROL = "tester"; agy`)
 ```
 Actuás con el rol de docs/agentes/tester.md. Leé AGENTS.md, docs/frontend/ESPECIFICACION.md,
-docs/frontend/PLAN.md, docs/frontend/PLAN_PRUEBAS.md, docs/PLAN.md (sección API),
-docs/ERRORES_RECURRENTES.md y frontend/src/app/contratos/. No leas la implementación.
+docs/frontend/PLAN.md, docs/frontend/PLAN_PRUEBAS.md, docs/frontend/CODIFICACION.md (sección
+Pruebas), docs/PLAN.md (sección API), docs/ERRORES_RECURRENTES.md y frontend/src/app/contratos/.
+No leas la implementación.
 Escribí las pruebas de la tarea N en frontend/tests/: deben compilar y quedar en rojo.
 Actualizá la tabla de trazabilidad de docs/frontend/PLAN_PRUEBAS.md.
 ```

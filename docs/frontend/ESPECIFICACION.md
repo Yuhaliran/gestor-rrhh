@@ -160,7 +160,18 @@ es cambiar la especificación.
 - Formularios: «Guardar» y «Cancelar». Alta de colaborador: «Agregar empresa» y, por fila, «Quitar».
 - Detalle del colaborador: «Editar datos», «Asociar empresa»; por empresa «Editar» y «Quitar».
 - Confirmación de eliminar o quitar: «Sí, eliminar» y «Cancelar».
+- Pantalla de RF7: enlace «Volver al listado».
 - Mensajes: los de RF4, RF5 («El valor no es válido.»), RF7 y RF8.
+- Mensajes de las validaciones en el navegador, debajo del campo: «Este campo es obligatorio.»
+  (VC1), «Admite hasta N caracteres.» (VC2, con el largo), «El formato no es válido.» (VC3 y el
+  código ISO de VC4), «No puede ser negativa.» y «La edad mínima no puede ser mayor que la
+  máxima.» (VC4, este último debajo de «Edad máxima», como en la API).
+
+**Enlaces y botones.** Lo que navega es un enlace (rol `link`): «Nuevo», «Editar» de los listados,
+«Cancelar» de los formularios, «Colaboradores», «Ver detalle», «Editar datos» y «Volver al
+listado». Lo que actúa es un botón (rol `button`): «Guardar», «Eliminar», «Quitar», «Agregar
+empresa», «Asociar empresa», el «Editar» de una empresa en el detalle (abre un diálogo) y los dos
+de la confirmación.
 
 ## Criterios de aceptación del frontend
 - **CAF1.** Los 5 mantenimientos funcionan contra la API real (crear, listar, buscar, paginar,

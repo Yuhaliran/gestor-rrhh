@@ -65,7 +65,7 @@ frontend/
     app/
       app.config.ts         raíz de composición
       app.routes.ts         rutas de la especificación, «Contrato de interfaz»
-      app.ts, app.html      layout: menú (RF1), <router-outlet>, p-toast, p-confirmdialog
+      app.ts, app.html      layout: menú (RF1), <router-outlet>, p-toast (p-confirmdialog va en cada vista que confirma)
       contratos/
         dtos.ts             un tipo por record de RRHH.Contratos, con el mismo nombre
         errores.ts          ProblemDetails y ErrorApi
@@ -203,8 +203,9 @@ al inicializar un componente (usan `inject()`) y devuelven su estado en signals:
   país vacía departamento y municipio y carga los departamentos; cambiar el departamento vacía el
   municipio y carga los municipios. Con `inicial` (editar) carga las tres listas sin vaciar la
   selección.
-- **`crearFormulario(grupo, guardar)`**: `errorGeneral`, `guardando`, `enviar()`. `enviar` marca
-  los controles y, si el grupo es inválido (VC), no llama a la API. Un `ErrorApi` 400 pone cada
+- **`crearFormulario(grupo, guardar, opciones)`**: `errorGeneral`, `guardando`, `enviar()`.
+  `enviar` marca los controles y, si el grupo es inválido (VC), no llama a la API. Al guardar,
+  avisa «Se guardó correctamente.» y navega a `opciones.volverA` (RF4). Un `ErrorApi` 400 pone cada
   mensaje en su control (`setErrors({ api: mensaje })`), también dentro de un `FormArray`
   (`empresas[1].fechaIngreso`); las claves sin control y cualquier otro error van a `errorGeneral`.
 - **`crearEliminacion(eliminar, alTerminar)`**: confirma (`ConfirmationService` de PrimeNG),
