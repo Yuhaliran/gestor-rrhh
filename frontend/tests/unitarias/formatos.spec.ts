@@ -7,10 +7,9 @@ import {
   edadMinimaNoMayorQueMaxima,
   mensajeDeError,
   mensajeDeValidacion,
+  PATRON_TELEFONO,
+  PATRON_CODIGO_ISO,
 } from '../../src/app/servicios/formatos';
-import * as formatosServicio from '../../src/app/servicios/formatos';
-const PATRON_TELEFONO = (formatosServicio as any).PATRON_TELEFONO;
-const PATRON_CODIGO_ISO = (formatosServicio as any).PATRON_CODIGO_ISO;
 
 describe('Formatos y Validadores', () => {
   it('fechaParaMostrar_ConvierteAFormatoLocal', () => {

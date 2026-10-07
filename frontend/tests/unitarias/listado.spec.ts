@@ -65,13 +65,17 @@ describe('Listado', () => {
       });
 
       listado.cambiarPagina(3);
+
+      // Contar desde después de cambiarPagina
+      llamadas = 0;
+
       listado.cambiarBusqueda('a');
       vi.advanceTimersByTime(100);
       listado.cambiarBusqueda('ab');
       vi.advanceTimersByTime(300);
     });
 
-    expect(llamadas).toBe(2); // 1 inicial + 1 por la búsqueda
+    expect(llamadas).toBe(1); // 'a' no consulta, 'ab' consulta una vez
     expect(consultaEnviada!.pagina).toBe(1);
     expect(consultaEnviada!.buscar).toBe('ab');
   });

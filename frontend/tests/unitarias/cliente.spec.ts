@@ -34,7 +34,7 @@ describe('ClienteRrhhHttp', () => {
 
   it('listar_ConUrlBase_UsaTokenUrlApi', () => {
     TestBed.configureTestingModule({
-      providers: [...proveedoresDePrueba(), { provide: URL_API, useValue: 'http://otra.api/api' }],
+      providers: [...proveedoresDePrueba(), { provide: URL_API, useValue: 'http://otra.api' }],
     });
 
     const cliente = TestBed.inject(CLIENTE_RRHH);
