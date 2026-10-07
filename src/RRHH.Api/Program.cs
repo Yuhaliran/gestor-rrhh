@@ -21,6 +21,14 @@ builder.Services.AddExceptionHandler<ManejadorExcepciones>();
 builder.Services.AddControllers()
     .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
+// CORS para el frontend Angular (CORS1): sólo los orígenes configurados; sin orígenes, ninguno
+var origenes = builder.Configuration.GetSection("Cors:OrigenesPermitidos").Get<string[]>() ?? [];
+builder.Services.AddCors(o => o.AddDefaultPolicy(p => p
+    .WithOrigins(origenes)
+    .WithMethods("GET", "POST", "PUT", "DELETE")
+    .WithHeaders("Content-Type")
+    .WithExposedHeaders("Location")));   // el frontend lee el Location de los 201
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
@@ -34,6 +42,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors();
 
 app.UseAuthorization();
 
