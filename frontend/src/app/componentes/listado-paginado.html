@@ -1,0 +1,27 @@
+<div class="barra">
+  <mat-form-field class="buscar" subscriptSizing="dynamic">
+    <mat-label>Buscar</mat-label>
+    <input matInput type="search" (input)="buscar($event)" />
+  </mat-form-field>
+  <p class="total" aria-live="polite">{{ textoTotal() }}</p>
+</div>
+
+@if (listado().cargando()) {
+  <mat-progress-bar mode="indeterminate" aria-label="Cargando" />
+}
+@if (mensajeError(); as mensaje) {
+  <p class="error" role="alert">{{ mensaje }}</p>
+}
+
+<div class="tabla-desplazable">
+  <ng-content />
+</div>
+
+<mat-paginator
+  [length]="listado().total()"
+  [pageIndex]="listado().pagina() - 1"
+  [pageSize]="listado().tamanio()"
+  [pageSizeOptions]="tamanios"
+  showFirstLastButtons
+  (page)="cambiarPagina($event)"
+/>

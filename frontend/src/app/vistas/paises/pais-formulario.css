@@ -1,0 +1,4 @@
+/* RF9: el código ISO se muestra en mayúsculas mientras se escribe */
+.mayusculas {
+  text-transform: uppercase;
+}
