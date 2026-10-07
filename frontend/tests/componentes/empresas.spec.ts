@@ -31,6 +31,14 @@ const otraMuni = {
   paisNombre: 'Guatemala',
 };
 
+const otroDepto = {
+  ...guatemalaDepto,
+  id: 2,
+  nombre: 'Sacatepéquez',
+  paisId: 1,
+  paisNombre: 'Guatemala',
+};
+
 describe('EmpresasListado', () => {
   it('listar_MuestraFilasConNombreNitYGeografia_YEnlacesY409AlEliminar', async () => {
     const user = userEvent.setup();
@@ -41,7 +49,9 @@ describe('EmpresasListado', () => {
 
     expect(await screen.findByText('Mi Empresa')).toBeTruthy();
     expect(screen.getByText('123456-7')).toBeTruthy();
-    expect(screen.getAllByText('Guatemala').length).toBeGreaterThanOrEqual(3);
+    expect(await screen.findByText('Antigua Guatemala')).toBeTruthy();
+    expect(screen.getByText('Sacatepéquez')).toBeTruthy();
+    expect(screen.getByText('Guatemala')).toBeTruthy();
 
     // Links
     const editar = screen.getByRole('link', { name: 'Editar' });
@@ -67,10 +77,17 @@ describe('EmpresaFormulario', () => {
     const user = userEvent.setup();
     await render(EmpresaFormulario, { providers: proveedoresDePrueba() });
     const api = TestBed.inject(HttpTestingController);
+    const router = TestBed.inject(Router);
+    vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
 
     api
       .expectOne((r) => r.url.endsWith('/api/paises') && r.params.get('tamanio') === '100')
-      .flush(paginaDe([guatemala]));
+      .flush(
+        paginaDe([
+          { ...guatemala, id: 1, nombre: 'Guatemala' },
+          { ...guatemala, id: 9, nombre: 'El Salvador' },
+        ]),
+      );
 
     // Departamento and Municipio disabled
     const deptoSelect = screen.getByLabelText('Departamento');
@@ -83,60 +100,127 @@ describe('EmpresaFormulario', () => {
       muniSelect.getAttribute('aria-disabled') === 'true' || muniSelect.hasAttribute('disabled'),
     ).toBeTruthy();
 
-    // Guardar sin elegir país
-    await user.click(screen.getByRole('button', { name: 'Guardar' }));
-
-    // VC1
-    const mensajes = await screen.findAllByText('Este campo es obligatorio.');
-    expect(mensajes.length).toBeGreaterThan(0);
-    api.expectNone((r) => r.method === 'POST');
-
-    // Elige país
-    await user.click(screen.getByLabelText('País'));
-    await user.click(await screen.findByRole('option', { name: 'Guatemala' }));
-    api.expectOne((r) => r.url.endsWith('/api/paises/1/departamentos')).flush([guatemalaDepto]);
-
-    // Elige depto
-    await user.click(screen.getByLabelText('Departamento'));
-    await user.click(await screen.findByRole('option', { name: 'Guatemala' }));
-    api.expectOne((r) => r.url.endsWith('/api/departamentos/1/municipios')).flush([guatemalaMuni]);
-
-    // Elige muni
-    await user.click(screen.getByLabelText('Municipio'));
-    await user.click(await screen.findByRole('option', { name: 'Guatemala' }));
-
-    // Llena los otros 5 datos
+    // Llena los otros 5 datos (valid format)
     await user.type(screen.getByLabelText('NIT'), '123456-7');
     await user.type(screen.getByLabelText('Razón social'), 'Mi Empresa S.A.');
     await user.type(screen.getByLabelText('Nombre comercial'), 'Mi Empresa');
     await user.type(screen.getByLabelText('Teléfono'), '12345678');
     await user.type(screen.getByLabelText('Correo'), 'info@miempresa.com');
 
+    // Guardar sin elegir país (VC1)
+    await user.click(screen.getByRole('button', { name: 'Guardar' }));
+    let mensajes = await screen.findAllByText('Este campo es obligatorio.');
+    expect(mensajes.length).toBe(1);
+    api.expectNone((r) => r.method === 'POST');
+
+    // Elige país
+    await user.click(screen.getByLabelText('País'));
+    await user.click(await screen.findByRole('option', { name: 'Guatemala' }));
+    api
+      .expectOne((r) => r.url.endsWith('/api/paises/1/departamentos'))
+      .flush([guatemalaDepto, otroDepto]);
+
+    // Guardar sin elegir depto (VC1)
+    await user.click(screen.getByRole('button', { name: 'Guardar' }));
+    mensajes = await screen.findAllByText('Este campo es obligatorio.');
+    expect(mensajes.length).toBe(1);
+    api.expectNone((r) => r.method === 'POST');
+
+    // Elige depto
+    await user.click(screen.getByLabelText('Departamento'));
+    await user.click(await screen.findByRole('option', { name: 'Guatemala' }));
+    api.expectOne((r) => r.url.endsWith('/api/departamentos/1/municipios')).flush([guatemalaMuni]);
+
+    // Guardar sin elegir muni (VC1)
+    await user.click(screen.getByRole('button', { name: 'Guardar' }));
+    mensajes = await screen.findAllByText('Este campo es obligatorio.');
+    expect(mensajes.length).toBe(1);
+    api.expectNone((r) => r.method === 'POST');
+
+    // Elige muni
+    await user.click(screen.getByLabelText('Municipio'));
+    await user.click(await screen.findByRole('option', { name: 'Guatemala' }));
+
     // Enviar y esperar error 400 en NIT
     await user.click(screen.getByRole('button', { name: 'Guardar' }));
     api
       .expectOne((r) => r.method === 'POST')
-      .flush(validacion({ nit: ['El NIT ya existe.'] }), {
+      .flush(validacion({ Nit: ['El NIT ya existe.'] }), {
         status: 400,
         statusText: 'Bad Request',
       });
 
     expect(await screen.findByText('El NIT ya existe.')).toBeTruthy();
 
+    // POST Exitoso para verificar body
+    await user.click(screen.getByRole('button', { name: 'Guardar' }));
+    const pedidoExito = api.expectOne((r) => r.method === 'POST');
+    expect(pedidoExito.request.body).toEqual({
+      municipioId: 1,
+      nit: '123456-7',
+      razonSocial: 'Mi Empresa S.A.',
+      nombreComercial: 'Mi Empresa',
+      telefono: '12345678',
+      correo: 'info@miempresa.com',
+    });
+    pedidoExito.flush(miEmpresa);
+
+    // RF4: Navega
+    expect(router.navigateByUrl).toHaveBeenCalledWith(
+      expect.objectContaining({ paths: ['empresas'] }),
+      expect.anything(),
+    );
+
+    // Cambiar departamento vacía municipio
+    await user.click(screen.getByLabelText('Departamento'));
+    await user.click(await screen.findByRole('option', { name: 'Sacatepéquez' }));
+    api.expectOne((r) => r.url.endsWith('/api/departamentos/2/municipios')).flush([]);
+
+    expect(muniSelect.textContent?.includes('Guatemala')).toBeFalsy();
+
     // Cambiar país vacía depto y muni
     await user.click(screen.getByLabelText('País'));
-    // Supongamos que reelegimos Guatemala para simular cambio
-    await user.click(await screen.findByRole('option', { name: 'Guatemala' }));
-    api.expectOne((r) => r.url.endsWith('/api/paises/1/departamentos')).flush([guatemalaDepto]);
+    await user.click(await screen.findByRole('option', { name: 'El Salvador' }));
+    api.expectOne((r) => r.url.endsWith('/api/paises/9/departamentos')).flush([]);
 
+    expect(deptoSelect.textContent?.includes('Sacatepéquez')).toBeFalsy();
+    expect(muniSelect.textContent?.includes('Guatemala')).toBeFalsy();
     expect(
-      screen.queryByText('Guatemala', {
-        selector: 'mat-select[formControlName="departamentoId"] *',
-      }),
-    ).toBeFalsy();
+      muniSelect.getAttribute('aria-disabled') === 'true' || muniSelect.hasAttribute('disabled'),
+    ).toBeTruthy();
   });
 
-  it('editar_IniciaCascadaYPaisDeshabilitado_GuardaConMunicipioNuevo_YError404', async () => {
+  it('crear_FormatosInvalidos_MuestraMensajeYNoLlamaApi', async () => {
+    const user = userEvent.setup();
+    await render(EmpresaFormulario, { providers: proveedoresDePrueba() });
+    const api = TestBed.inject(HttpTestingController);
+
+    api.expectOne((r) => r.url.endsWith('/api/paises')).flush(paginaDe([guatemala]));
+
+    const tel = screen.getByLabelText('Teléfono');
+    await user.type(tel, '12'); // Invalido VC3
+    const correo = screen.getByLabelText('Correo');
+    await user.type(correo, 'correo-invalido'); // Invalido VC3
+
+    await user.click(screen.getByRole('button', { name: 'Guardar' }));
+
+    const mensajes = await screen.findAllByText('El formato no es válido.');
+    expect(mensajes.length).toBeGreaterThanOrEqual(2);
+    api.expectNone((r) => r.method === 'POST');
+  });
+
+  it('crear_ErrorDeRed_MuestraRF8', async () => {
+    await render(EmpresaFormulario, { providers: proveedoresDePrueba() });
+    const api = TestBed.inject(HttpTestingController);
+
+    api
+      .expectOne((r) => r.url.endsWith('/api/paises'))
+      .error(new ProgressEvent('error'), { status: 0, statusText: 'Unknown Error' });
+
+    expect(await screen.findByText('No se pudo conectar con la API.')).toBeTruthy();
+  });
+
+  it('editar_IniciaCascadaYPaisDeshabilitado_GuardaConMunicipioNuevo', async () => {
     const user = userEvent.setup();
     await render(EmpresaFormulario, { inputs: { id: '1' }, providers: proveedoresDePrueba() });
     const api = TestBed.inject(HttpTestingController);
@@ -148,6 +232,7 @@ describe('EmpresaFormulario', () => {
     api
       .expectOne((r) => r.url.endsWith('/api/paises') && r.params.get('tamanio') === '100')
       .flush(paginaDe([guatemala]));
+    // Edit starts with cascada loaded
     api.expectOne((r) => r.url.endsWith('/api/paises/1/departamentos')).flush([guatemalaDepto]);
     api
       .expectOne((r) => r.url.endsWith('/api/departamentos/1/municipios'))
@@ -158,16 +243,16 @@ describe('EmpresaFormulario', () => {
       paisSelect.getAttribute('aria-disabled') === 'true' || paisSelect.hasAttribute('disabled'),
     ).toBeTruthy();
 
+    // Verify all three names are visible in edit
+    expect(await screen.findByText('Antigua Guatemala')).toBeTruthy();
+    expect(screen.getByText('Sacatepéquez')).toBeTruthy();
+    expect(screen.getAllByText('Guatemala').length).toBeGreaterThanOrEqual(1);
+
     const deptoSelect = screen.getByLabelText('Departamento');
-    expect(
-      deptoSelect.getAttribute('aria-disabled') === 'false' ||
-        !deptoSelect.hasAttribute('disabled'),
-    ).toBeTruthy();
+    expect(deptoSelect.getAttribute('aria-disabled') === 'false').toBeTruthy();
 
     const muniSelect = screen.getByLabelText('Municipio');
-    expect(
-      muniSelect.getAttribute('aria-disabled') === 'false' || !muniSelect.hasAttribute('disabled'),
-    ).toBeTruthy();
+    expect(muniSelect.getAttribute('aria-disabled') === 'false').toBeTruthy();
 
     // Cambia muni
     await user.click(muniSelect);
@@ -193,7 +278,7 @@ describe('EmpresaFormulario', () => {
 });
 
 describe('EmpresaColaboradores', () => {
-  it('listar_MuestraTitulo_FilasConDatosDeLaEmpresa_EnlacesYError404', async () => {
+  it('listar_MuestraTitulo_FilasConDatosDeLaEmpresa_Enlaces', async () => {
     await render(EmpresaColaboradores, { inputs: { id: '1' }, providers: proveedoresDePrueba() });
     const api = TestBed.inject(HttpTestingController);
 
@@ -217,9 +302,9 @@ describe('EmpresaColaboradores', () => {
     expect(screen.queryByText('01/01/2022')).toBeFalsy();
     expect(screen.queryByText('Consultor')).toBeFalsy();
 
-    // Enlaces
+    // Enlaces: id de colaboradorConDosEmpresas is 5
     const verDetalle = screen.getByRole('link', { name: 'Ver detalle' });
-    expect(verDetalle.getAttribute('href')).toBe('/colaboradores/1');
+    expect(verDetalle.getAttribute('href')).toBe('/colaboradores/5');
 
     const volver = screen.getByRole('link', { name: 'Volver al listado' });
     expect(volver.getAttribute('href')).toBe('/empresas');

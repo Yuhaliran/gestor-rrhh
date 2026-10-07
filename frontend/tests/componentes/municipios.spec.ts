@@ -72,14 +72,26 @@ describe('MunicipioFormulario', () => {
       .expectOne((r) => r.url.endsWith('/api/paises') && r.params.get('tamanio') === '100')
       .flush(paginaDe([guatemala]));
 
+    // Fill name but no country
+    await user.type(screen.getByLabelText('Nombre'), 'Flores');
+
     const botonGuardar = await screen.findByRole('button', { name: 'Guardar' });
     await user.click(botonGuardar);
 
     const mensajes = await screen.findAllByText('Este campo es obligatorio.');
-    expect(mensajes.length).toBeGreaterThan(0);
+    expect(mensajes.length).toBe(1);
     api.expectNone((r) => r.method === 'POST');
+  });
 
-    api.verify();
+  it('crear_ErrorDeRed_MuestraRF8', async () => {
+    await render(MunicipioFormulario, { providers: proveedoresDePrueba() });
+    const api = TestBed.inject(HttpTestingController);
+
+    api
+      .expectOne((r) => r.url.endsWith('/api/paises'))
+      .error(new ProgressEvent('error'), { status: 0, statusText: 'Unknown Error' });
+
+    expect(await screen.findByText('No se pudo conectar con la API.')).toBeTruthy();
   });
 
   it('crear_AltaEnCascada_ElegirPaisYDepto_HacePostConDepartamentoIdYNombre', async () => {

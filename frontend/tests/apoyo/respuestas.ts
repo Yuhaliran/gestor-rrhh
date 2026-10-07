@@ -82,15 +82,15 @@ export const miEmpresa: EmpresaDto = {
   telefono: '12345678',
   correo: 'info@miempresa.com',
   municipioId: 1,
-  municipioNombre: 'Guatemala',
-  departamentoId: 1,
-  departamentoNombre: 'Guatemala',
+  municipioNombre: 'Antigua Guatemala',
+  departamentoId: 2,
+  departamentoNombre: 'Sacatepéquez',
   paisId: 1,
   paisNombre: 'Guatemala',
 };
 
 export const colaboradorConDosEmpresas: ColaboradorDto = {
-  id: 1,
+  id: 5,
   nombreCompleto: 'Juan Pérez',
   fechaNacimiento: '1990-01-01',
   edad: 34,
@@ -98,20 +98,20 @@ export const colaboradorConDosEmpresas: ColaboradorDto = {
   correo: 'juan@example.com',
   empresas: [
     {
-      empresaId: 1,
-      nombreComercial: 'Mi Empresa',
-      paisId: 1,
-      paisNombre: 'Guatemala',
-      fechaIngreso: '2020-01-01',
-      puesto: 'Desarrollador',
-    },
-    {
       empresaId: 2,
       nombreComercial: 'Otra Empresa',
       paisId: 1,
       paisNombre: 'Guatemala',
       fechaIngreso: '2022-01-01',
       puesto: 'Consultor',
+    },
+    {
+      empresaId: 1,
+      nombreComercial: 'Mi Empresa',
+      paisId: 1,
+      paisNombre: 'Guatemala',
+      fechaIngreso: '2020-01-01',
+      puesto: 'Desarrollador',
     },
   ],
 };
