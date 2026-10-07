@@ -27,7 +27,7 @@ describe('DepartamentosListado', () => {
 
     expect(await screen.findByText('Petén')).toBeTruthy();
     expect(screen.getByText('Guatemala')).toBeTruthy();
-    expect(screen.getByText('1 registros')).toBeTruthy();
+    expect(screen.getByText('1 registro')).toBeTruthy();
   });
 
   it('eliminar_ConConflicto_MuestraElDetalle', async () => {
@@ -97,7 +97,7 @@ describe('DepartamentoFormulario', () => {
     expect(
       paisSelect.getAttribute('aria-disabled') === 'true' || paisSelect.hasAttribute('disabled'),
     ).toBeTruthy();
-    expect(screen.getByText('Guatemala')).toBeTruthy();
+    expect(await screen.findByText('Guatemala')).toBeTruthy();
   });
 
   it('editar_Guardar_EnviaPutConElMismoPaisId', async () => {
