@@ -16,9 +16,11 @@ no sólo que funcione.
 - Codificación:    `docs/CODIFICACION.md` (convenciones y patrón de referencia; seguirlo en todas las entidades)
 - Prompts:         `docs/PROMPTS.md` (mensajes para cada paso del ciclo)
 - Errores:         `docs/ERRORES_RECURRENTES.md` (errores ya resueltos y cómo evitarlos; leer antes de cada tarea)
+- Frontend:        `docs/frontend/` (especificación, plan, plan de pruebas y tareas del frontend Angular)
 
 ## Tecnologías
-.NET 10 · ASP.NET Core (API + Razor Pages) · Entity Framework Core · SQL Server · xUnit · Git · Postman
+.NET 10 · ASP.NET Core (API + Razor Pages) · Entity Framework Core · SQL Server · xUnit · Git · Postman ·
+Angular (frontend paralelo, `docs/frontend/PLAN.md`)
 
 ## Estructura
 ```
@@ -33,6 +35,7 @@ tests/
   RRHH.UnitTests/
   RRHH.IntegrationTests/
   RRHH.ArchitectureTests/
+frontend/               frontend Angular paralelo; consume la API por HTTP (docs/frontend/PLAN.md)
 postman/
 docs/
 ```
@@ -48,6 +51,8 @@ docs/
 - Aplicar migraciones: `dotnet ef database update -p src/RRHH.Infrastructure -s src/RRHH.Api`
 - Correr la API:       `dotnet run --project src/RRHH.Api`
 - Correr la web:       `dotnet run --project src/RRHH.Web`
+- Frontend Angular (en `frontend/`): `npm ci`, `npm start` (http://localhost:4200), `npm test`,
+  `npm run lint`, `npm run format:check` y `npm run build` (los cuatro últimos, antes de cada commit)
 
 ## Convenciones
 - Arquitectura limpia liviana: Domain no referencia a nadie; Api y Web no acceden al DbContext directamente.
@@ -69,8 +74,9 @@ docs/
 
 ## Roles
 Este proyecto separa roles entre agentes de distintos modelos (ver `docs/AGENTES.md`):
-- Implementador: sólo modifica `src/`.
-- Tester: sólo modifica `tests/`, `postman/` y la tabla de trazabilidad de `docs/PLAN_PRUEBAS.md`.
+- Implementador: sólo modifica `src/` y `frontend/`, salvo `frontend/tests/`.
+- Tester: sólo modifica `tests/`, `postman/`, `frontend/tests/` y las tablas de trazabilidad de
+  `docs/PLAN_PRUEBAS.md` y `docs/frontend/PLAN_PRUEBAS.md`.
 - Revisor: no modifica nada.
 - Implementador y tester pueden agregar entradas a `docs/ERRORES_RECURRENTES.md`.
 

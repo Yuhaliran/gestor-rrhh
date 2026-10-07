@@ -8,7 +8,7 @@
 // sólo puede ejecutar comandos de lectura, con aprobación. El tester ejecuta sin preguntar los
 // comandos de cada tarea, no puede usar los que ya causaron problemas (scripts que editan
 // archivos, PowerShell que escribe, borrar) y para el resto pregunta: así las aprobaciones que
-// quedan son las que importan.
+// quedan son las que importan. De npm, sólo los scripts del frontend (frontend/package.json).
 //
 // Entrada (stdin):  { "toolCall": { "name": "...", "args": { ... } }, "artifactDirectoryPath": "...", ... }
 // Salida (stdout):  { "decision": "allow" | "ask" | "deny", "reason": "..." }
@@ -27,10 +27,17 @@ const HERRAMIENTAS_LECTURA = new Set(['view_file', 'list_dir', 'find_by_name', '
 const HERRAMIENTAS_SUBAGENTES = new Set(['invoke_subagent', 'define_subagent', 'send_message', 'manage_subagents']);
 
 // Lo único que el tester puede modificar (docs/agentes/tester.md). Las carpetas terminan en "/".
-const ESCRITURA_TESTER = ['tests/', 'postman/', 'docs/PLAN_PRUEBAS.md', 'docs/ERRORES_RECURRENTES.md'];
+const ESCRITURA_TESTER = [
+  'tests/', 'postman/', 'docs/PLAN_PRUEBAS.md', 'docs/ERRORES_RECURRENTES.md',
+  'frontend/tests/', 'docs/frontend/PLAN_PRUEBAS.md',
+];
 
-// Implementación que el tester no lee: sus pruebas son de caja negra.
-const LECTURA_PROHIBIDA_TESTER = ['src/RRHH.Application/Servicios/', 'src/RRHH.Infrastructure/'];
+// Implementación que el tester no lee: sus pruebas son de caja negra. Del frontend lee
+// contratos/, app.routes.ts y app.config.ts (docs/frontend/PLAN.md, «Agentes»).
+const LECTURA_PROHIBIDA_TESTER = [
+  'src/RRHH.Application/Servicios/', 'src/RRHH.Infrastructure/',
+  'frontend/src/app/api/', 'frontend/src/app/servicios/', 'frontend/src/app/vistas/', 'frontend/src/app/componentes/',
+];
 
 // Campos de texto libre que agy agrega a las herramientas: describen la acción, no son rutas.
 const CAMPOS_DESCRIPTIVOS = new Set(['toolAction', 'toolSummary']);
@@ -72,6 +79,14 @@ const INTERPRETES = new Set([
   'wsl', 'deno', 'bun', 'wscript', 'cscript',
 ]);
 const VALIDAR_JSON = /^node(?:\.exe)?\s+-e\s+"JSON\.parse\(require\('fs'\)\.readFileSync\('([^'"]+)'\s*,\s*'utf-?8'\)\)\s*;?"$/i;
+// npm, sólo para los scripts de frontend/package.json, que el tester no puede modificar.
+// Cualquier otro uso de npm (o npx) sigue bloqueado.
+const NPM_LECTURA = new Set(['test', 'run lint', 'run build', 'run format:check']);
+const NPM_TESTER = new Set([...NPM_LECTURA, 'run format:pruebas']);   // formatea sólo frontend/tests/
+const NPM_INSTALACION = new Set(['ci', 'install']);                   // sin argumentos: lo de package-lock.json
+const MOTIVO_NPM = 'De npm, el tester sólo corre los scripts del frontend, en frontend/ (o con --prefix frontend): '
+  + 'npm test, npm run lint, npm run build, npm run format:check, npm run format:pruebas y '
+  + 'npm test -- --include <ruta de frontend/tests/>. npm ci y npm install, con aprobación.';
 const BORRAR = new Set(['del', 'erase', 'rm', 'rmdir', 'rd', 'remove-item', 'ri', 'unlink']);
 // Git que no muestra el contenido de los archivos
 const GIT_RESUMEN_TESTER = new Set([
@@ -80,7 +95,9 @@ const GIT_RESUMEN_TESTER = new Set([
 // Opciones de diff y show que no muestran el contenido, o muestran sólo lo que el tester preparó
 const DIFF_RESUMIDO = new Set(['--stat', '--shortstat', '--name-only', '--name-status', '--cached', '--staged']);
 // Lo que el tester puede ver completo en un diff: lo suyo y el contrato
-const DIFF_PERMITIDO_TESTER = [...ESCRITURA_TESTER, 'docs/', 'src/RRHH.Contratos/', 'src/RRHH.Application/Interfaces/'];
+const DIFF_PERMITIDO_TESTER = [
+  ...ESCRITURA_TESTER, 'docs/', 'src/RRHH.Contratos/', 'src/RRHH.Application/Interfaces/', 'frontend/src/app/contratos/',
+];
 // git commit que tomaría cambios ajenos o saltearía verificaciones (-a, --amend, -n)
 const COMMIT_PROHIBIDO = /^(--all|--amend|--no-verify|-[^-]*[an][^-]*)$/;
 const ADD_PROHIBIDO = new Set(['-A', '--all', '-u', '--update', '-f', '--force', '.', '*', ':/']);
@@ -120,8 +137,9 @@ function cubre(lista, ruta) {
 function motivoEscritura(ruta) {
   if (rol === 'revisor') return 'El revisor no modifica archivos: sólo informa hallazgos (docs/agentes/revisor.md).';
   if (rol !== 'tester') return `RRHH_ROL="${rol}" no es un rol válido (tester o revisor): se bloquea toda escritura.`;
-  return `El tester sólo modifica tests/, postman/, docs/PLAN_PRUEBAS.md y docs/ERRORES_RECURRENTES.md `
-    + `(docs/agentes/tester.md); "${ruta || '.'}" no está permitido.`;
+  return `El tester sólo modifica tests/, postman/, frontend/tests/, docs/PLAN_PRUEBAS.md, `
+    + `docs/frontend/PLAN_PRUEBAS.md y docs/ERRORES_RECURRENTES.md (docs/agentes/tester.md); `
+    + `"${ruta || '.'}" no está permitido.`;
 }
 
 function decidirEscritura(args, artefactos) {
@@ -206,7 +224,8 @@ function dotnetDeLectura([subcomando, ...resto]) {
   return false;
 }
 
-function comandoDeLectura(segmento) {
+function comandoDeLectura(segmento, cwd) {
+  if (esNpm(segmento)) return npmDelFrontend(palabras(segmento).slice(1), cwd, NPM_LECTURA) === 'permite';
   const [programa = '', ...args] = palabras(segmento);
   const nombre = programa.toLowerCase().replace(/\.exe$/, '');
   if (nombre === 'git') return gitDeLectura(args);
@@ -215,12 +234,12 @@ function comandoDeLectura(segmento) {
 }
 
 // Motivo por el que el comando no es de sólo lectura, o null si lo es.
-function motivoComandoNoLectura(linea) {
+function motivoComandoNoLectura(linea, cwd) {
   const sinComillas = linea.replace(/"[^"]*"|'[^']*'/g, '""');
   const redireccion = [...sinComillas.matchAll(REDIRECCION)].find((m) => !DESTINO_INOFENSIVO.test(m[1]));
   if (redireccion) return `redirige la salida a «${redireccion[1]}»`;
   if (ESCRITURA_EN_COMANDO.test(linea)) return 'usa un comando que escribe archivos o ejecuta código';
-  const noPermitido = segmentos(linea).find((s) => !comandoDeLectura(s));
+  const noPermitido = segmentos(linea).find((s) => !comandoDeLectura(s, cwd));
   return noPermitido === undefined ? null : `«${noPermitido}» no está entre los comandos de lectura`;
 }
 
@@ -239,6 +258,42 @@ const todasEn = (lista, rutas, cwd) =>
     const ruta = rutaDelRepositorio(r, cwd);
     return ruta !== null && cubre(lista, ruta);
   });
+
+// npm por su nombre, sin ruta: una ruta podría apuntar a un npm.cmd escrito por el tester.
+const esNpm = (segmento) => /^npm(\.cmd)?$/i.test(palabras(segmento)[0] ?? '');
+
+// npm en frontend/ (con la terminal ahí o con --prefix frontend): "permite" si es uno de los
+// scripts, "pregunta" si instala lo que fija package-lock.json, null si es cualquier otra cosa.
+function npmDelFrontend(args, cwd, scripts) {
+  const base = typeof cwd === 'string' && cwd !== '' ? path.resolve(raiz, cwd) : raiz;
+  // Desde una carpeta del tester, cmd.exe tomaría primero un npm.cmd que él haya escrito ahí
+  if (cubre(ESCRITURA_TESTER, dentroDe(raiz, base) ?? '')) return null;
+  let carpeta = base;
+  // 2>&1 o > $null no forman parte del script; una redirección a un archivo se bloquea aparte
+  let resto = args.filter((a) => !/^(\d|\*)?>>?(&\d|\$null|nul)$/i.test(a));
+  if (resto[0] === '--prefix' && resto.length > 1) {
+    carpeta = path.resolve(base, resto[1]);
+    resto = resto.slice(2);
+  }
+  const relativa = dentroDe(raiz, carpeta);
+  if (relativa === null || (enWindows ? relativa.toLowerCase() : relativa) !== 'frontend') return null;
+
+  const separador = resto.indexOf('--');
+  const comando = (separador === -1 ? resto : resto.slice(0, separador)).join(' ');
+  const extra = separador === -1 ? [] : resto.slice(separador + 1);
+  if (extra.length === 0) {
+    if (scripts.has(comando)) return 'permite';
+    return NPM_INSTALACION.has(comando) && scripts === NPM_TESTER ? 'pregunta' : null;
+  }
+  // npm test -- --include <ruta>: ng test toma las rutas desde frontend/src; sólo pruebas del tester
+  if (comando !== 'test' || !scripts.has('test')) return null;
+  const rutas = [];
+  for (let i = 0; i < extra.length; i += 2) {
+    if (extra[i] !== '--include' || extra[i + 1] === undefined) return null;
+    rutas.push(extra[i + 1]);
+  }
+  return todasEn(['frontend/tests/'], rutas, path.join(carpeta, 'src')) ? 'permite' : null;
+}
 
 // git diff, show o log -p: sin preguntar si es un resumen, o si todas las rutas son del tester o
 // del contrato (hace falta al menos una: sin rutas mostraría también la implementación).
@@ -297,6 +352,7 @@ function permitidoAlTester(segmento, cwd) {
   if (VALIDAR_JSON.test(segmento)) {
     return todasEn(ESCRITURA_TESTER, [segmento.match(VALIDAR_JSON)[1]], cwd);
   }
+  if (esNpm(segmento)) return npmDelFrontend(palabras(segmento).slice(1), cwd, NPM_TESTER) === 'permite';
   const [programa = '', ...args] = palabras(segmento);
   const nombre = programa.toLowerCase().replace(/\.exe$/, '');
   if (nombre === 'git') return gitDelTester(args, cwd);
@@ -304,11 +360,12 @@ function permitidoAlTester(segmento, cwd) {
   return TERMINAL_LECTURA.has(nombre);
 }
 
-// Programa de un segmento, también detrás de los operadores de llamada de PowerShell (& y .)
+// Programa de un segmento, también detrás de los operadores de llamada de PowerShell (& y .).
+// Sin extensión: npm.cmd o node.bat no esquivan la lista de intérpretes.
 function programaDe(segmento) {
   const [primera = '', segunda = ''] = palabras(segmento);
   const programa = primera === '&' || primera === '.' ? segunda : primera;
-  return path.basename(programa.replace(/\\/g, '/')).toLowerCase().replace(/\.exe$/, '');
+  return path.basename(programa.replace(/\\/g, '/')).toLowerCase().replace(/\.(exe|cmd|bat)$/, '');
 }
 
 function decidirComandoTester(linea, cwd) {
@@ -319,6 +376,10 @@ function decidirComandoTester(linea, cwd) {
       + '(docs/agentes/tester.md). Si el contrato no define algo, pedilo.');
   }
   for (const segmento of segmentos(linea)) {
+    if (esNpm(segmento)) {
+      if (npmDelFrontend(palabras(segmento).slice(1), cwd, NPM_TESTER) === null) return niega(MOTIVO_NPM);
+      continue;
+    }
     const programa = programaDe(segmento);
     if (INTERPRETES.has(programa) && !VALIDAR_JSON.test(segmento)) {
       return niega('El tester no ejecuta scripts (node -e, python -c, código en base64…): con ellos se editaron '
@@ -340,7 +401,7 @@ function decidirComando(args) {
   const linea = String(args.CommandLine ?? '');
   if (GIT_PUSH.test(linea)) return niega('git push lo hace sólo el responsable (AGENTS.md, «No hacer»).');
   if (rol === 'tester') return decidirComandoTester(linea, args.Cwd);
-  const motivo = motivoComandoNoLectura(linea);
+  const motivo = motivoComandoNoLectura(linea, args.Cwd);
   return motivo === null
     ? pregunta
     : niega(`${rol === 'revisor' ? 'El revisor' : `El rol «${rol}»`} sólo usa comandos de lectura (docs/agentes/revisor.md): ${motivo}. `

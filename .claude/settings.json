@@ -4,6 +4,7 @@
     "deny": [
       "Edit(/tests/**)",
       "Edit(/postman/**)",
+      "Edit(/frontend/tests/**)",
       "Read(./.env)",
       "Bash(git push *)",
       "PowerShell(git push *)"

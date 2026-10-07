@@ -21,6 +21,11 @@ indent_size = 2
 [*.json]
 indent_size = 2
 
+# Frontend Angular (docs/frontend/PLAN.md, «Tecnologías»); Prettier lee esta sección
+[*.{ts,html,css,js,mjs}]
+indent_size = 2
+quote_type = single
+
 # C# files
 [*.cs]
 
