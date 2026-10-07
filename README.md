@@ -157,6 +157,7 @@ requisitos».
 | `PROMPTS.md` | Los mensajes que se usaron con los agentes en cada paso del ciclo |
 | `ERRORES_RECURRENTES.md` | Los problemas encontrados durante el desarrollo (de herramientas, de las pruebas y de los agentes), su causa y cómo evitarlos |
 | `ENTORNO.md` | Instalación del entorno en Windows, paso a paso, incluidos los agentes |
+| `frontend/` | **El frontend Angular paralelo.** Su especificación, plan técnico, plan de pruebas y tareas (fases 9 a 12), con la misma arquitectura y el mismo modelo en V del backend |
 
 ### Configuración
 | Archivo | Qué contiene |
