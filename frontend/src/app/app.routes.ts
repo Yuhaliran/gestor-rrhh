@@ -1,5 +1,8 @@
 import { Routes } from '@angular/router';
 
+import { ColaboradorAlta } from './vistas/colaboradores/colaborador-alta';
+import { ColaboradorEditar } from './vistas/colaboradores/colaborador-editar';
+import { ColaboradoresListado } from './vistas/colaboradores/colaboradores-listado';
 import { DepartamentoFormulario } from './vistas/departamentos/departamento-formulario';
 import { DepartamentosListado } from './vistas/departamentos/departamentos-listado';
 import { EmpresaColaboradores } from './vistas/empresas/empresa-colaboradores';
@@ -42,9 +45,9 @@ export const routes: Routes = [
     title: 'Colaboradores de la empresa',
   },
 
-  { path: 'colaboradores', component: Pendiente, title: 'Colaboradores' },
-  { path: 'colaboradores/nuevo', component: Pendiente, title: 'Nuevo colaborador' },
-  { path: 'colaboradores/:id/editar', component: Pendiente, title: 'Editar colaborador' },
+  { path: 'colaboradores', component: ColaboradoresListado, title: 'Colaboradores' },
+  { path: 'colaboradores/nuevo', component: ColaboradorAlta, title: 'Nuevo colaborador' },
+  { path: 'colaboradores/:id/editar', component: ColaboradorEditar, title: 'Editar colaborador' },
   { path: 'colaboradores/:id', component: Pendiente, title: 'Detalle del colaborador' },
 
   { path: '**', redirectTo: '' },

@@ -183,6 +183,16 @@ es cambiar la especificación.
   `/colaboradores/:id`); enlace «Volver al listado» (a `/empresas`). Búsqueda, total y paginador
   como en los demás listados (RF2). Si la empresa no existe, la pantalla de RF7.
 - Edad (RF13 a RF15): «N años» («1 año»), tal como la devuelve la API (RN7).
+- Listado de colaboradores (RF13): por fila, nombre completo, correo, edad y empresas (sus nombres
+  comerciales separados por «, »).
+- Alta de colaborador (RF13): títulos «Nuevo colaborador» y, al editar, «Editar colaborador».
+  Después de los datos personales, la sección «Empresas»: cada fila es un grupo (rol `group`)
+  llamado «Empresa 1», «Empresa 2», etc., con los campos «Empresa» (lista con el nombre
+  comercial), «Fecha de ingreso» y «Puesto (opcional)» (esa es la etiqueta) y el botón «Quitar».
+  Empieza con una fila; «Agregar empresa» agrega una vacía al final; con una sola fila, «Quitar»
+  está deshabilitado (RN3, como en RF14). Editar muestra sólo los cuatro datos personales. El
+  alta y la edición vuelven a `/colaboradores` (RF4).
+- Fechas (VC5): los campos de fecha tienen como máximo la fecha de hoy (atributo `max`).
 
 **Enlaces y botones.** Lo que navega es un enlace (rol `link`): «Nuevo», «Editar» de los listados,
 «Cancelar» de los formularios, «Colaboradores», «Ver detalle», «Editar datos» y «Volver al
