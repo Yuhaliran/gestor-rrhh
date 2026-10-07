@@ -1,4 +1,11 @@
-import { Pagina, PaisDto, DepartamentoDto, MunicipioDto } from '../../src/app/contratos/dtos';
+import {
+  Pagina,
+  PaisDto,
+  DepartamentoDto,
+  MunicipioDto,
+  EmpresaDto,
+  ColaboradorDto,
+} from '../../src/app/contratos/dtos';
 import { ProblemDetails } from '../../src/app/contratos/errores';
 
 export function paginaDe<T>(elementos: T[]): Pagina<T> {
@@ -65,4 +72,46 @@ export const guatemalaMuni: MunicipioDto = {
   departamentoNombre: 'Guatemala',
   paisId: 1,
   paisNombre: 'Guatemala',
+};
+
+export const miEmpresa: EmpresaDto = {
+  id: 1,
+  nit: '123456-7',
+  razonSocial: 'Mi Empresa S.A.',
+  nombreComercial: 'Mi Empresa',
+  telefono: '12345678',
+  correo: 'info@miempresa.com',
+  municipioId: 1,
+  municipioNombre: 'Guatemala',
+  departamentoId: 1,
+  departamentoNombre: 'Guatemala',
+  paisId: 1,
+  paisNombre: 'Guatemala',
+};
+
+export const colaboradorConDosEmpresas: ColaboradorDto = {
+  id: 1,
+  nombreCompleto: 'Juan Pérez',
+  fechaNacimiento: '1990-01-01',
+  edad: 34,
+  telefono: '12345678',
+  correo: 'juan@example.com',
+  empresas: [
+    {
+      empresaId: 1,
+      nombreComercial: 'Mi Empresa',
+      paisId: 1,
+      paisNombre: 'Guatemala',
+      fechaIngreso: '2020-01-01',
+      puesto: 'Desarrollador',
+    },
+    {
+      empresaId: 2,
+      nombreComercial: 'Otra Empresa',
+      paisId: 1,
+      paisNombre: 'Guatemala',
+      fechaIngreso: '2022-01-01',
+      puesto: 'Consultor',
+    },
+  ],
 };

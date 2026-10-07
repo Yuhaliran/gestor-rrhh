@@ -63,6 +63,25 @@ describe('MunicipiosListado', () => {
 });
 
 describe('MunicipioFormulario', () => {
+  it('crear_CampoObligatorioVacio_MuestraMensajeYNoLlamaApi', async () => {
+    const user = userEvent.setup();
+    await render(MunicipioFormulario, { providers: proveedoresDePrueba() });
+    const api = TestBed.inject(HttpTestingController);
+
+    api
+      .expectOne((r) => r.url.endsWith('/api/paises') && r.params.get('tamanio') === '100')
+      .flush(paginaDe([guatemala]));
+
+    const botonGuardar = await screen.findByRole('button', { name: 'Guardar' });
+    await user.click(botonGuardar);
+
+    const mensajes = await screen.findAllByText('Este campo es obligatorio.');
+    expect(mensajes.length).toBeGreaterThan(0);
+    api.expectNone((r) => r.method === 'POST');
+
+    api.verify();
+  });
+
   it('crear_AltaEnCascada_ElegirPaisYDepto_HacePostConDepartamentoIdYNombre', async () => {
     const user = userEvent.setup();
     await render(MunicipioFormulario, { providers: proveedoresDePrueba() });
