@@ -65,7 +65,6 @@ export class MunicipioFormulario implements OnInit {
   private readonly cascada = signal<Cascada | null>(null);
   private readonly padres = signal<{ pais: Opcion; departamento: Opcion } | null>(null);
 
-  protected readonly edicion = computed(() => Number(this.id()) > 0);
   protected readonly paises = computed<Opcion[]>(() => {
     const padres = this.padres();
     return padres ? [padres.pais] : (this.cascada()?.paises() ?? []);
@@ -74,18 +73,25 @@ export class MunicipioFormulario implements OnInit {
     const padres = this.padres();
     return padres ? [padres.departamento] : (this.cascada()?.departamentos() ?? []);
   });
-  protected readonly paisElegido = computed(
-    () => this.padres()?.pais.id ?? this.cascada()?.seleccion().paisId ?? null,
-  );
+  // RF8: una lista de la cascada que no se pudo cargar
+  protected readonly errorCascada = computed(() => {
+    const error = this.cascada()?.error();
+    return error ? mensajeDeError(error) : null;
+  });
 
+  // El país sólo elige los departamentos: no viaja a la API. Es un control obligatorio para que
+  // VC1 lo exija mientras el departamento está deshabilitado; un control deshabilitado no se
+  // valida (E-022).
   protected readonly grupo = inject(NonNullableFormBuilder).group({
-    departamentoId: [null as number | null, Validators.required],
+    paisId: [null as number | null, Validators.required],
+    departamentoId: [{ value: null as number | null, disabled: true }, Validators.required],
     nombre: ['', [Validators.required, Validators.maxLength(100)]],
   });
 
   protected readonly formulario = crearFormulario(
     this.grupo,
-    (datos: GuardarMunicipioDto) => {
+    ({ departamentoId, nombre }: GuardarMunicipioDto) => {
+      const datos = { departamentoId, nombre };
       const id = Number(this.id());
       return id
         ? this.cliente.municipios.actualizar(id, datos)
@@ -95,9 +101,6 @@ export class MunicipioFormulario implements OnInit {
   );
 
   ngOnInit(): void {
-    // El departamento se habilita al elegir el país (alta) o queda fijo (edición, RN8)
-    this.grupo.controls.departamentoId.disable();
-
     const id = Number(this.id());
     if (!id) {
       // La cascada se crea acá, cuando ya se sabe que es un alta: al editar no hace falta
@@ -105,6 +108,8 @@ export class MunicipioFormulario implements OnInit {
       return;
     }
 
+    // RN8: país y departamento se muestran, pero no se pueden cambiar
+    this.grupo.controls.paisId.disable();
     this.cliente.municipios
       .obtener(id)
       .pipe(takeUntilDestroyed(this.destruccion))
@@ -124,15 +129,11 @@ export class MunicipioFormulario implements OnInit {
       });
   }
 
-  // RN6: cambiar el país vacía el departamento y carga los de ese país
-  protected elegirPais(paisId: number | null): void {
+  // RN6: cambiar el país vacía el departamento, carga los de ese país y lo habilita
+  protected elegirPais(paisId: number): void {
     this.cascada()?.elegirPais(paisId);
     const departamento = this.grupo.controls.departamentoId;
     departamento.reset(null);
-    if (paisId === null) {
-      departamento.disable();
-    } else {
-      departamento.enable();
-    }
+    departamento.enable();
   }
 }
