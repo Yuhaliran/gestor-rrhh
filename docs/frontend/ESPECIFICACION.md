@@ -178,6 +178,8 @@ es cambiar la especificación.
   se elige su padre. Guardar sin elegir un nivel de la cascada muestra «Este campo es
   obligatorio.» debajo del primero sin valor (VC1) y no llama a la API, aunque el país y el
   departamento no viajen a la API.
+- NIT de la empresa (RF12): se muestra en mayúsculas mientras se escribe, como en `RRHH.Web`; la
+  API lo guarda en mayúsculas.
 - Colaboradores de una empresa (RF15): título «Colaboradores de» y el nombre comercial; por fila,
   nombre completo, edad, fecha de ingreso en esa empresa, puesto y el enlace «Ver detalle» (a
   `/colaboradores/:id`); enlace «Volver al listado» (a `/empresas`). Búsqueda, total y paginador
