@@ -1,0 +1,15 @@
+/* RF13: las empresas del alta, un grupo por fila */
+.empresas,
+.fila-empresa {
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  margin: 0 0 1rem;
+  padding: 0.5rem 1rem 1rem;
+}
+
+.empresas > button,
+.fila-empresa > button {
+  align-self: flex-start;
+}
