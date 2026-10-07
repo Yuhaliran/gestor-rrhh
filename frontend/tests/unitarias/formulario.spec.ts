@@ -205,4 +205,20 @@ describe('Formulario', () => {
       expect(avisos.exito).toHaveBeenCalledWith('Se guardó correctamente.');
     });
   });
+  it('enviar_ConAlGuardar_LlamaAAlGuardarYNoNavega', () => {
+    const grupo = new FormGroup({ nombre: new FormControl('A') });
+    let alGuardarLlamadoCon: any;
+
+    TestBed.runInInjectionContext(() => {
+      const formulario = crearFormulario(grupo, () => of({ id: 1, nombre: 'A' }), {
+        alGuardar: (respuesta) => {
+          alGuardarLlamadoCon = respuesta;
+        },
+      });
+      formulario.enviar();
+    });
+
+    expect(alGuardarLlamadoCon).toEqual({ id: 1, nombre: 'A' });
+    expect(router.navigateByUrl).not.toHaveBeenCalled();
+  });
 });
