@@ -9,7 +9,8 @@
     "test": "ng test --watch=false",
     "lint": "ng lint",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "format:pruebas": "prettier --write tests"
   },
   "private": true,
   "packageManager": "npm@11.17.0",
