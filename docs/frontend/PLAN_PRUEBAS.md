@@ -33,7 +33,7 @@ la implementación. En el frontend eso se logra así:
 |---|---|---|---|
 | Unitarias | `frontend/tests/unitarias/` | Vitest (`ng test`); `HttpTestingController` o cliente falso | Nada |
 | Componentes | `frontend/tests/componentes/` | Vitest, @testing-library/angular, @testing-library/user-event, `HttpTestingController`, jsdom | Nada |
-| Arquitectura | `frontend/eslint.config.js` | ESLint (`import/no-restricted-paths`, `no-restricted-imports`, `no-restricted-globals`) | Nada |
+| Arquitectura | `frontend/eslint.config.js` | ESLint (`@typescript-eslint/no-restricted-imports` por carpeta, `no-restricted-globals`) | Nada |
 | Aceptación | Lista CAF de este documento | El navegador, a mano | API y frontend corriendo |
 | E2E (mejora futura) | `frontend/tests/e2e/` | Playwright | API, frontend y navegadores |
 

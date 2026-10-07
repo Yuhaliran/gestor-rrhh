@@ -55,7 +55,8 @@ pruebas):
 ## Estructura
 ```
 frontend/
-  package.json, package-lock.json, angular.json, tsconfig*.json, eslint.config.js, .prettierrc.json
+  package.json, package-lock.json, angular.json, tsconfig*.json, eslint.config.js, .prettierrc,
+  .prettierignore
   src/
     index.html, main.ts, styles.css
     environments/
@@ -113,7 +114,7 @@ ruta), salvo el colaborador: el alta incluye las empresas y la edición no (como
 | Componentes | PrimeNG (tema Aura de `@primeuix/themes`) + PrimeIcons | p-table con paginación lazy, p-select, p-datepicker, p-toast y p-confirmdialog ya hechos |
 | Estado | Signals en cada pantalla; sin store global (sin NgRx) | El estado es de cada pantalla; un store no aporta nada aquí |
 | Pruebas | Vitest (el ejecutor de `ng test`), @testing-library/angular, user-event, `HttpTestingController` | Ver plan de pruebas |
-| Calidad | angular-eslint, eslint-plugin-import, Prettier | RNF6 y reglas ARQF |
+| Calidad | angular-eslint (trae typescript-eslint), Prettier | RNF6 y reglas ARQF: `@typescript-eslint/no-restricted-imports` por carpeta, con `allowTypeImports` para ARQF1. `eslint-plugin-import` no es compatible con ESLint 10 |
 
 Node.js ya está en el entorno (`docs/ENTORNO.md`, por Newman). `.editorconfig` de la raíz agrega
 `[*.{ts,html,css,js,mjs}]` con `indent_size = 2`, y se borra el que genera el CLI dentro de

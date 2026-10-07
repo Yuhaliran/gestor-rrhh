@@ -1,0 +1,5 @@
+# Generados o administrados por herramientas
+package-lock.json
+dist/
+.angular/
+coverage/

@@ -44,16 +44,17 @@ funcional (CAF1 a CAF4) ni las pruebas unitarias de lo genérico.
 - [ ] 30. CORS en la API (CORS1). El tester escribe primero las dos pruebas de integración del
        preflight (`test(api): CORS para el frontend`); luego el implementador configura
        `Program.cs` y los appsettings (`feat(api): CORS para el frontend`). Postman sigue pasando
-- [ ] 31. Crear `frontend/` con `npx @angular/cli@22 new` (sin SSR, con CSS y Vitest);
-       `ng add angular-eslint`; agregar PrimeNG, `@angular/cdk`, `@primeuix/themes` y PrimeIcons,
-       @testing-library/angular, @testing-library/dom, user-event, eslint-plugin-import y
-       Prettier; scripts de `package.json`; `environments/`; puerto 4200 fijo en `angular.json`;
-       borrar el `.editorconfig` que genera el CLI y agregar `[*.{ts,html,css,js,mjs}]` al de la
-       raíz; carpetas de `docs/frontend/PLAN.md`, «Estructura»; comandos del frontend en
-       `AGENTS.md`; una prueba de componente trivial en `frontend/tests/`, con Testing Library,
-       que confirma que `ng test` encuentra las pruebas fuera de `src/` y que Testing Library
-       funciona con esta versión de Angular. Si `ng test` no acepta pruebas fuera de `src/`, van
-       en `frontend/src/pruebas/` y se corrigen las rutas en los documentos
+- [ ] 31. Crear `frontend/` con `npx @angular/cli@22 new` (sin SSR, sin zone.js, con CSS y
+       Vitest); `ng add angular-eslint`; agregar PrimeNG, `@angular/cdk`, `@primeuix/themes` y
+       PrimeIcons, @testing-library/angular, @testing-library/dom y user-event (Prettier ya viene
+       con el CLI); scripts de `package.json`; `environments/`; puerto 4200 fijo en
+       `angular.json`; `strict` y `strictTemplates` explícitos; Prettier con `endOfLine: auto`
+       (`core.autocrlf` deja CRLF en Windows); borrar el `.editorconfig` que genera el CLI y
+       agregar `[*.{ts,html,css,js,mjs}]` al de la raíz; comandos del frontend en `AGENTS.md`;
+       una prueba de componente trivial en `frontend/tests/`, con Testing Library, que confirma
+       que `ng test` encuentra las pruebas fuera de `src/` (opción `include` de `angular.json`) y
+       que Testing Library funciona con esta versión de Angular. Las carpetas de
+       `docs/frontend/PLAN.md`, «Estructura», se crean con su contenido en la tarea 35
        (`chore(frontend): estructura del proyecto Angular`)
 - [ ] 32. Reglas ARQF1 a ARQF3 en `eslint.config.js`, verificadas con un import prohibido a
        propósito (`test(frontend): reglas de dependencia entre capas`)

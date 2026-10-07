@@ -51,6 +51,8 @@ docs/
 - Aplicar migraciones: `dotnet ef database update -p src/RRHH.Infrastructure -s src/RRHH.Api`
 - Correr la API:       `dotnet run --project src/RRHH.Api`
 - Correr la web:       `dotnet run --project src/RRHH.Web`
+- Frontend Angular (en `frontend/`): `npm ci`, `npm start` (http://localhost:4200), `npm test`,
+  `npm run lint`, `npm run format:check` y `npm run build` (los cuatro últimos, antes de cada commit)
 
 ## Convenciones
 - Arquitectura limpia liviana: Domain no referencia a nadie; Api y Web no acceden al DbContext directamente.
