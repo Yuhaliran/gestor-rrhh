@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { render, screen, within } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 import { HttpTestingController } from '@angular/common/http/testing';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi, afterEach } from 'vitest';
 
 import { proveedoresDePrueba } from '../apoyo/proveedores';
 import { conflicto, noEncontrado, validacion, miEmpresa, paginaDe } from '../apoyo/respuestas';
@@ -39,17 +39,22 @@ const colaboradorMock = {
 const empresa3 = { ...miEmpresa, id: 3, nombreComercial: 'Tercera Empresa' };
 
 describe('ColaboradorDetalle', () => {
-  it('verDetalle_CargaDatos_404MuestraRF7', async () => {
-    // 404
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('verDetalle_Con404_MuestraRF7', async () => {
     await render(ColaboradorDetalle, { inputs: { id: '999' }, providers: proveedoresDePrueba() });
     const api = TestBed.inject(HttpTestingController);
     api
       .expectOne((r) => r.method === 'GET' && r.url.endsWith('/api/colaboradores/999'))
       .flush(noEncontrado(), { status: 404, statusText: 'Not Found' });
     expect(await screen.findByText('El registro no existe.')).toBeTruthy();
+  });
 
-    // Normal
+  it('verDetalle_CargaDatos_MuestraElDetalleYBotones', async () => {
     await render(ColaboradorDetalle, { inputs: { id: '5' }, providers: proveedoresDePrueba() });
+    const api = TestBed.inject(HttpTestingController);
     api
       .expectOne((r) => r.method === 'GET' && r.url.endsWith('/api/colaboradores/5'))
       .flush(colaboradorMock);
@@ -100,14 +105,16 @@ describe('ColaboradorDetalle', () => {
     // 409
     await user.click(await screen.findByRole('button', { name: 'Sí, eliminar' }));
     const req = api.expectOne((r) => r.method === 'DELETE');
-    expect(req.request.url.includes('/api/colaboradores/5/empresas/')).toBeTruthy();
+    expect(req.request.url.endsWith('/api/colaboradores/5/empresas/2')).toBeTruthy();
     req.flush(conflicto('No se puede quitar.'), { status: 409, statusText: 'Conflict' });
     expect(await screen.findByText('No se puede quitar.')).toBeTruthy();
 
     // Ahora quitar de verdad
     await user.click(quitarBtns[0]);
     await user.click(await screen.findByRole('button', { name: 'Sí, eliminar' }));
-    api.expectOne((r) => r.method === 'DELETE').flush({}); // 204
+    const req2 = api.expectOne((r) => r.method === 'DELETE');
+    expect(req2.request.url.endsWith('/api/colaboradores/5/empresas/2')).toBeTruthy();
+    req2.flush({}); // 204
     expect(await screen.findByText('Se eliminó correctamente.')).toBeTruthy();
 
     // Actualiza detalle
@@ -127,6 +134,9 @@ describe('ColaboradorDetalle', () => {
   });
 
   it('asociar_AbreDialogo_Asocia_MuestraErroresYCierra', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(2023, 9, 25, 12, 0, 0));
+
     const user = userEvent.setup();
     await render(ColaboradorDetalle, { inputs: { id: '5' }, providers: proveedoresDePrueba() });
     const api = TestBed.inject(HttpTestingController);
@@ -158,7 +168,16 @@ describe('ColaboradorDetalle', () => {
     expect(screen.queryByRole('option', { name: 'Otra Empresa' })).toBeFalsy();
     await user.click(await screen.findByRole('option', { name: 'Tercera Empresa' }));
 
-    await user.type(within(dialogoNuevo).getByLabelText('Fecha de ingreso'), '2023-01-01');
+    // Diálogo, VC1: sin fecha de ingreso, Este campo es obligatorio. dentro del diálogo y no hay POST.
+    await user.click(within(dialogoNuevo).getByRole('button', { name: 'Guardar' }));
+    expect(await within(dialogoNuevo).findByText('Este campo es obligatorio.')).toBeTruthy();
+    api.expectNone((r) => r.method === 'POST');
+
+    // Diálogo, VC5: max de Fecha de ingreso es hoy
+    const ingreso = within(dialogoNuevo).getByLabelText('Fecha de ingreso') as HTMLInputElement;
+    expect(ingreso.max).toBe('2023-10-25');
+
+    await user.type(ingreso, '2023-01-01');
 
     // Error 400
     await user.click(within(dialogoNuevo).getByRole('button', { name: 'Guardar' }));
@@ -185,30 +204,43 @@ describe('ColaboradorDetalle', () => {
       fechaIngreso: '2023-01-01',
       puesto: null,
     });
-    req.flush({}); // 204
+    // La API responde 200 con el colaborador actualizado
+    req.flush({
+      ...colaboradorMock,
+      empresas: [
+        ...colaboradorMock.empresas,
+        {
+          empresaId: 3,
+          nombreComercial: 'Tercera Empresa',
+          paisId: 1,
+          paisNombre: 'Guatemala',
+          fechaIngreso: '2023-01-01',
+          puesto: null,
+        },
+      ],
+    });
 
     expect(await screen.findByText('Se guardó correctamente.')).toBeTruthy();
     expect(screen.queryByRole('dialog')).toBeFalsy();
 
-    // Actualiza detalle
-    api
-      .expectOne((r) => r.method === 'GET' && r.url.endsWith('/api/colaboradores/5'))
-      .flush({
-        ...colaboradorMock,
-        empresas: [
-          ...colaboradorMock.empresas,
-          {
-            empresaId: 3,
-            nombreComercial: 'Tercera Empresa',
-            paisId: 1,
-            paisNombre: 'Guatemala',
-            fechaIngreso: '2023-01-01',
-            puesto: null,
-          },
-        ],
-      });
-
     expect(await screen.findByText('Tercera Empresa')).toBeTruthy();
+  });
+
+  it('asociar_ListaEmpresasFalla_MuestraRF8', async () => {
+    const user = userEvent.setup();
+    await render(ColaboradorDetalle, { inputs: { id: '5' }, providers: proveedoresDePrueba() });
+    const api = TestBed.inject(HttpTestingController);
+    api.expectOne((r) => r.url.endsWith('/api/colaboradores/5')).flush(colaboradorMock);
+
+    await user.click(await screen.findByRole('button', { name: 'Asociar empresa' }));
+
+    // Fallo de conexión
+    api
+      .expectOne((r) => r.url.endsWith('/api/empresas') && r.params.get('tamanio') === '100')
+      .error(new ProgressEvent('error'));
+
+    const dialogo = await screen.findByRole('dialog', { name: 'Asociar empresa' });
+    expect(await within(dialogo).findByText('No se pudo conectar con la API.')).toBeTruthy();
   });
 
   it('editar_AbreDialogo_Edita_ActualizaDetalle', async () => {
@@ -240,26 +272,25 @@ describe('ColaboradorDetalle', () => {
 
     await user.click(within(dialogo).getByRole('button', { name: 'Guardar' }));
 
-    // Use includes because it could be empresa 1 or 2 depending on order
     const req = api.expectOne(
-      (r) => r.method === 'PUT' && r.url.includes('/api/colaboradores/5/empresas/'),
+      (r) => r.method === 'PUT' && r.url.endsWith('/api/colaboradores/5/empresas/2'),
     );
     expect(req.request.body).toEqual({
       fechaIngreso: '2022-01-01',
       puesto: 'Consultor Senior',
     });
-    req.flush({});
 
+    // La API responde 200 con el colaborador actualizado
+    req.flush({
+      ...colaboradorMock,
+      empresas: [
+        { ...colaboradorMock.empresas[0], puesto: 'Consultor Senior' },
+        colaboradorMock.empresas[1],
+      ],
+    });
+
+    expect(await screen.findByText('Se guardó correctamente.')).toBeTruthy();
     expect(screen.queryByRole('dialog')).toBeFalsy();
-    api
-      .expectOne((r) => r.method === 'GET' && r.url.endsWith('/api/colaboradores/5'))
-      .flush({
-        ...colaboradorMock,
-        empresas: [
-          { ...colaboradorMock.empresas[0], puesto: 'Consultor Senior' },
-          colaboradorMock.empresas[1],
-        ],
-      });
 
     expect(await screen.findByText('Consultor Senior')).toBeTruthy();
   });
