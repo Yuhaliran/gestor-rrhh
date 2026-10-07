@@ -331,9 +331,13 @@ export function proveedoresDePrueba(): (Provider | EnvironmentProviders)[] {
     { provide: CLIENTE_RRHH, useClass: ClienteRrhhHttp },
     { provide: AVISOS, useClass: AvisosMaterial },
     { provide: CONFIRMACION, useClass: ConfirmacionMaterial },
+    // Sin animaciones: con ellas, el diálogo tarda 75 ms en cerrar y el pedido que dispara
+    // «Sí, eliminar» todavía no existe cuando la prueba lo busca
+    { provide: MATERIAL_ANIMATIONS, useValue: { animationsDisabled: true } },
   ];
 }
 ```
+Para buscar un pedido por sus parámetros se usa `r.params.get('buscar')`: `r.url` no los incluye.
 Las pruebas unitarias de `servicios/` reemplazan `AVISOS` y `CONFIRMACION` por dobles:
 `{ provide: AVISOS, useValue: { exito: vi.fn(), error: vi.fn() } }` y
 `{ provide: CONFIRMACION, useValue: { confirmar: () => of(true) } }`.
