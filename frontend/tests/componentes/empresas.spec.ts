@@ -166,10 +166,7 @@ describe('EmpresaFormulario', () => {
     pedidoExito.flush(miEmpresa);
 
     // RF4: Navega
-    expect(router.navigateByUrl).toHaveBeenCalledWith(
-      expect.objectContaining({ paths: ['empresas'] }),
-      expect.anything(),
-    );
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/empresas');
 
     // Cambiar departamento vacía municipio
     await user.click(screen.getByLabelText('Departamento'));
@@ -178,12 +175,19 @@ describe('EmpresaFormulario', () => {
 
     expect(muniSelect.textContent?.includes('Guatemala')).toBeFalsy();
 
-    // Cambiar país vacía depto y muni
+    // Cambiar país vacía depto y muni directamente, asegurando que muni estuviera elegido
+    // El país ya es Guatemala.
+    await user.click(screen.getByLabelText('Departamento'));
+    await user.click(await screen.findByRole('option', { name: 'Guatemala' }));
+    api.expectOne((r) => r.url.endsWith('/api/departamentos/1/municipios')).flush([guatemalaMuni]);
+    await user.click(screen.getByLabelText('Municipio'));
+    await user.click(await screen.findByRole('option', { name: 'Guatemala' }));
+
     await user.click(screen.getByLabelText('País'));
     await user.click(await screen.findByRole('option', { name: 'El Salvador' }));
     api.expectOne((r) => r.url.endsWith('/api/paises/9/departamentos')).flush([]);
 
-    expect(deptoSelect.textContent?.includes('Sacatepéquez')).toBeFalsy();
+    expect(deptoSelect.textContent?.includes('Guatemala')).toBeFalsy();
     expect(muniSelect.textContent?.includes('Guatemala')).toBeFalsy();
     expect(
       muniSelect.getAttribute('aria-disabled') === 'true' || muniSelect.hasAttribute('disabled'),
@@ -233,10 +237,20 @@ describe('EmpresaFormulario', () => {
       .expectOne((r) => r.url.endsWith('/api/paises') && r.params.get('tamanio') === '100')
       .flush(paginaDe([guatemala]));
     // Edit starts with cascada loaded
-    api.expectOne((r) => r.url.endsWith('/api/paises/1/departamentos')).flush([guatemalaDepto]);
     api
-      .expectOne((r) => r.url.endsWith('/api/departamentos/1/municipios'))
-      .flush([guatemalaMuni, otraMuni]);
+      .expectOne((r) => r.url.endsWith('/api/paises/1/departamentos'))
+      .flush([guatemalaDepto, otroDepto]);
+    api
+      .expectOne((r) => r.url.endsWith('/api/departamentos/2/municipios'))
+      .flush([
+        {
+          ...guatemalaMuni,
+          nombre: 'Antigua Guatemala',
+          departamentoId: 2,
+          departamentoNombre: 'Sacatepéquez',
+        },
+        otraMuni,
+      ]);
 
     const paisSelect = await screen.findByLabelText('País');
     expect(

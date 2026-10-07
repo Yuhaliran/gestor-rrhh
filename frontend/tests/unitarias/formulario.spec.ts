@@ -173,4 +173,36 @@ describe('Formulario', () => {
       expect(formulario.guardando()).toBe(false);
     });
   });
+
+  it('enviar_DespuesDeError400_VuelveALlamarAGuardar', () => {
+    const grupo = new FormGroup({ nombre: new FormControl('A') });
+    let llamados = 0;
+    let responderError = true;
+
+    TestBed.runInInjectionContext(() => {
+      const formulario = crearFormulario(
+        grupo,
+        () => {
+          llamados++;
+          if (responderError) {
+            return throwError(() => ({
+              estado: 400,
+              errores: { Nombre: ['Inválido'] },
+            }));
+          }
+          return of({});
+        },
+        { volverA: '/lista' },
+      );
+
+      formulario.enviar();
+      expect(llamados).toBe(1);
+      expect(grupo.get('nombre')?.errors).toEqual({ api: 'Inválido' });
+
+      responderError = false;
+      formulario.enviar(); // Enviar de nuevo sin cambiar
+      expect(llamados).toBe(2);
+      expect(avisos.exito).toHaveBeenCalledWith('Se guardó correctamente.');
+    });
+  });
 });

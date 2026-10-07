@@ -56,9 +56,7 @@ describe('ColaboradoresListado', () => {
     expect(screen.getByText('juan@example.com')).toBeTruthy();
     expect(screen.getByText('34 años')).toBeTruthy();
     // Verification of companies (might be joined or just listed)
-    expect(
-      screen.getByText((content) => content.includes('Empresa A') || content.includes('Empresa B')),
-    ).toBeTruthy();
+    expect(await screen.findByText('Empresa A, Empresa B')).toBeTruthy();
 
     const verDetalle = screen.getByRole('link', { name: 'Ver detalle' });
     expect(verDetalle.getAttribute('href')).toBe('/colaboradores/1');
@@ -124,13 +122,13 @@ describe('ColaboradorAlta', () => {
     await user.click(within(grupo2).getByLabelText('Empresa'));
     await user.click(await screen.findByRole('option', { name: 'Empresa B' }));
     await user.type(within(grupo2).getByLabelText('Fecha de ingreso'), '2022-01-01');
-    await user.type(within(grupo2).getByLabelText('Puesto'), 'Consultor');
+    await user.type(within(grupo2).getByLabelText('Puesto (opcional)'), 'Consultor');
 
     // Fill data for Empresa 1 to differentiate
     await user.click(within(grupo1).getByLabelText('Empresa'));
     await user.click(await screen.findByRole('option', { name: 'Mi Empresa' }));
     await user.type(within(grupo1).getByLabelText('Fecha de ingreso'), '2020-01-01');
-    await user.type(within(grupo1).getByLabelText('Puesto'), 'Desarrollador');
+    await user.type(within(grupo1).getByLabelText('Puesto (opcional)'), 'Desarrollador');
 
     // Remove row 1
     await user.click(quitar1);
@@ -140,7 +138,7 @@ describe('ColaboradorAlta', () => {
     expect(screen.queryByRole('group', { name: 'Empresa 2' })).toBeFalsy();
 
     // Check it retained Empresa 2's data
-    const inputPuesto = within(grupoUnico).getByLabelText('Puesto') as HTMLInputElement;
+    const inputPuesto = within(grupoUnico).getByLabelText('Puesto (opcional)') as HTMLInputElement;
     expect(inputPuesto.value).toBe('Consultor');
 
     // Re-add another to test 400 routing
@@ -158,7 +156,7 @@ describe('ColaboradorAlta', () => {
     });
 
     // Ensure error is in group 2
-    expect(within(nuevoGrupo2).getByText('Fecha inválida.')).toBeTruthy();
+    expect(await within(nuevoGrupo2).findByText('Fecha inválida.')).toBeTruthy();
     expect(within(grupoUnico).queryByText('Fecha inválida.')).toBeFalsy();
 
     // 409 as general warning
@@ -190,10 +188,7 @@ describe('ColaboradorAlta', () => {
     });
     req3.flush(colaboradorMock);
 
-    expect(router.navigateByUrl).toHaveBeenCalledWith(
-      expect.objectContaining({ paths: ['colaboradores'] }),
-      expect.anything(),
-    );
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/colaboradores');
   });
 
   it('crear_ValidaVC1yVC5', async () => {
@@ -209,26 +204,94 @@ describe('ColaboradorAlta', () => {
 
     const grupo1 = await screen.findByRole('group', { name: 'Empresa 1' });
 
-    // VC1 en filas
-    await user.click(screen.getByRole('button', { name: 'Guardar' }));
-    const req = api.match((r) => r.method === 'POST');
-    expect(req.length).toBe(0);
+    // Llenar todos los datos excepto empresa
+    await user.type(screen.getByLabelText('Nombre completo'), 'Juan Pérez');
+    await user.type(screen.getByLabelText('Fecha de nacimiento'), '1990-01-01');
+    await user.type(screen.getByLabelText('Teléfono'), '12345678');
+    await user.type(screen.getByLabelText('Correo'), 'juan@example.com');
+    await user.type(within(grupo1).getByLabelText('Fecha de ingreso'), '2020-01-01');
 
-    const mensajes = await within(grupo1).findAllByText('Este campo es obligatorio.');
-    expect(mensajes.length).toBeGreaterThan(0);
+    await user.click(screen.getByRole('button', { name: 'Guardar' }));
+    api.expectNone((r) => r.method === 'POST');
+
+    let mensajes = await within(grupo1).findAllByText('Este campo es obligatorio.');
+    expect(mensajes.length).toBe(1);
+    expect(screen.getAllByText('Este campo es obligatorio.').length).toBe(1);
+
+    // Ahora completa la empresa y vacía la fecha
+    await user.click(within(grupo1).getByLabelText('Empresa'));
+    await user.click(await screen.findByRole('option', { name: 'Mi Empresa' }));
+    const ingreso = within(grupo1).getByLabelText('Fecha de ingreso') as HTMLInputElement;
+    await user.clear(ingreso);
+
+    await user.click(screen.getByRole('button', { name: 'Guardar' }));
+    api.expectNone((r) => r.method === 'POST');
+    mensajes = await within(grupo1).findAllByText('Este campo es obligatorio.');
+    expect(mensajes.length).toBe(1);
+    expect(screen.getAllByText('Este campo es obligatorio.').length).toBe(1);
 
     // VC5
     const nacimiento = screen.getByLabelText('Fecha de nacimiento') as HTMLInputElement;
     expect(nacimiento.getAttribute('max')).toBe('2026-10-07');
-
-    const ingreso = within(grupo1).getByLabelText('Fecha de ingreso') as HTMLInputElement;
     expect(ingreso.getAttribute('max')).toBe('2026-10-07');
+  });
+
+  it('crear_SinConexionEmpresas_MuestraRF8', async () => {
+    await render(ColaboradorAlta, { providers: proveedoresDePrueba() });
+    const api = TestBed.inject(HttpTestingController);
+
+    api
+      .expectOne((r) => r.url.endsWith('/api/empresas') && r.params.get('tamanio') === '100')
+      .error(new ProgressEvent('error'), { status: 0, statusText: 'Unknown Error' });
+
+    expect(await screen.findByText('No se pudo conectar con la API.')).toBeTruthy();
+  });
+
+  it('crear_DatosPersonalesInvalidos_MuestraMensajesYNoLlamaApi', async () => {
+    const user = userEvent.setup();
+    await render(ColaboradorAlta, { providers: proveedoresDePrueba() });
+    const api = TestBed.inject(HttpTestingController);
+
+    api
+      .expectOne((r) => r.url.endsWith('/api/empresas') && r.params.get('tamanio') === '100')
+      .flush(paginaDe([miEmpresa]));
+
+    const tel = screen.getByLabelText('Teléfono');
+    await user.type(tel, '12'); // Inválido VC3
+    const correo = screen.getByLabelText('Correo');
+    await user.type(correo, 'correo-invalido'); // Inválido VC3
+
+    await user.click(screen.getByRole('button', { name: 'Guardar' }));
+
+    const mensajes = await screen.findAllByText('El formato no es válido.');
+    expect(mensajes.length).toBeGreaterThanOrEqual(2);
+    api.expectNone((r) => r.method === 'POST');
+
+    // Vaciar nombre completo con el resto completo
+    await user.clear(tel);
+    await user.type(tel, '12345678');
+    await user.clear(correo);
+    await user.type(correo, 'juan@example.com');
+    await user.type(screen.getByLabelText('Fecha de nacimiento'), '1990-01-01');
+    const grupo1 = await screen.findByRole('group', { name: 'Empresa 1' });
+    await user.click(within(grupo1).getByLabelText('Empresa'));
+    await user.click(await screen.findByRole('option', { name: 'Mi Empresa' }));
+    await user.type(within(grupo1).getByLabelText('Fecha de ingreso'), '2020-01-01');
+
+    const nombre = screen.getByLabelText('Nombre completo') as HTMLInputElement;
+    await user.clear(nombre);
+
+    await user.click(screen.getByRole('button', { name: 'Guardar' }));
+    api.expectNone((r) => r.method === 'POST');
+    expect(await screen.findByText('Este campo es obligatorio.')).toBeTruthy();
   });
 });
 
 describe('ColaboradorEditar', () => {
   it('editar_CargaSoloDatosPersonales_EnviaPUTSoloConEsosDatos_NavegaY404', async () => {
-    const user = userEvent.setup();
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-10-07T12:00:00Z'));
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     await render(ColaboradorEditar, { inputs: { id: '1' }, providers: proveedoresDePrueba() });
     const api = TestBed.inject(HttpTestingController);
     const router = TestBed.inject(Router);
@@ -243,6 +306,9 @@ describe('ColaboradorEditar', () => {
 
     const nombre = screen.getByLabelText('Nombre completo') as HTMLInputElement;
     expect(nombre.value).toBe('Juan Pérez');
+
+    const nacimiento = screen.getByLabelText('Fecha de nacimiento') as HTMLInputElement;
+    expect(nacimiento.getAttribute('max')).toBe('2026-10-07'); // VC5 max
 
     await user.clear(nombre);
     await user.type(nombre, 'Juan Modificado');
@@ -261,10 +327,7 @@ describe('ColaboradorEditar', () => {
 
     pedido.flush(colaboradorMock);
 
-    expect(router.navigateByUrl).toHaveBeenCalledWith(
-      expect.objectContaining({ paths: ['colaboradores'] }),
-      expect.anything(),
-    );
+    expect(router.navigateByUrl).toHaveBeenCalledWith('/colaboradores');
   });
 
   it('editar_NoExiste_MuestraRF7', async () => {
