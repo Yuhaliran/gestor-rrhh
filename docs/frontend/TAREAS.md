@@ -34,17 +34,17 @@ reducen a las específicas (padre fijo); Playwright no se hace. No se recorta: C
 funcional (CAF1 a CAF4) ni las pruebas unitarias de lo genérico.
 
 ## Fase 9 · rama `chore/frontend-estructura`
-- [ ] 29. Agregar `docs/frontend/` (especificación, plan, plan de pruebas y tareas) y referenciarlo
+- [x] 29. Agregar `docs/frontend/` (especificación, plan, plan de pruebas y tareas) y referenciarlo
        desde `AGENTS.md` (documentos, estructura y roles) y desde el README; ampliar el rol en
        `docs/agentes/implementador.md` (`docs(frontend): especificación, planes y tareas`)
-- [ ] 29b. `docs/frontend/CODIFICACION.md`: convenciones (nombres, componentes, estilo) y el
+- [x] 29b. `docs/frontend/CODIFICACION.md`: convenciones (nombres, componentes, estilo) y el
         patrón de referencia de Países en Angular (cliente, lógica de pantalla, listado y
         formulario), como `docs/CODIFICACION.md` en el backend. Se escribe antes de codificar y se
         ajusta en la tarea 38 si algo no funciona igual (`docs(frontend): pautas de codificación`)
-- [ ] 30. CORS en la API (CORS1). El tester escribe primero las dos pruebas de integración del
+- [x] 30. CORS en la API (CORS1). El tester escribe primero las dos pruebas de integración del
        preflight (`test(api): CORS para el frontend`); luego el implementador configura
        `Program.cs` y los appsettings (`feat(api): CORS para el frontend`). Postman sigue pasando
-- [ ] 31. Crear `frontend/` con `npx @angular/cli@22 new` (sin SSR, sin zone.js, con CSS y
+- [x] 31. Crear `frontend/` con `npx @angular/cli@22 new` (sin SSR, sin zone.js, con CSS y
        Vitest); `ng add angular-eslint`; agregar PrimeNG, `@angular/cdk`, `@primeuix/themes` y
        PrimeIcons, @testing-library/angular, @testing-library/dom y user-event (Prettier ya viene
        con el CLI); scripts de `package.json`; `environments/`; puerto 4200 fijo en
@@ -56,12 +56,12 @@ funcional (CAF1 a CAF4) ni las pruebas unitarias de lo genérico.
        que Testing Library funciona con esta versión de Angular. Las carpetas de
        `docs/frontend/PLAN.md`, «Estructura», se crean con su contenido en la tarea 35
        (`chore(frontend): estructura del proyecto Angular`)
-- [ ] 32. Reglas ARQF1 a ARQF3 en `eslint.config.js`, verificadas con un import prohibido a
+- [x] 32. Reglas ARQF1 a ARQF3 en `eslint.config.js`, verificadas con un import prohibido a
        propósito (`test(frontend): reglas de dependencia entre capas`)
-- [ ] 33. Permisos por rol para el frontend: `.claude/settings.json`, hook
+- [x] 33. Permisos por rol para el frontend: `.claude/settings.json`, hook
        `permisos-por-rol.mjs` y roles del tester y del revisor en `docs/agentes/`
        (`docs/frontend/PLAN.md`, «Agentes») (`chore: permisos de los agentes para el frontend`)
-- [ ] 34. Job del frontend en la CI; agregarlo como check obligatorio del ruleset
+- [x] 34. Job del frontend en la CI; agregarlo como check obligatorio del ruleset
        (`ci: lint, pruebas y build del frontend`)
 
 ## Fase 10 · rama `feature/frontend-base-geografia`

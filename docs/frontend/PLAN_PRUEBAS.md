@@ -139,7 +139,7 @@ La columna «Pruebas» la completa el tester en cada tarea, con el nombre de cad
 | VC1–VC5 | Validaciones en el navegador | U, C | |
 | RNF1 | URL de la API por configuración | U | |
 | RNF2 | Formatos de fecha (sin correrse un día) y enum | U | |
-| CORS1 | Preflight con origen permitido y no permitido | I (backend) | Preflight_OrigenPermitido_DevuelveAccessControlAllowOrigin, Preflight_OrigenNoPermitido_NoDevuelveAccessControlAllowOrigin, Preflight_MetodosModificacionConContentType_DevuelveOrigenMetodoYEncabezadosPermitidos, Get_ConOrigenPermitido_ExponeEncabezadoLocation |
+| CORS1 | Preflight con origen permitido y no permitido; métodos, Content-Type y Location | I (backend) | Preflight_OrigenPermitido_DevuelveAccessControlAllowOrigin, Preflight_OrigenNoPermitido_NoDevuelveAccessControlAllowOrigin, Preflight_MetodosModificacionConContentType_DevuelveOrigenMetodoYEncabezadosPermitidos, Get_ConOrigenPermitido_ExponeEncabezadoLocation |
 | ARQF1–3 | Reglas de dependencia | R | |
 | CAF1–4 | Aceptación | A | Lista de aceptación, puntos 1 a 8 |
 | CAF5 | Pruebas en verde | U, C | `npm test` en la CI |
@@ -149,7 +149,9 @@ La columna «Pruebas» la completa el tester en cada tarea, con el nombre de cad
 
 CORS1 se prueba en `tests/RRHH.IntegrationTests` (xUnit, `WebApplicationFactory`): un `OPTIONS`
 con `Origin: http://localhost:4200` devuelve `Access-Control-Allow-Origin`; con otro origen, no lo
-devuelve.
+devuelve. El preflight de POST, PUT y DELETE con `Content-Type` los permite, y un GET desde el
+origen permitido expone `Location`: sin esas pruebas, quitar el encabezado, un método o `Location`
+de la política no hacía fallar ninguna (se verificó con mutaciones).
 
 ## Criterio de terminado de cada tarea
 - `npm run lint`, `npm run format:check`, `npm test` y `npm run build` sin errores.
