@@ -1,0 +1,36 @@
+<h2>{{ id() ? 'Editar departamento' : 'Nuevo departamento' }}</h2>
+
+@if (noExiste()) {
+  <p>El registro no existe.</p>
+  <a matButton routerLink="/departamentos">Volver al listado</a>
+} @else {
+  @if (errorCarga(); as mensaje) {
+    <p class="error-general" role="alert">{{ mensaje }}</p>
+  }
+  <form class="formulario" [formGroup]="grupo" (ngSubmit)="formulario.enviar()">
+    <mat-form-field>
+      <mat-label>País</mat-label>
+      <mat-select formControlName="paisId">
+        @for (pais of paises(); track pais.id) {
+          <mat-option [value]="pais.id">{{ pais.nombre }}</mat-option>
+        }
+      </mat-select>
+      <mat-error>{{ mensajeDe(grupo.controls.paisId.errors) }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Nombre</mat-label>
+      <input matInput formControlName="nombre" maxlength="100" />
+      <mat-error>{{ mensajeDe(grupo.controls.nombre.errors) }}</mat-error>
+    </mat-form-field>
+
+    @if (formulario.errorGeneral(); as mensaje) {
+      <p class="error-general" role="alert">{{ mensaje }}</p>
+    }
+
+    <div class="acciones-formulario">
+      <button matButton="filled" type="submit" [disabled]="formulario.guardando()">Guardar</button>
+      <a matButton routerLink="/departamentos">Cancelar</a>
+    </div>
+  </form>
+}
