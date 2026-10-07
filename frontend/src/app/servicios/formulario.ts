@@ -64,12 +64,14 @@ export const crearFormulario: CrearFormulario = <TDatos, TRespuesta>(
       guardar(grupo.getRawValue() as TDatos)
         .pipe(takeUntilDestroyed(destruccion))
         .subscribe({
-          next: () => {
+          next: (respuesta) => {
             guardando.set(false);
             avisos.exito('Se guardó correctamente.');
-            // alGuardar: tarea 42 (E-014)
+            // RF4: se vuelve a la pantalla indicada o, en un diálogo, se le pasa la respuesta
             if ('volverA' in opciones) {
               void router.navigateByUrl(opciones.volverA);
+            } else {
+              opciones.alGuardar(respuesta);
             }
           },
           error: (error: ErrorApi) => {

@@ -1,0 +1,18 @@
+/* RF14: los datos personales, con su nombre a la izquierda */
+.datos {
+  display: grid;
+  gap: 0.25rem 1rem;
+  grid-template-columns: max-content 1fr;
+}
+
+.datos dt {
+  font-weight: 600;
+}
+
+.datos dd {
+  margin: 0;
+}
+
+.tabla-desplazable {
+  margin-bottom: 1rem;
+}

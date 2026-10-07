@@ -1,0 +1,73 @@
+@if (noExiste()) {
+  <h2>Detalle del colaborador</h2>
+  <p>El registro no existe.</p>
+  <a matButton routerLink="/colaboradores">Volver al listado</a>
+} @else {
+  @if (errorCarga(); as mensaje) {
+    <p class="error-general" role="alert">{{ mensaje }}</p>
+  }
+
+  @if (colaborador(); as colaborador) {
+    <div class="encabezado-pantalla">
+      <h2>{{ colaborador.nombreCompleto }}</h2>
+      <div class="acciones">
+        <a matButton [routerLink]="['/colaboradores', colaborador.id, 'editar']">Editar datos</a>
+        <a matButton routerLink="/colaboradores">Volver al listado</a>
+      </div>
+    </div>
+
+    <dl class="datos">
+      <dt>Edad</dt>
+      <dd>{{ textoEdad(colaborador.edad) }}</dd>
+      <dt>Fecha de nacimiento</dt>
+      <dd>{{ fechaParaMostrar(colaborador.fechaNacimiento) }}</dd>
+      <dt>Teléfono</dt>
+      <dd>{{ colaborador.telefono }}</dd>
+      <dt>Correo</dt>
+      <dd>{{ colaborador.correo }}</dd>
+    </dl>
+
+    <h3>Empresas</h3>
+    <div class="tabla-desplazable">
+      <table mat-table [dataSource]="colaborador.empresas">
+        <ng-container matColumnDef="empresa">
+          <th mat-header-cell *matHeaderCellDef>Empresa</th>
+          <td mat-cell *matCellDef="let relacion">{{ relacion.nombreComercial }}</td>
+        </ng-container>
+        <ng-container matColumnDef="pais">
+          <th mat-header-cell *matHeaderCellDef>País</th>
+          <td mat-cell *matCellDef="let relacion">{{ relacion.paisNombre }}</td>
+        </ng-container>
+        <ng-container matColumnDef="fechaIngreso">
+          <th mat-header-cell *matHeaderCellDef>Fecha de ingreso</th>
+          <td mat-cell *matCellDef="let relacion">
+            {{ fechaParaMostrar(relacion.fechaIngreso) }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="puesto">
+          <th mat-header-cell *matHeaderCellDef>Puesto</th>
+          <td mat-cell *matCellDef="let relacion">{{ relacion.puesto }}</td>
+        </ng-container>
+        <ng-container matColumnDef="acciones">
+          <th mat-header-cell *matHeaderCellDef><span class="oculto">Acciones</span></th>
+          <td mat-cell *matCellDef="let relacion" class="acciones">
+            <button matButton type="button" (click)="editarEmpresa(relacion)">Editar</button>
+            <button
+              matButton
+              type="button"
+              [disabled]="unica() || quitar.eliminando()"
+              (click)="quitar.eliminar(relacion)"
+            >
+              Quitar
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+        <tr mat-row *matRowDef="let fila; columns: columnas"></tr>
+      </table>
+    </div>
+
+    <button matButton="filled" type="button" (click)="asociarEmpresa()">Asociar empresa</button>
+  }
+}
