@@ -100,14 +100,16 @@ export interface Formulario {
 }
 
 // enviar(): si el grupo es inválido (VC), marca los controles y no llama a la API; un error que
-// puso la API no impide volver a enviar. Al guardar,
-// avisa con avisos.exito('Se guardó correctamente.') y navega a opciones.volverA (RF4). Un 400 pone cada mensaje en
-// su control con setErrors({ api: mensaje }), también dentro de un FormArray
-// ('empresas[1].fechaIngreso'); una clave sin control y cualquier otro error van a errorGeneral.
+// puso la API no impide volver a enviar. Al guardar, avisa con
+// avisos.exito('Se guardó correctamente.') y navega a opciones.volverA (RF4); con
+// opciones.alGuardar (un diálogo, que se cierra con el resultado), en lugar de navegar le pasa la
+// respuesta de la API. Un 400 pone cada mensaje en su control con setErrors({ api: mensaje }),
+// también dentro de un FormArray ('empresas[1].fechaIngreso'); una clave sin control y cualquier
+// otro error van a errorGeneral.
 export type CrearFormulario = <TDatos, TRespuesta>(
   grupo: FormGroup,
   guardar: (datos: TDatos) => Observable<TRespuesta>,
-  opciones: { volverA: string },
+  opciones: { volverA: string } | { alGuardar: (respuesta: TRespuesta) => void },
 ) => Formulario;
 
 // RF3, RF4 · Eliminación con confirmación

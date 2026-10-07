@@ -15,7 +15,7 @@ const VALOR_NO_VALIDO = 'El valor no es válido.';
 export const crearFormulario: CrearFormulario = <TDatos, TRespuesta>(
   grupo: FormGroup,
   guardar: (datos: TDatos) => Observable<TRespuesta>,
-  opciones: { volverA: string },
+  opciones: { volverA: string } | { alGuardar: (respuesta: TRespuesta) => void },
 ): Formulario => {
   const avisos = inject(AVISOS);
   const router = inject(Router);
@@ -67,7 +67,10 @@ export const crearFormulario: CrearFormulario = <TDatos, TRespuesta>(
           next: () => {
             guardando.set(false);
             avisos.exito('Se guardó correctamente.');
-            void router.navigateByUrl(opciones.volverA);
+            // alGuardar: tarea 42 (E-014)
+            if ('volverA' in opciones) {
+              void router.navigateByUrl(opciones.volverA);
+            }
           },
           error: (error: ErrorApi) => {
             guardando.set(false);

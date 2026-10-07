@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 
-// Rutas del «Contrato de interfaz» (docs/frontend/ESPECIFICACION.md). Las pantallas llegan en las
-// tareas 38 a 42 y reemplazan a Pendiente. Las rutas fijas («nuevo») van antes que las de :id.
+// Rutas del «Contrato de interfaz» (docs/frontend/ESPECIFICACION.md). Las rutas fijas («nuevo») van
+// antes que las de :id.
 // Cada pantalla se carga al entrar en ella (loadComponent): el bundle inicial queda con el layout
 // y lo común, por debajo del presupuesto de angular.json.
 export const routes: Routes = [
@@ -114,7 +114,8 @@ export const routes: Routes = [
   },
   {
     path: 'colaboradores/:id',
-    loadComponent: () => import('./vistas/pendiente').then((m) => m.Pendiente),
+    loadComponent: () =>
+      import('./vistas/colaboradores/colaborador-detalle').then((m) => m.ColaboradorDetalle),
     title: 'Detalle del colaborador',
   },
 

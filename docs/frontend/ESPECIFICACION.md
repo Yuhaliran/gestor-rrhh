@@ -193,12 +193,28 @@ es cambiar la especificación.
   está deshabilitado (RN3, como en RF14). Editar muestra sólo los cuatro datos personales. El
   alta y la edición vuelven a `/colaboradores` (RF4).
 - Fechas (VC5): los campos de fecha tienen como máximo la fecha de hoy (atributo `max`).
+- Puesto (opcional): vacío se envía como `null` (alta, asociar y editar).
+- Detalle del colaborador (RF14): título, el nombre completo; los datos «Edad» («N años»),
+  «Fecha de nacimiento», «Teléfono» y «Correo»; enlaces «Editar datos» (a
+  `/colaboradores/:id/editar`) y «Volver al listado» (a `/colaboradores`). La sección «Empresas»
+  tiene, por fila, empresa (nombre comercial), país, fecha de ingreso, puesto y los botones
+  «Editar» y «Quitar» («Quitar» deshabilitado si es la única, RN3); debajo, el botón «Asociar
+  empresa».
+- Diálogos del detalle (rol `dialog`, con su título como nombre): «Asociar empresa», con
+  «Empresa» (sólo las que todavía no tiene), «Fecha de ingreso» y «Puesto (opcional)»; y «Editar
+  empresa», con «Empresa» deshabilitado (con su nombre), «Fecha de ingreso» y «Puesto
+  (opcional)». Los dos con «Guardar» y «Cancelar», que en un diálogo es un botón y lo cierra. Al
+  guardar, el diálogo se cierra, se avisa «Se guardó correctamente.» y el detalle muestra los
+  datos nuevos (RF4); un 400 va debajo de su campo y un 409 como aviso general, dentro del
+  diálogo.
+- Quitar una empresa: la misma confirmación que eliminar (RF3); al quitarla, «Se eliminó
+  correctamente.» y el detalle se actualiza; un 409 se muestra como aviso (RF14).
 
 **Enlaces y botones.** Lo que navega es un enlace (rol `link`): «Nuevo», «Editar» de los listados,
 «Cancelar» de los formularios, «Colaboradores», «Ver detalle», «Editar datos» y «Volver al
 listado». Lo que actúa es un botón (rol `button`): «Guardar», «Eliminar», «Quitar», «Agregar
-empresa», «Asociar empresa», el «Editar» de una empresa en el detalle (abre un diálogo) y los dos
-de la confirmación.
+empresa», «Asociar empresa», el «Editar» de una empresa en el detalle (abre un diálogo), el
+«Cancelar» de un diálogo y los dos de la confirmación.
 
 ## Criterios de aceptación del frontend
 - **CAF1.** Los 5 mantenimientos funcionan contra la API real (crear, listar, buscar, paginar,
