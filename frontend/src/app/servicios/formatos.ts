@@ -15,6 +15,13 @@ const noImplementado = (): never => {
   throw new Error('No implementado');
 };
 
+// V5 y VC3 · Teléfono: dígitos, espacios, +, - y paréntesis, de 7 a 20 caracteres
+// (el mismo de src/RRHH.Contratos/Comun/Formatos.cs)
+export const PATRON_TELEFONO = /^[0-9+()\- ]{7,20}$/;
+
+// VC4 · Código ISO del país: 2 letras (el mismo de GuardarPaisDto)
+export const PATRON_CODIGO_ISO = /^[A-Za-z]{2}$/;
+
 // Opciones del campo «Cumpleaños del 29 de febrero» (Contrato de interfaz)
 export const OPCIONES_REGLA_29_FEBRERO: readonly OpcionRegla[] = [
   { valor: 'VeintiochoDeFebrero', texto: '28 de febrero' },

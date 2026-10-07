@@ -20,7 +20,8 @@ import type { ErrorApi } from './errores';
 //   servicios/eliminacion.ts  crearEliminacion
 //   servicios/formatos.ts     fechaParaMostrar, fechaDesdeIso, fechaAIso, textoRegla29Febrero,
 //                             mensajeDeError, mensajeDeValidacion, OPCIONES_REGLA_29_FEBRERO
-//                             (OpcionRegla[]) y edadMinimaNoMayorQueMaxima (ValidatorFn del grupo
+//                             (OpcionRegla[]), PATRON_TELEFONO y PATRON_CODIGO_ISO (RegExp, para
+//                             Validators.pattern) y edadMinimaNoMayorQueMaxima (ValidatorFn del grupo
 //                             de País: { edadMinimaMayorQueMaxima: true } si la mínima supera a la
 //                             máxima, VC4)
 // Las funciones crear* usan inject(): se llaman al inicializar un componente (o, en las pruebas,

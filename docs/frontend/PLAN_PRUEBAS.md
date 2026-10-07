@@ -73,9 +73,11 @@ Arrange-Act-Assert.
   control y un 409 van a `errorGeneral`; `guardando` mientras espera.
 - **`crearEliminacion`**: sin confirmar no elimina; 204 avisa y recarga; 409 avisa y no recarga.
 - **Formatos**: fecha `aaaa-mm-dd` ↔ `dd/mm/aaaa`; fecha del calendario ↔ `aaaa-mm-dd` sin correrse
-  un día (con la zona horaria fijada en `America/Guatemala` para la prueba); enum ↔ texto;
-  validadores de VC con valores límite (teléfono de 6, 7, 20 y 21 caracteres; código ISO de 1, 2 y
-  3 letras; edad mínima igual y mayor que la máxima).
+  un día; enum ↔ texto; validadores de VC con valores límite (teléfono de 6, 7, 20 y 21
+  caracteres y código ISO de 1, 2 y 3 letras, con `PATRON_TELEFONO` y `PATRON_CODIGO_ISO`; edad
+  mínima igual y mayor que la máxima). La zona horaria no la cambian las pruebas: la CI corre con
+  `TZ=America/Guatemala` (UTC−6) y las máquinas del equipo ya están en esa zona. En UTC, un
+  `new Date('aaaa-mm-dd')` que corre la fecha un día pasaría.
 
 ## Pruebas de componentes
 Por pantalla, sólo lo propio de ella (lo genérico ya está cubierto por las unitarias):

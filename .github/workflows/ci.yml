@@ -58,6 +58,10 @@ jobs:
     name: "Frontend: lint, pruebas y build"
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # UTC−6, como Guatemala: en UTC, un new Date('aaaa-mm-dd') que corre la fecha un día pasaría
+    # las pruebas de las fechas (RNF2)
+    env:
+      TZ: America/Guatemala
     defaults:
       run:
         working-directory: frontend
