@@ -1,0 +1,35 @@
+<div class="encabezado-pantalla">
+  <h2>Países</h2>
+  <a matButton="filled" routerLink="/paises/nuevo">Nuevo</a>
+</div>
+
+<rrhh-listado-paginado [listado]="listado">
+  <table mat-table [dataSource]="listado.elementos()">
+    <ng-container matColumnDef="nombre">
+      <th mat-header-cell *matHeaderCellDef>Nombre</th>
+      <td mat-cell *matCellDef="let pais">{{ pais.nombre }}</td>
+    </ng-container>
+    <ng-container matColumnDef="codigoIso2">
+      <th mat-header-cell *matHeaderCellDef>Código ISO</th>
+      <td mat-cell *matCellDef="let pais">{{ pais.codigoIso2 }}</td>
+    </ng-container>
+    <ng-container matColumnDef="edadMinima">
+      <th mat-header-cell *matHeaderCellDef>Edad mínima</th>
+      <td mat-cell *matCellDef="let pais">{{ pais.edadMinima }}</td>
+    </ng-container>
+    <ng-container matColumnDef="edadMaxima">
+      <th mat-header-cell *matHeaderCellDef>Edad máxima</th>
+      <td mat-cell *matCellDef="let pais">{{ pais.edadMaxima }}</td>
+    </ng-container>
+    <ng-container matColumnDef="acciones">
+      <th mat-header-cell *matHeaderCellDef><span class="oculto">Acciones</span></th>
+      <td mat-cell *matCellDef="let pais" class="acciones">
+        <a matButton [routerLink]="['/paises', pais.id, 'editar']">Editar</a>
+        <button matButton type="button" (click)="eliminacion.eliminar(pais)">Eliminar</button>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+    <tr mat-row *matRowDef="let fila; columns: columnas"></tr>
+  </table>
+</rrhh-listado-paginado>

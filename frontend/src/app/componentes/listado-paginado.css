@@ -1,0 +1,21 @@
+.barra {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  justify-content: space-between;
+  margin-top: 1rem;
+}
+
+.buscar {
+  flex: 1 1 16rem;
+  max-width: 28rem;
+}
+
+.total {
+  margin: 0;
+}
+
+.error {
+  color: #991b1b;
+}

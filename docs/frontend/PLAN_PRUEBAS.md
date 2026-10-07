@@ -22,8 +22,8 @@ la implementación. En el frontend eso se logra así:
   las pantallas»).
 - **Componentes:** el tester busca los elementos como un usuario, por etiqueta, rol o texto
   (`getByLabelText('Nombre')`, `getByRole('button', { name: 'Guardar' })`), según el «Contrato de
-  interfaz» de la especificación. No depende de clases CSS, de la estructura de PrimeNG ni de
-  nombres internos.
+  interfaz» de la especificación. No depende de clases CSS, de la estructura de Angular Material
+  ni de nombres internos.
 - **API simulada:** las respuestas que se entregan con `HttpTestingController` (en
   `frontend/tests/apoyo/`) se escriben desde `docs/PLAN.md`, «API» (rutas, códigos y formato de
   `ProblemDetails`), no desde el cliente del frontend.
@@ -73,9 +73,11 @@ Arrange-Act-Assert.
   control y un 409 van a `errorGeneral`; `guardando` mientras espera.
 - **`crearEliminacion`**: sin confirmar no elimina; 204 avisa y recarga; 409 avisa y no recarga.
 - **Formatos**: fecha `aaaa-mm-dd` ↔ `dd/mm/aaaa`; fecha del calendario ↔ `aaaa-mm-dd` sin correrse
-  un día (con la zona horaria fijada en `America/Guatemala` para la prueba); enum ↔ texto;
-  validadores de VC con valores límite (teléfono de 6, 7, 20 y 21 caracteres; código ISO de 1, 2 y
-  3 letras; edad mínima igual y mayor que la máxima).
+  un día; enum ↔ texto; validadores de VC con valores límite (teléfono de 6, 7, 20 y 21
+  caracteres y código ISO de 1, 2 y 3 letras, con `PATRON_TELEFONO` y `PATRON_CODIGO_ISO`; edad
+  mínima igual y mayor que la máxima). La zona horaria no la cambian las pruebas: la CI corre con
+  `TZ=America/Guatemala` (UTC−6) y las máquinas del equipo ya están en esa zona. En UTC, un
+  `new Date('aaaa-mm-dd')` que corre la fecha un día pasaría.
 
 ## Pruebas de componentes
 Por pantalla, sólo lo propio de ella (lo genérico ya está cubierto por las unitarias):
@@ -88,8 +90,8 @@ Por pantalla, sólo lo propio de ella (lo genérico ya está cubierto por las un
   empresa en el detalle.
 
 ## Pruebas de arquitectura
-- **ARQF1.** `contratos/` no importa módulos del proyecto; de bibliotecas, sólo tipos de `rxjs` y
-  `@angular/core`.
+- **ARQF1.** `contratos/` no importa módulos del proyecto; de bibliotecas, sólo tipos de `rxjs`,
+  `@angular/core` y `@angular/forms`.
 - **ARQF2.** `api/` sólo importa `contratos/`; `@angular/common/http` no se importa fuera de `api/`
   y `app.config.ts`; `fetch` no se usa.
 - **ARQF3.** `vistas/`, `componentes/` y `servicios/` no importan `api/` ni `environments/`.
@@ -121,26 +123,26 @@ La columna «Pruebas» la completa el tester en cada tarea, con el nombre de cad
 
 | Id | Qué se verifica | Nivel | Pruebas |
 |---|---|---|---|
-| RF1 | Menú y página de inicio | C, A | |
-| RF2 | Listado paginado por la API, búsqueda con espera | U, C, A | |
-| RF3 | Confirmación al eliminar; 409 visible | U, C, A | |
-| RF4 | Avisos de éxito y regreso al listado | U, C | |
-| RF5 | Errores 400 debajo de cada campo, también con índice; JSON ilegible | U, C, A | |
-| RF6 | 409 como aviso general | U, C, A | |
-| RF7 | 404 al editar o ver | U, C, A | |
-| RF8 | Sin conexión y error no previsto | U, A | |
-| RF9 | Países: valores propuestos, código ISO en mayúsculas | C, A | |
-| RF10 | Departamentos: país fijo al editar | C, A | |
-| RF11 | Municipios: cascada al crear, padres fijos al editar | C, A | |
-| RF12 | Empresas: cascada, país fijo al editar | U, C, A | |
+| RF1 | Menú y página de inicio | C, A | App_menu_TieneEnlacesAMantenimientos, Inicio_inicio_TieneAccesosAMantenimientos |
+| RF2 | Listado paginado por la API, búsqueda con espera | U, C, A | Listado_cargaInicial_PidePagina1YTamanioOpciones, Listado_cambiarPagina_PideNuevaPagina, Listado_cambiarTamanio_VuelveAPagina1YPideNuevoTamanio, Listado_cambiarBusqueda_Espera300msYVuelveAPagina1, Listado_respuestasMismaBusqueda_DescartaRespuestaVieja, ClienteRrhhHttp_listar_ConBusqueda_EnviaPaginaTamanioYBuscar, ClienteRrhhHttp_listar_SinBuscar_NoEnviaBuscar, listar_CargaInicial_MuestraFilasYTotal, buscar_ConTexto_Espera300msYConsultaEnPagina1, listar_Paginador_MuestraTotalYCambiaPagina |
+| RF3 | Confirmación al eliminar; 409 visible | U, C, A | Eliminacion_eliminar_SinConfirmar_NoElimina, Eliminacion_eliminar_409_AvisaYNoRecarga, eliminar_Confirma_HaceDelete, eliminar_ConConflicto_MuestraElDetalleYConservaLaFila |
+| RF4 | Avisos de éxito y regreso al listado | U, C | Formulario_enviar_Exito_AvisaYNavega, Formulario_enviar_MientrasEspera_GuardandoEsTrue, Eliminacion_eliminar_204_AvisaYRecarga, ClienteRrhhHttp_eliminar_204_NoDevuelveCuerpo, ClienteRrhhHttp_crear_CuerpoJsonYContentType_PoneEncabezado, crear_GuardarExito_AvisaYNavegaAlListado |
+| RF5 | Errores 400 debajo de cada campo, también con índice; JSON ilegible | U, C, A | Formulario_enviar_Error400_PoneMensajeEnControlYFormArray, Formulario_enviar_Error400JsonIlegible_MuestraElValorNoEsValidoYDescartaDto, Formulario_enviar_ErrorSinControl_VaAErrorGeneral, erroresInterceptor_interceptor_Error400_NormalizaClavesYDevuelveErrorApi, erroresInterceptor_interceptor_Error400JsonIlegible_LimpiaClavesYMensaje, crear_ConError400_MuestraElMensajeDebajoDelCampo |
+| RF6 | 409 como aviso general | U, C, A | Formulario_enviar_Error409_VaAErrorGeneral, erroresInterceptor_interceptor_Error409_DevuelveErrorApiConDetalle |
+| RF7 | 404 al editar o ver | U, C, A | erroresInterceptor_interceptor_Error404_DevuelveErrorApiConDetalle, Formatos_mensajeDeError_SegunEstado_MuestraTextoCorrecto, editar_ConError404_MuestraElRegistroNoExisteYVolver |
+| RF8 | Sin conexión y error no previsto | U, A | erroresInterceptor_interceptor_Error500_DevuelveErrorApiSoloConEstado, erroresInterceptor_interceptor_SinConexion_DevuelveErrorApiConEstado0, Listado_error_GuardaErrorSinRomperListado |
+| RF9 | Países: valores propuestos, código ISO en mayúsculas | C, A | crear_ValoresPorDefecto_Propone18100Y28DeFebrero, crear_CodigoIso_SeEnviaEnMayusculas, editar_Guardar_EnviaPutConDatosNuevos |
+| RF10 | Departamentos: país fijo al editar | C, A | listar_MuestraFilasConNombreYPaisYTotal, crear_SeleccionarPaisYEscribirNombre_HacePostConPaisIdYNombre, editar_Abre_PaisEstaDeshabilitadoYSeMuestraElNombre, editar_Guardar_EnviaPutConElMismoPaisId, editar_ConError404_MuestraElRegistroNoExiste |
+| RF11 | Municipios: cascada al crear, padres fijos al editar | C, A | Cascada_cargaInicial_SinInicial_CargaPaisesYVaciaSeleccion, Cascada_cargaInicial_ConInicial_CargaPaisesDepartamentosYMunicipiosSinVaciar, Cascada_elegirPais_CambiaPaisVaciaHijosYCargaDepartamentos, Cascada_elegirDepartamento_CambiaDepartamentoVaciaMunicipioYCargaMunicipios, Cascada_elegirMunicipio_CambiaMunicipio, listar_MuestraFilasConNombreDepartamentoYPaisYTotal, crear_AltaEnCascada_ElegirPaisYDepto_HacePostConDepartamentoIdYNombre, crear_CambiarDePais_VaciaElDepartamento, editar_Abre_PaisYDepartamentoEstanDeshabilitadosYSeMuestranNombres, editar_Guardar_EnviaPutConElMismoDepartamentoId |
+| RF12 | Empresas: cascada, país fijo al editar | U, C, A | Cascada_cargaInicial_SinInicial_CargaPaisesYVaciaSeleccion, Cascada_cargaInicial_ConInicial_CargaPaisesDepartamentosYMunicipiosSinVaciar, Cascada_elegirPais_CambiaPaisVaciaHijosYCargaDepartamentos, Cascada_elegirDepartamento_CambiaDepartamentoVaciaMunicipioYCargaMunicipios, Cascada_elegirMunicipio_CambiaMunicipio |
 | RF13 | Alta de colaborador con varias empresas; editar sólo datos personales | C, A | |
 | RF14 | Detalle: edad y empresas; asociar, editar, quitar | C, A | |
 | RF15 | Colaboradores de una empresa | C, A | |
-| VC1–VC5 | Validaciones en el navegador | U, C | |
-| RNF1 | URL de la API por configuración | U | |
-| RNF2 | Formatos de fecha (sin correrse un día) y enum | U | |
+| VC1–VC5 | Validaciones en el navegador | U, C | Formulario_enviar_Invalido_BloqueaEnvioYMarcaControles, Formatos_mensajeDeValidacion_SegunError_MuestraTextoCorrecto, ValidadoresLimite_edadMinimaNoMayorQueMaxima_Igual_EsValido, ValidadoresLimite_edadMinimaNoMayorQueMaxima_Mayor_EsInvalido, ValidadoresLimite_patronTelefono_ValoresLimite, ValidadoresLimite_patronCodigoIso_ValoresLimite, crear_CampoObligatorioVacio_MuestraMensajeYNoLlamaApi, crear_EdadMinimaMayorQueMaxima_MuestraErrorYNoLlamaApi |
+| RNF1 | URL de la API por configuración | U | ClienteRrhhHttp_listar_ConUrlBase_UsaTokenUrlApi |
+| RNF2 | Formatos de fecha (sin correrse un día) y enum | U | Formatos_fechaParaMostrar_ConvierteAFormatoLocal, Formatos_fechaDesdeIso_CreaFechaLocalSinCorrerseUnDia, Formatos_fechaAIso_ConvierteFechaLocalAFormatoIsoSinCorrerseUnDia, Formatos_textoRegla29Febrero_MuestraTextoCorrecto |
 | CORS1 | Preflight con origen permitido y no permitido; métodos, Content-Type y Location | I (backend) | Preflight_OrigenPermitido_DevuelveAccessControlAllowOrigin, Preflight_OrigenNoPermitido_NoDevuelveAccessControlAllowOrigin, Preflight_MetodosModificacionConContentType_DevuelveOrigenMetodoYEncabezadosPermitidos, Get_ConOrigenPermitido_ExponeEncabezadoLocation |
-| ARQF1–3 | Reglas de dependencia | R | |
+| ARQF1–3 | Reglas de dependencia | R | npm run lint (frontend/eslint.config.js) |
 | CAF1–4 | Aceptación | A | Lista de aceptación, puntos 1 a 8 |
 | CAF5 | Pruebas en verde | U, C | `npm test` en la CI |
 | CAF6 | Arquitectura | R | `npm run lint` en la CI |

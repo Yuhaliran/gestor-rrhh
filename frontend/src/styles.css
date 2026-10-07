@@ -1,2 +1,56 @@
-/* Estilos globales. El tema de PrimeNG (Aura) se registra en app.config.ts. */
-@import 'primeicons/primeicons.css';
+/* Estilos globales. El tema de Angular Material (azure-blue) se carga en angular.json. */
+
+body {
+  font-family: system-ui, sans-serif;
+  margin: 0;
+}
+
+/* RNF4: las tablas se desplazan solas en el ancho de un teléfono, sin mover la página */
+.tabla-desplazable {
+  overflow-x: auto;
+}
+
+/* Aviso de error (AvisosMaterial) */
+.aviso-error {
+  --mat-snack-bar-container-color: #991b1b;
+  --mat-snack-bar-supporting-text-color: #fff;
+}
+
+/* Título de la pantalla con su acción principal («Nuevo») */
+.encabezado-pantalla {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  justify-content: space-between;
+}
+
+/* Formularios: un campo por fila, hasta un ancho cómodo */
+.formulario {
+  display: flex;
+  flex-direction: column;
+  max-width: 32rem;
+}
+
+.acciones-formulario {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.acciones {
+  white-space: nowrap;
+}
+
+.error-general {
+  color: #991b1b;
+}
+
+/* Visible sólo para lectores de pantalla */
+.oculto {
+  clip: rect(0 0 0 0);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}

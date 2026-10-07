@@ -1,16 +1,43 @@
-import { provideRouter } from '@angular/router';
 import { render, screen } from '@testing-library/angular';
-
 import { App } from '../../src/app/app';
+import { Inicio } from '../../src/app/vistas/inicio';
+import { proveedoresDePrueba } from '../apoyo/proveedores';
 
-// Prueba de la estructura (tarea 31): confirma que `ng test` encuentra las pruebas de
-// frontend/tests/ y que Testing Library funciona con esta versión de Angular.
 describe('App', () => {
   it('render_SinRuta_MuestraElTituloDeLaAplicacion', async () => {
-    // Arrange y Act
-    await render(App, { providers: [provideRouter([])] });
-
-    // Assert
+    await render(App, { providers: proveedoresDePrueba() });
     expect(screen.getByRole('heading', { name: 'Recursos Humanos' })).toBeTruthy();
+  });
+
+  it('menu_TieneEnlacesAMantenimientos', async () => {
+    await render(App, { providers: proveedoresDePrueba() });
+    expect(screen.getByRole('link', { name: 'Países' }).getAttribute('href')).toBe('/paises');
+    expect(screen.getByRole('link', { name: 'Departamentos' }).getAttribute('href')).toBe(
+      '/departamentos',
+    );
+    expect(screen.getByRole('link', { name: 'Municipios' }).getAttribute('href')).toBe(
+      '/municipios',
+    );
+    expect(screen.getByRole('link', { name: 'Empresas' }).getAttribute('href')).toBe('/empresas');
+    expect(screen.getByRole('link', { name: 'Colaboradores' }).getAttribute('href')).toBe(
+      '/colaboradores',
+    );
+  });
+});
+
+describe('Inicio', () => {
+  it('inicio_TieneAccesosAMantenimientos', async () => {
+    await render(Inicio, { providers: proveedoresDePrueba() });
+    expect(screen.getByRole('link', { name: /Países/i }).getAttribute('href')).toBe('/paises');
+    expect(screen.getByRole('link', { name: /Departamentos/i }).getAttribute('href')).toBe(
+      '/departamentos',
+    );
+    expect(screen.getByRole('link', { name: /Municipios/i }).getAttribute('href')).toBe(
+      '/municipios',
+    );
+    expect(screen.getByRole('link', { name: /Empresas/i }).getAttribute('href')).toBe('/empresas');
+    expect(screen.getByRole('link', { name: /Colaboradores/i }).getAttribute('href')).toBe(
+      '/colaboradores',
+    );
   });
 });

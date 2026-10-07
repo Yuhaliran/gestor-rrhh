@@ -166,6 +166,16 @@ es cambiar la especificación.
   (VC1), «Admite hasta N caracteres.» (VC2, con el largo), «El formato no es válido.» (VC3 y el
   código ISO de VC4), «No puede ser negativa.» y «La edad mínima no puede ser mayor que la
   máxima.» (VC4, este último debajo de «Edad máxima», como en la API).
+- Listados (RF2): el campo de búsqueda tiene la etiqueta «Buscar»; el total se muestra como
+  «N registros» («1 registro», «0 registros»); mientras carga, una barra de progreso (rol
+  `progressbar`); un error del listado, con el texto de RF8. El paginador, en español:
+  «Registros por página» (10, 20 o 50), «Página anterior», «Página siguiente», «Primera página»,
+  «Última página» y el rango «1 – 10 de 45».
+- Confirmación (RF3): título «Confirmar» y el mensaje «¿Eliminar este registro?».
+- Padre fijo al editar (RN8, RF10 a RF12): el campo conserva su etiqueta («País»,
+  «Departamento») y se muestra deshabilitado, con el nombre del padre. Al crear, el mismo campo es
+  una lista para elegir (rol `combobox`); en la cascada, cada lista está deshabilitada hasta que
+  se elige su padre.
 
 **Enlaces y botones.** Lo que navega es un enlace (rol `link`): «Nuevo», «Editar» de los listados,
 «Cancelar» de los formularios, «Colaboradores», «Ver detalle», «Editar datos» y «Volver al

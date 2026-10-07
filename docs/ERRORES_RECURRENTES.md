@@ -285,6 +285,28 @@ Compilación, paquetes, pruebas, EF Core, git.
 
 - Origen:        verificación posterior a la entrega (v1.0.0) · 2026-09-30 · implementador
 
+### E-021 · Una dependencia de terceros cambió a una licencia comercial
+- Síntoma:       el frontend muestra un cartel rojo «Invalid PrimeUI License» y la consola avisa
+                 «[PrimeUI] PrimeUI license is not configured.», sin ningún error de compilación ni
+                 de pruebas.
+- Causa:         PrimeNG, elegida en el plan por sus componentes, ahora es «PrimeUI», una familia de
+                 bibliotecas comerciales: su `LICENSE.md` exige una clave de licencia, gratuita sólo
+                 para personas y organizaciones chicas, con registro y renovación anual. Todas las
+                 versiones compatibles con Angular 22 tienen esa licencia. El plan se escribió por lo
+                 que la biblioteca hacía, sin mirar su licencia actual.
+- Solución:      se reemplazó por Angular Material (MIT, de Google, misma versión que Angular). La
+                 lógica de las pantallas dejó de depender de la biblioteca: los avisos y la
+                 confirmación son interfaces propias del contrato (`Avisos`, `Confirmacion`), con
+                 adaptadores en `componentes/`.
+- Cómo evitarlo: al empezar un proyecto, listar las herramientas y dependencias de terceros con su
+                 licencia actual (el campo `license` de `npm view <paquete>` o el `LICENSE` del
+                 repositorio, no lo que se recuerda de versiones anteriores) y confirmar que se puede
+                 usar y distribuir. Repetirlo al agregar una dependencia o cambiar de versión mayor.
+                 Que la lógica dependa de interfaces propias, no de los servicios de una biblioteca
+                 de componentes, hace barato el cambio si ocurre. La lista de este frontend está en
+                 `docs/frontend/PLAN.md`, «Licencias».
+- Origen:        tarea 37 · 2026-10-07 · implementador
+
 ## Funcionalidad
 Comportamiento que no cumplía la especificación, detectado por pruebas o revisión.
 

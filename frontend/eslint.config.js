@@ -71,14 +71,15 @@ module.exports = defineConfig([
               message: 'ARQF1: contratos/ no importa otras carpetas del proyecto.',
             },
             {
-              regex: '^(?!\\.|rxjs$|@angular/core$)',
-              message: 'ARQF1: contratos/ sólo importa tipos de rxjs y @angular/core.',
+              regex: '^(?!\\.|rxjs$|@angular/core$|@angular/forms$)',
+              message:
+                'ARQF1: contratos/ sólo importa tipos de rxjs, @angular/core y @angular/forms.',
             },
             {
-              regex: '^(rxjs|@angular/core)$',
+              regex: '^(rxjs|@angular/core|@angular/forms)$',
               allowTypeImports: true,
               message:
-                'ARQF1: de rxjs y @angular/core, contratos/ sólo importa tipos (import type).',
+                'ARQF1: de rxjs, @angular/core y @angular/forms, contratos/ sólo importa tipos (import type).',
             },
           ],
         },

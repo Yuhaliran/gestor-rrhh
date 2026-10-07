@@ -46,7 +46,8 @@ funcional (CAF1 a CAF4) ni las pruebas unitarias de lo genérico.
        `Program.cs` y los appsettings (`feat(api): CORS para el frontend`). Postman sigue pasando
 - [x] 31. Crear `frontend/` con `npx @angular/cli@22 new` (sin SSR, sin zone.js, con CSS y
        Vitest); `ng add angular-eslint`; agregar PrimeNG, `@angular/cdk`, `@primeuix/themes` y
-       PrimeIcons, @testing-library/angular, @testing-library/dom y user-event (Prettier ya viene
+       PrimeIcons (en la tarea 37 se reemplazaron por Angular Material: E-021),
+       @testing-library/angular, @testing-library/dom y user-event (Prettier ya viene
        con el CLI); scripts de `package.json`; `environments/`; puerto 4200 fijo en
        `angular.json`; `strict` y `strictTemplates` explícitos; Prettier con `endOfLine: auto`
        (`core.autocrlf` deja CRLF en Windows); borrar el `.editorconfig` que genera el CLI y
@@ -65,18 +66,18 @@ funcional (CAF1 a CAF4) ni las pruebas unitarias de lo genérico.
        (`ci: lint, pruebas y build del frontend`)
 
 ## Fase 10 · rama `feature/frontend-base-geografia`
-- [ ] 35. Contrato: `contratos/` completo (DTOs, `ErrorApi`, `ClienteRrhh` y `pantallas.ts`),
+- [x] 35. Contrato: `contratos/` completo (DTOs, `ErrorApi`, `ClienteRrhh` y `pantallas.ts`),
        revisado contra `src/RRHH.Contratos`; tokens `CLIENTE_RRHH` y `URL_API`; esqueletos de
        `api/` y `servicios/` que lanzan `No implementado` (`feat(frontend): contrato`)
-- [ ] 36. Tester: unitarias del cliente HTTP, la lógica de pantallas y los formatos, y las
+- [x] 36. Tester: unitarias del cliente HTTP, la lógica de pantallas y los formatos, y las
        respuestas de `tests/apoyo/` para toda la API, desde la especificación
        (`test(frontend): pruebas del cliente y la lógica de pantallas`)
-- [ ] 37. Implementación de `api/` y `servicios/`, `app.config.ts`, layout con menú, inicio y
+- [x] 37. Implementación de `api/` y `servicios/`, `app.config.ts`, layout con menú, inicio y
        router con todas las rutas (las pantallas pendientes, vacías) hasta que las pruebas de la
        tarea 36 queden en verde (`feat(frontend): cliente de la API, lógica de pantallas y layout`)
-- [ ] 38. Países, patrón de referencia para las demás pantallas: tester (componentes) →
+- [x] 38. Países, patrón de referencia para las demás pantallas: tester (componentes) →
         implementador (`test(frontend): países` · `feat(frontend): mantenimiento de países`)
-- [ ] 39. Departamentos y municipios, con padre fijo al editar y cascada en el alta de municipio
+- [x] 39. Departamentos y municipios, con padre fijo al editar y cascada en el alta de municipio
         (`test(frontend): departamentos y municipios` ·
         `feat(frontend): departamentos y municipios`)
 
