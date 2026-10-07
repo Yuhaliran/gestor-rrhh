@@ -82,11 +82,11 @@ funcional (CAF1 a CAF4) ni las pruebas unitarias de lo genérico.
         `feat(frontend): departamentos y municipios`)
 
 ## Fase 11 · rama `feature/frontend-empresas-colaboradores`
-- [ ] 40. Empresas con cascada y país fijo al editar; colaboradores de una empresa
+- [x] 40. Empresas con cascada y país fijo al editar; colaboradores de una empresa
         (`test(frontend): empresas` · `feat(frontend): mantenimiento de empresas`)
-- [ ] 41. Colaboradores: listado, alta con empresas, editar datos personales
+- [x] 41. Colaboradores: listado, alta con empresas, editar datos personales
         (`test(frontend): colaboradores` · `feat(frontend): mantenimiento de colaboradores`)
-- [ ] 42. Detalle del colaborador: edad y empresas; asociar, editar y quitar
+- [x] 42. Detalle del colaborador: edad y empresas; asociar, editar y quitar
         (`test(frontend): detalle del colaborador` · `feat(frontend): empresas de un colaborador`)
 
 ## Fase 12 · rama `docs/frontend-entrega`
