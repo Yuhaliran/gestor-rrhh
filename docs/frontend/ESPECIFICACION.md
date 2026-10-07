@@ -172,6 +172,10 @@ es cambiar la especificación.
   «Registros por página» (10, 20 o 50), «Página anterior», «Página siguiente», «Primera página»,
   «Última página» y el rango «1 – 10 de 45».
 - Confirmación (RF3): título «Confirmar» y el mensaje «¿Eliminar este registro?».
+- Padre fijo al editar (RN8, RF10 a RF12): el campo conserva su etiqueta («País»,
+  «Departamento») y se muestra deshabilitado, con el nombre del padre. Al crear, el mismo campo es
+  una lista para elegir (rol `combobox`); en la cascada, cada lista está deshabilitada hasta que
+  se elige su padre.
 
 **Enlaces y botones.** Lo que navega es un enlace (rol `link`): «Nuevo», «Editar» de los listados,
 «Cancelar» de los formularios, «Colaboradores», «Ver detalle», «Editar datos» y «Volver al

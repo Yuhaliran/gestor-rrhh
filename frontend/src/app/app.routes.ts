@@ -1,6 +1,10 @@
 import { Routes } from '@angular/router';
 
+import { DepartamentoFormulario } from './vistas/departamentos/departamento-formulario';
+import { DepartamentosListado } from './vistas/departamentos/departamentos-listado';
 import { Inicio } from './vistas/inicio';
+import { MunicipioFormulario } from './vistas/municipios/municipio-formulario';
+import { MunicipiosListado } from './vistas/municipios/municipios-listado';
 import { PaisFormulario } from './vistas/paises/pais-formulario';
 import { PaisesListado } from './vistas/paises/paises-listado';
 import { Pendiente } from './vistas/pendiente';
@@ -14,13 +18,17 @@ export const routes: Routes = [
   { path: 'paises/nuevo', component: PaisFormulario, title: 'Nuevo país' },
   { path: 'paises/:id/editar', component: PaisFormulario, title: 'Editar país' },
 
-  { path: 'departamentos', component: Pendiente, title: 'Departamentos' },
-  { path: 'departamentos/nuevo', component: Pendiente, title: 'Nuevo departamento' },
-  { path: 'departamentos/:id/editar', component: Pendiente, title: 'Editar departamento' },
+  { path: 'departamentos', component: DepartamentosListado, title: 'Departamentos' },
+  { path: 'departamentos/nuevo', component: DepartamentoFormulario, title: 'Nuevo departamento' },
+  {
+    path: 'departamentos/:id/editar',
+    component: DepartamentoFormulario,
+    title: 'Editar departamento',
+  },
 
-  { path: 'municipios', component: Pendiente, title: 'Municipios' },
-  { path: 'municipios/nuevo', component: Pendiente, title: 'Nuevo municipio' },
-  { path: 'municipios/:id/editar', component: Pendiente, title: 'Editar municipio' },
+  { path: 'municipios', component: MunicipiosListado, title: 'Municipios' },
+  { path: 'municipios/nuevo', component: MunicipioFormulario, title: 'Nuevo municipio' },
+  { path: 'municipios/:id/editar', component: MunicipioFormulario, title: 'Editar municipio' },
 
   { path: 'empresas', component: Pendiente, title: 'Empresas' },
   { path: 'empresas/nuevo', component: Pendiente, title: 'Nueva empresa' },
