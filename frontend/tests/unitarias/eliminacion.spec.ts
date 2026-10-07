@@ -46,9 +46,11 @@ describe('Eliminacion', () => {
   });
 
   it('eliminar_204_AvisaYRecarga', () => {
+    let elementoEliminado: any;
     TestBed.runInInjectionContext(() => {
-      const eliminacion = crearEliminacion(() => {
+      const eliminacion = crearEliminacion((elemento) => {
         eliminarLlamado = true;
+        elementoEliminado = elemento;
         return of(undefined);
       }, recargarSpy);
 
@@ -58,6 +60,7 @@ describe('Eliminacion', () => {
       options.accept();
 
       expect(eliminarLlamado).toBe(true);
+      expect(elementoEliminado).toBe(1);
       expect(messageService.add).toHaveBeenCalledWith(
         expect.objectContaining({ summary: 'Se eliminó correctamente.' }),
       );

@@ -1,10 +1,18 @@
-import { TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import { of, throwError, Subject } from 'rxjs';
 import { crearListado } from '../../src/app/servicios/listado';
 import { paginaDe } from '../apoyo/respuestas';
 import { Consulta, Pagina } from '../../src/app/contratos/dtos';
 
 describe('Listado', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('cargaInicial_PidePagina1YTamanioOpciones', () => {
     let consultaEnviada: Consulta | undefined;
     TestBed.runInInjectionContext(() => {
@@ -46,7 +54,7 @@ describe('Listado', () => {
     expect(consultaEnviada!.tamanio).toBe(50);
   });
 
-  it('cambiarBusqueda_Espera300msYVuelveAPagina1', fakeAsync(() => {
+  it('cambiarBusqueda_Espera300msYVuelveAPagina1', () => {
     let llamadas = 0;
     let consultaEnviada: Consulta | undefined;
     TestBed.runInInjectionContext(() => {
@@ -58,49 +66,65 @@ describe('Listado', () => {
 
       listado.cambiarPagina(3);
       listado.cambiarBusqueda('a');
-      tick(100);
+      vi.advanceTimersByTime(100);
       listado.cambiarBusqueda('ab');
-      tick(300);
+      vi.advanceTimersByTime(300);
     });
 
     expect(llamadas).toBe(2); // 1 inicial + 1 por la búsqueda
     expect(consultaEnviada!.pagina).toBe(1);
     expect(consultaEnviada!.buscar).toBe('ab');
-  }));
+  });
 
-  it('respuestasMismaBusqueda_DescartaRespuestaVieja', fakeAsync(() => {
-    const respuestas = new Subject<Pagina<string>>();
+  it('respuestasMismaBusqueda_DescartaRespuestaVieja', () => {
+    const respuestas: Subject<Pagina<string>>[] = [];
+
     TestBed.runInInjectionContext(() => {
-      const listado = crearListado(() => respuestas.asObservable());
+      const listado = crearListado(() => {
+        const subject = new Subject<Pagina<string>>();
+        respuestas.push(subject);
+        return subject.asObservable();
+      });
+
+      // carga inicial crea respuestas[0]
+      respuestas[0].next(paginaDe(['inicial']));
+
       listado.cambiarBusqueda('a');
-      tick(300);
+      vi.advanceTimersByTime(300);
+      // cambiarBusqueda 'a' crea respuestas[1]
 
       listado.cambiarBusqueda('ab');
-      tick(300);
+      vi.advanceTimersByTime(300);
+      // cambiarBusqueda 'ab' crea respuestas[2]
 
-      respuestas.next(paginaDe(['vieja']));
-      expect(listado.elementos()).toEqual([]);
+      // Emitimos de la búsqueda vieja ('a')
+      respuestas[1].next(paginaDe(['vieja']));
+      expect(listado.elementos()).toEqual(['inicial']);
 
-      respuestas.next(paginaDe(['nueva']));
+      // Emitimos de la búsqueda nueva ('ab')
+      respuestas[2].next(paginaDe(['nueva']));
       expect(listado.elementos()).toEqual(['nueva']);
     });
-  }));
+  });
 
-  it('error_GuardaErrorSinRomperListado', fakeAsync(() => {
-    let fallar = true;
+  it('error_GuardaErrorSinRomperListado', () => {
+    let fallar = false;
     TestBed.runInInjectionContext(() => {
       const listado = crearListado(() =>
-        fallar ? throwError(() => ({ estado: 500 })) : of(paginaDe(['nueva'])),
+        fallar ? throwError(() => ({ estado: 500 })) : of(paginaDe(['correcta'])),
       );
 
-      expect(listado.error()?.estado).toBe(500);
-      expect(listado.cargando()).toBe(false);
+      // Carga correcta primero
+      expect(listado.elementos()).toEqual(['correcta']);
+      expect(listado.error()).toBeNull();
 
-      fallar = false;
+      // Carga que falla
+      fallar = true;
       listado.recargar();
 
-      expect(listado.error()).toBeNull();
-      expect(listado.elementos()).toEqual(['nueva']);
+      expect(listado.error()?.estado).toBe(500);
+      expect(listado.elementos()).toEqual(['correcta']);
+      expect(listado.cargando()).toBe(false);
     });
-  }));
+  });
 });

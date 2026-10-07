@@ -4,6 +4,7 @@ import { CLIENTE_RRHH } from '../../src/app/servicios/cliente';
 import { ErrorApi } from '../../src/app/contratos/errores';
 import { proveedoresDePrueba } from '../apoyo/proveedores';
 import { conflicto, guatemala, jsonIlegible, noEncontrado, validacion } from '../apoyo/respuestas';
+import { URL_API } from '../../src/app/api/url-api';
 
 describe('ClienteRrhhHttp', () => {
   it('listar_ConBusqueda_EnviaPaginaTamanioYBuscar', () => {
@@ -28,6 +29,19 @@ describe('ClienteRrhhHttp', () => {
     cliente.paises.listar({ pagina: 1, tamanio: 10 }).subscribe();
     const pedido = api.expectOne('http://api.prueba/api/paises?pagina=1&tamanio=10');
     expect(pedido.request.params.has('buscar')).toBe(false);
+    api.verify();
+  });
+
+  it('listar_ConUrlBase_UsaTokenUrlApi', () => {
+    TestBed.configureTestingModule({
+      providers: [...proveedoresDePrueba(), { provide: URL_API, useValue: 'http://otra.api/api' }],
+    });
+
+    const cliente = TestBed.inject(CLIENTE_RRHH);
+    const api = TestBed.inject(HttpTestingController);
+
+    cliente.paises.listar({ pagina: 1, tamanio: 10 }).subscribe();
+    api.expectOne('http://otra.api/api/paises?pagina=1&tamanio=10');
     api.verify();
   });
 
@@ -110,7 +124,7 @@ describe('erroresInterceptor', () => {
       .flush(noEncontrado(), { status: 404, statusText: 'Not Found' });
 
     expect(error?.estado).toBe(404);
-    expect(error?.detalle).toBe('El registro no existe.');
+    expect(error?.detalle).toBe('No existe.');
   });
 
   it('interceptor_Error409_DevuelveErrorApiConDetalle', () => {

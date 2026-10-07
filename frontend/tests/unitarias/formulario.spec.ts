@@ -44,12 +44,21 @@ describe('Formulario', () => {
 
   it('enviar_Exito_AvisaYNavega', () => {
     const grupo = new FormGroup({ nombre: new FormControl('A') });
+    let valoresGuardados: any;
 
     TestBed.runInInjectionContext(() => {
-      const formulario = crearFormulario(grupo, () => of({}), { volverA: '/lista' });
+      const formulario = crearFormulario(
+        grupo,
+        (valores) => {
+          valoresGuardados = valores;
+          return of({});
+        },
+        { volverA: '/lista' },
+      );
       formulario.enviar();
     });
 
+    expect(valoresGuardados).toEqual({ nombre: 'A' });
     expect(messageService.add).toHaveBeenCalledWith(
       expect.objectContaining({ summary: 'Se guardó correctamente.' }),
     );

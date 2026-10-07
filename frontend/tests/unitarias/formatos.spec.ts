@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import {
   fechaParaMostrar,
@@ -9,16 +8,11 @@ import {
   mensajeDeError,
   mensajeDeValidacion,
 } from '../../src/app/servicios/formatos';
+import * as formatosServicio from '../../src/app/servicios/formatos';
+const PATRON_TELEFONO = (formatosServicio as any).PATRON_TELEFONO;
+const PATRON_CODIGO_ISO = (formatosServicio as any).PATRON_CODIGO_ISO;
 
 describe('Formatos y Validadores', () => {
-  beforeEach(() => {
-    (globalThis as any).process = { env: { TZ: 'America/Guatemala' } };
-  });
-
-  afterEach(() => {
-    delete (globalThis as any).process.env['TZ'];
-  });
-
   it('fechaParaMostrar_ConvierteAFormatoLocal', () => {
     expect(fechaParaMostrar('2026-10-07')).toBe('07/10/2026');
   });
@@ -80,8 +74,7 @@ describe('Formatos y Validadores', () => {
     });
 
     it('patronTelefono_ValoresLimite', () => {
-      const regex = /^[0-9+()\- ]{7,20}$/;
-      const control = new FormControl('', Validators.pattern(regex));
+      const control = new FormControl('', Validators.pattern(PATRON_TELEFONO));
 
       control.setValue('123456'); // 6 caracteres
       expect(control.errors?.['pattern']).toBeTruthy();
@@ -97,8 +90,7 @@ describe('Formatos y Validadores', () => {
     });
 
     it('patronCodigoIso_ValoresLimite', () => {
-      const regex = /^[A-Za-z]{2}$/;
-      const control = new FormControl('', Validators.pattern(regex));
+      const control = new FormControl('', Validators.pattern(PATRON_CODIGO_ISO));
 
       control.setValue('A'); // 1 letra
       expect(control.errors?.['pattern']).toBeTruthy();
