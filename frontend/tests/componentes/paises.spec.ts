@@ -93,6 +93,25 @@ describe('PaisesListado', () => {
 
     expect(await screen.findByText('Ocurrió un error inesperado.')).toBeTruthy();
   });
+
+  it('listar_Paginador_MuestraTotalYCambiaPagina', async () => {
+    const user = userEvent.setup();
+    await render(PaisesListado, { providers: proveedoresDePrueba() });
+    const api = TestBed.inject(HttpTestingController);
+
+    api
+      .expectOne((r) => r.url.endsWith('/api/paises'))
+      .flush({ ...paginaDe([guatemala]), total: 45 });
+
+    expect(await screen.findByText('Registros por página')).toBeTruthy();
+    expect(screen.getByText('1 – 20 de 45')).toBeTruthy();
+
+    await user.click(screen.getByRole('button', { name: 'Página siguiente' }));
+
+    const pedido = api.expectOne((r) => r.params.get('pagina') === '2');
+    expect(pedido.request.params.get('pagina')).toBe('2');
+    pedido.flush({ ...paginaDe([guatemala]), total: 45 });
+  });
 });
 
 describe('PaisFormulario', () => {
@@ -160,7 +179,7 @@ describe('PaisFormulario', () => {
     await render(PaisFormulario, { providers: proveedoresDePrueba() });
 
     const router = TestBed.inject(Router);
-    const routerSpy = vi.spyOn(router, 'navigateByUrl');
+    const routerSpy = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
 
     await user.type(await screen.findByLabelText('Nombre'), 'Belice');
     await user.type(screen.getByLabelText('Código ISO'), 'BZ');
@@ -199,5 +218,48 @@ describe('PaisFormulario', () => {
 
     expect(await screen.findByText('El registro no existe.')).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Volver al listado' })).toBeTruthy();
+  });
+
+  it('editar_Guardar_EnviaPutConDatosNuevos', async () => {
+    const user = userEvent.setup();
+    await render(PaisFormulario, { inputs: { id: '7' }, providers: proveedoresDePrueba() });
+
+    const api = TestBed.inject(HttpTestingController);
+    const router = TestBed.inject(Router);
+    vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+    const belice = { ...guatemala, id: 7, nombre: 'Belice', codigoIso2: 'BZ' };
+    api.expectOne((r) => r.method === 'GET' && r.url.endsWith('/api/paises/7')).flush(belice);
+
+    const nombre = await screen.findByLabelText('Nombre');
+    await user.clear(nombre);
+    await user.type(nombre, 'Belice Editado');
+
+    await user.click(screen.getByRole('button', { name: 'Guardar' }));
+
+    const pedido = api.expectOne((r) => r.method === 'PUT' && r.url.endsWith('/api/paises/7'));
+    expect(pedido.request.body.nombre).toBe('Belice Editado');
+    pedido.flush({ ...belice, nombre: 'Belice Editado' });
+  });
+
+  it('crear_EdadMinimaMayorQueMaxima_MuestraErrorYNoLlamaApi', async () => {
+    const user = userEvent.setup();
+    await render(PaisFormulario, { providers: proveedoresDePrueba() });
+
+    const min = await screen.findByLabelText('Edad mínima');
+    const max = screen.getByLabelText('Edad máxima');
+
+    await user.clear(min);
+    await user.type(min, '30');
+    await user.clear(max);
+    await user.type(max, '20');
+
+    await user.click(screen.getByRole('button', { name: 'Guardar' }));
+
+    expect(
+      await screen.findByText('La edad mínima no puede ser mayor que la máxima.'),
+    ).toBeTruthy();
+
+    const api = TestBed.inject(HttpTestingController);
+    api.expectNone((r) => r.method === 'POST');
   });
 });
