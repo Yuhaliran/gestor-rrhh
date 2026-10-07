@@ -99,7 +99,8 @@ export interface Formulario {
   enviar(): void;
 }
 
-// enviar(): si el grupo es inválido (VC), marca los controles y no llama a la API. Al guardar,
+// enviar(): si el grupo es inválido (VC), marca los controles y no llama a la API; un error que
+// puso la API no impide volver a enviar. Al guardar,
 // avisa con avisos.exito('Se guardó correctamente.') y navega a opciones.volverA (RF4). Un 400 pone cada mensaje en
 // su control con setErrors({ api: mensaje }), también dentro de un FormArray
 // ('empresas[1].fechaIngreso'); una clave sin control y cualquier otro error van a errorGeneral.
