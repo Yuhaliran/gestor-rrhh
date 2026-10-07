@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 
 import { Inicio } from './vistas/inicio';
+import { PaisFormulario } from './vistas/paises/pais-formulario';
+import { PaisesListado } from './vistas/paises/paises-listado';
 import { Pendiente } from './vistas/pendiente';
 
 // Rutas del «Contrato de interfaz» (docs/frontend/ESPECIFICACION.md). Las pantallas llegan en las
@@ -8,9 +10,9 @@ import { Pendiente } from './vistas/pendiente';
 export const routes: Routes = [
   { path: '', component: Inicio, title: 'Recursos Humanos' },
 
-  { path: 'paises', component: Pendiente, title: 'Países' },
-  { path: 'paises/nuevo', component: Pendiente, title: 'Nuevo país' },
-  { path: 'paises/:id/editar', component: Pendiente, title: 'Editar país' },
+  { path: 'paises', component: PaisesListado, title: 'Países' },
+  { path: 'paises/nuevo', component: PaisFormulario, title: 'Nuevo país' },
+  { path: 'paises/:id/editar', component: PaisFormulario, title: 'Editar país' },
 
   { path: 'departamentos', component: Pendiente, title: 'Departamentos' },
   { path: 'departamentos/nuevo', component: Pendiente, title: 'Nuevo departamento' },
