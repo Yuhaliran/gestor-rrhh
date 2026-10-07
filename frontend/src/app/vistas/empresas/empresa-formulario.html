@@ -1,0 +1,83 @@
+<h2>{{ id() ? 'Editar empresa' : 'Nueva empresa' }}</h2>
+
+@if (noExiste()) {
+  <p>El registro no existe.</p>
+  <a matButton routerLink="/empresas">Volver al listado</a>
+} @else {
+  @if (errorCarga() ?? errorCascada(); as mensaje) {
+    <p class="error-general" role="alert">{{ mensaje }}</p>
+  }
+  <form class="formulario" [formGroup]="grupo" (ngSubmit)="formulario.enviar()">
+    <mat-form-field>
+      <mat-label>País</mat-label>
+      <mat-select formControlName="paisId" (selectionChange)="elegirPais($event.value)">
+        @for (pais of paises(); track pais.id) {
+          <mat-option [value]="pais.id">{{ pais.nombre }}</mat-option>
+        }
+      </mat-select>
+      <mat-error>{{ mensajeDe(grupo.controls.paisId.errors) }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Departamento</mat-label>
+      <mat-select
+        formControlName="departamentoId"
+        (selectionChange)="elegirDepartamento($event.value)"
+      >
+        @for (departamento of departamentos(); track departamento.id) {
+          <mat-option [value]="departamento.id">{{ departamento.nombre }}</mat-option>
+        }
+      </mat-select>
+      <mat-error>{{ mensajeDe(grupo.controls.departamentoId.errors) }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Municipio</mat-label>
+      <mat-select formControlName="municipioId">
+        @for (municipio of municipios(); track municipio.id) {
+          <mat-option [value]="municipio.id">{{ municipio.nombre }}</mat-option>
+        }
+      </mat-select>
+      <mat-error>{{ mensajeDe(grupo.controls.municipioId.errors) }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>NIT</mat-label>
+      <input matInput class="mayusculas" formControlName="nit" maxlength="20" />
+      <mat-error>{{ mensajeDe(grupo.controls.nit.errors) }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Razón social</mat-label>
+      <input matInput formControlName="razonSocial" maxlength="200" />
+      <mat-error>{{ mensajeDe(grupo.controls.razonSocial.errors) }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Nombre comercial</mat-label>
+      <input matInput formControlName="nombreComercial" maxlength="200" />
+      <mat-error>{{ mensajeDe(grupo.controls.nombreComercial.errors) }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Teléfono</mat-label>
+      <input matInput type="tel" formControlName="telefono" maxlength="20" />
+      <mat-error>{{ mensajeDe(grupo.controls.telefono.errors) }}</mat-error>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Correo</mat-label>
+      <input matInput type="email" formControlName="correo" maxlength="254" />
+      <mat-error>{{ mensajeDe(grupo.controls.correo.errors) }}</mat-error>
+    </mat-form-field>
+
+    @if (formulario.errorGeneral(); as mensaje) {
+      <p class="error-general" role="alert">{{ mensaje }}</p>
+    }
+
+    <div class="acciones-formulario">
+      <button matButton="filled" type="submit" [disabled]="formulario.guardando()">Guardar</button>
+      <a matButton routerLink="/empresas">Cancelar</a>
+    </div>
+  </form>
+}

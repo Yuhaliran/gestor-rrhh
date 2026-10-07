@@ -45,6 +45,11 @@ body {
   color: #991b1b;
 }
 
+/* RF9 y el NIT de la empresa: se muestran en mayúsculas mientras se escriben */
+.mayusculas {
+  text-transform: uppercase;
+}
+
 /* Visible sólo para lectores de pantalla */
 .oculto {
   clip: rect(0 0 0 0);
