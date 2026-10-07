@@ -7,6 +7,7 @@ import type {
   MensajeDeError,
   MensajeDeValidacion,
   OpcionRegla,
+  TextoEdad,
   TextoRegla29Febrero,
 } from '../contratos/pantallas';
 
@@ -48,6 +49,11 @@ export const fechaAIso: FechaAIso = (fecha) =>
 
 export const textoRegla29Febrero: TextoRegla29Febrero = (regla) =>
   OPCIONES_REGLA_29_FEBRERO.find((opcion) => opcion.valor === regla)?.texto ?? regla;
+
+// RN7 · Esqueleto hasta la tarea 40 (E-014)
+export const textoEdad: TextoEdad = () => {
+  throw new Error('No implementado');
+};
 
 // RF6 a RF8: nunca un detalle técnico
 export const mensajeDeError: MensajeDeError = (error) => {

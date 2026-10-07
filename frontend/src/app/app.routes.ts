@@ -2,6 +2,9 @@ import { Routes } from '@angular/router';
 
 import { DepartamentoFormulario } from './vistas/departamentos/departamento-formulario';
 import { DepartamentosListado } from './vistas/departamentos/departamentos-listado';
+import { EmpresaColaboradores } from './vistas/empresas/empresa-colaboradores';
+import { EmpresaFormulario } from './vistas/empresas/empresa-formulario';
+import { EmpresasListado } from './vistas/empresas/empresas-listado';
 import { Inicio } from './vistas/inicio';
 import { MunicipioFormulario } from './vistas/municipios/municipio-formulario';
 import { MunicipiosListado } from './vistas/municipios/municipios-listado';
@@ -30,12 +33,12 @@ export const routes: Routes = [
   { path: 'municipios/nuevo', component: MunicipioFormulario, title: 'Nuevo municipio' },
   { path: 'municipios/:id/editar', component: MunicipioFormulario, title: 'Editar municipio' },
 
-  { path: 'empresas', component: Pendiente, title: 'Empresas' },
-  { path: 'empresas/nuevo', component: Pendiente, title: 'Nueva empresa' },
-  { path: 'empresas/:id/editar', component: Pendiente, title: 'Editar empresa' },
+  { path: 'empresas', component: EmpresasListado, title: 'Empresas' },
+  { path: 'empresas/nuevo', component: EmpresaFormulario, title: 'Nueva empresa' },
+  { path: 'empresas/:id/editar', component: EmpresaFormulario, title: 'Editar empresa' },
   {
     path: 'empresas/:id/colaboradores',
-    component: Pendiente,
+    component: EmpresaColaboradores,
     title: 'Colaboradores de la empresa',
   },
 

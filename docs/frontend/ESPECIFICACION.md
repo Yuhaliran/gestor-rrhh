@@ -175,7 +175,14 @@ es cambiar la especificación.
 - Padre fijo al editar (RN8, RF10 a RF12): el campo conserva su etiqueta («País»,
   «Departamento») y se muestra deshabilitado, con el nombre del padre. Al crear, el mismo campo es
   una lista para elegir (rol `combobox`); en la cascada, cada lista está deshabilitada hasta que
-  se elige su padre.
+  se elige su padre. Guardar sin elegir un nivel de la cascada muestra «Este campo es
+  obligatorio.» debajo del primero sin valor (VC1) y no llama a la API, aunque el país y el
+  departamento no viajen a la API.
+- Colaboradores de una empresa (RF15): título «Colaboradores de» y el nombre comercial; por fila,
+  nombre completo, edad, fecha de ingreso en esa empresa, puesto y el enlace «Ver detalle» (a
+  `/colaboradores/:id`); enlace «Volver al listado» (a `/empresas`). Búsqueda, total y paginador
+  como en los demás listados (RF2). Si la empresa no existe, la pantalla de RF7.
+- Edad (RF13 a RF15): «N años» («1 año»), tal como la devuelve la API (RN7).
 
 **Enlaces y botones.** Lo que navega es un enlace (rol `link`): «Nuevo», «Editar» de los listados,
 «Cancelar» de los formularios, «Colaboradores», «Ver detalle», «Editar datos» y «Volver al

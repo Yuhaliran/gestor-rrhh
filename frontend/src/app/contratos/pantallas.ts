@@ -19,7 +19,7 @@ import type { ErrorApi } from './errores';
 //   servicios/formulario.ts   crearFormulario
 //   servicios/eliminacion.ts  crearEliminacion
 //   servicios/formatos.ts     fechaParaMostrar, fechaDesdeIso, fechaAIso, textoRegla29Febrero,
-//                             mensajeDeError, mensajeDeValidacion, OPCIONES_REGLA_29_FEBRERO
+//                             textoEdad, mensajeDeError, mensajeDeValidacion, OPCIONES_REGLA_29_FEBRERO
 //                             (OpcionRegla[]), PATRON_TELEFONO y PATRON_CODIGO_ISO (RegExp, para
 //                             Validators.pattern) y edadMinimaNoMayorQueMaxima (ValidatorFn del grupo
 //                             de País: { edadMinimaMayorQueMaxima: true } si la mínima supera a la
@@ -133,6 +133,8 @@ export type FechaDesdeIso = (iso: string) => Date;
 export type FechaAIso = (fecha: Date) => string;
 // 'VeintiochoDeFebrero' → «28 de febrero»; 'PrimeroDeMarzo' → «1 de marzo»
 export type TextoRegla29Febrero = (regla: Regla29Febrero) => string;
+// RN7 · La edad tal como la calcula la API: 34 → «34 años»; 1 → «1 año»
+export type TextoEdad = (edad: number) => string;
 
 export interface OpcionRegla {
   valor: Regla29Febrero;
