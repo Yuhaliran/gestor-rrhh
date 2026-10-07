@@ -16,9 +16,7 @@ describe('PaisesListado', () => {
     const api = TestBed.inject(HttpTestingController);
 
     const elSalvador = { ...guatemala, id: 2, nombre: 'El Salvador', codigoIso2: 'SV' };
-    api
-      .expectOne((r) => r.url.endsWith('/api/paises'))
-      .flush(paginaDe([guatemala, elSalvador]));
+    api.expectOne((r) => r.url.endsWith('/api/paises')).flush(paginaDe([guatemala, elSalvador]));
 
     expect(await screen.findByText('Guatemala')).toBeTruthy();
     expect(screen.getByText('El Salvador')).toBeTruthy();
@@ -32,18 +30,16 @@ describe('PaisesListado', () => {
     await render(PaisesListado, { providers: proveedoresDePrueba() });
     const api = TestBed.inject(HttpTestingController);
 
-    api
-      .expectOne((r) => r.url.endsWith('/api/paises'))
-      .flush(paginaDe([guatemala]));
+    api.expectOne((r) => r.url.endsWith('/api/paises')).flush(paginaDe([guatemala]));
 
     const buscar = await screen.findByLabelText('Buscar');
     await user.type(buscar, 'sal');
 
-    api.expectNone((r) => r.url.includes('buscar=sal'));
+    api.expectNone((r) => r.params.get('buscar') === 'sal');
 
     vi.advanceTimersByTime(300);
 
-    const pedido = api.expectOne((r) => r.url.includes('buscar=sal'));
+    const pedido = api.expectOne((r) => r.params.get('buscar') === 'sal');
     expect(pedido.request.params.get('pagina')).toBe('1');
     expect(pedido.request.params.get('buscar')).toBe('sal');
 
@@ -58,24 +54,23 @@ describe('PaisesListado', () => {
   it('eliminar_Confirma_HaceDelete', async () => {
     await render(PaisesListado, { providers: proveedoresDePrueba() });
     const api = TestBed.inject(HttpTestingController);
-    api
-      .expectOne((r) => r.url.endsWith('/api/paises'))
-      .flush(paginaDe([guatemala]));
+    api.expectOne((r) => r.url.endsWith('/api/paises')).flush(paginaDe([guatemala]));
 
     await userEvent.click(await screen.findByRole('button', { name: 'Eliminar' }));
     await userEvent.click(await screen.findByRole('button', { name: 'Sí, eliminar' }));
 
-    api
-      .expectOne((r) => r.method === 'DELETE' && r.url.endsWith('/api/paises/1'))
-      .flush(null);
+    api.expectOne((r) => r.method === 'DELETE' && r.url.endsWith('/api/paises/1')).flush(null);
+
+    expect(await screen.findByText('Se eliminó correctamente.')).toBeTruthy();
+
+    // Verifica que el listado vuelve a consultar (recarga)
+    api.expectOne((r) => r.method === 'GET' && r.url.endsWith('/api/paises'));
   });
 
   it('eliminar_ConConflicto_MuestraElDetalleYConservaLaFila', async () => {
     await render(PaisesListado, { providers: proveedoresDePrueba() });
     const api = TestBed.inject(HttpTestingController);
-    api
-      .expectOne((r) => r.url.endsWith('/api/paises'))
-      .flush(paginaDe([guatemala]));
+    api.expectOne((r) => r.url.endsWith('/api/paises')).flush(paginaDe([guatemala]));
 
     await userEvent.click(await screen.findByRole('button', { name: 'Eliminar' }));
     await userEvent.click(await screen.findByRole('button', { name: 'Sí, eliminar' }));
@@ -188,9 +183,7 @@ describe('PaisFormulario', () => {
 
     const api = TestBed.inject(HttpTestingController);
     const belice = { ...guatemala, id: 7, nombre: 'Belice', codigoIso2: 'BZ' };
-    api
-      .expectOne((r) => r.method === 'GET' && r.url.endsWith('/api/paises/7'))
-      .flush(belice);
+    api.expectOne((r) => r.method === 'GET' && r.url.endsWith('/api/paises/7')).flush(belice);
 
     expect(((await screen.findByLabelText('Nombre')) as HTMLInputElement).value).toBe('Belice');
     expect((screen.getByLabelText('Código ISO') as HTMLInputElement).value).toBe('BZ');

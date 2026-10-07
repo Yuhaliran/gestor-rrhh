@@ -2,6 +2,7 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { EnvironmentProviders, Provider } from '@angular/core';
 import { provideRouter } from '@angular/router';
+import { MATERIAL_ANIMATIONS } from '@angular/material/core';
 import { ClienteRrhhHttp } from '../../src/app/api/cliente-rrhh-http';
 import { erroresInterceptor } from '../../src/app/api/errores.interceptor';
 import { URL_API } from '../../src/app/api/url-api';
@@ -20,5 +21,6 @@ export function proveedoresDePrueba(): (Provider | EnvironmentProviders)[] {
     { provide: CLIENTE_RRHH, useClass: ClienteRrhhHttp },
     { provide: AVISOS, useClass: AvisosMaterial },
     { provide: CONFIRMACION, useClass: ConfirmacionMaterial },
+    { provide: MATERIAL_ANIMATIONS, useValue: { animationsDisabled: true } },
   ];
 }
