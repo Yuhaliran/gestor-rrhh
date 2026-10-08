@@ -90,14 +90,14 @@ funcional (CAF1 a CAF4) ni las pruebas unitarias de lo genérico.
         (`test(frontend): detalle del colaborador` · `feat(frontend): empresas de un colaborador`)
 
 ## Fase 12 · rama `docs/frontend-entrega`
-- [ ] 43. Lista de aceptación de `docs/frontend/PLAN_PRUEBAS.md` contra la API real; anotar el
+- [x] 43. Lista de aceptación de `docs/frontend/PLAN_PRUEBAS.md` contra la API real; anotar el
         resultado en el PR; corregir lo que falle en commits propios (`fix(frontend): ...`)
-- [ ] 44. README: sección «Frontend Angular» (por qué Angular frente a Flutter y Vue) y el
+- [x] 44. README: sección «Frontend Angular» (por qué Angular frente a Flutter y Vue) y el
         frontend integrado en las secciones existentes: «Cómo ejecutar» (tercera terminal con
         `npm start`), «Pruebas», «Arquitectura», «Estructura del repositorio», «Uso de IA» y
         «Mejoras futuras»; revisión final sin advertencias ni secretos
         (`docs: frontend Angular en el README`)
-- [ ] 45. PR de la fase 12 a `main`; después, tag sobre `main`:
+- [x] 45. PR de la fase 12 a `main`; después, tag sobre `main`:
         `git tag -a v1.1.0 -m "Frontend Angular"`
 
 Mejoras futuras (al README): E2E con Playwright; tipos generados desde OpenAPI; búsqueda en las
